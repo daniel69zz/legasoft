@@ -1,0 +1,152 @@
+%% BPMN — Modelo de proceso de negocio AS-IS / TO-BE (plantilla)
+%% Compilar: tectonic -X compile bpmn-proceso.tex
+\documentclass[11pt,a4paper]{article}
+\usepackage{../../docs/latex/legasoft}
+\usepackage{../../docs/latex/legasoft-diagramas}
+
+\lgtitulo{BPMN: modelo de proceso de negocio}
+\lgtituloCorto{BPMN — Proceso}
+\lgcodigo{LGS-MOD-BPMN-1}
+\lgversion{0.1}
+\lgestado{Plantilla}
+\lgfecha{\campo{fecha}}
+\lgautor{\lgDirector\ (\lgDirectorRol)}
+
+\begin{document}
+
+\begin{center}
+{\sffamily\bfseries\LARGE\color{lgPrimario} BPMN: modelo de proceso de negocio\par}
+\vspace{2pt}
+{\sffamily\normalsize\color{lgGris} \campo{nombre del proceso} · Legasoft\par}
+\end{center}
+\vspace{6pt}
+{\color{lgBorde}\hrule height 0.8pt}
+\vspace{10pt}
+
+\begin{porcompletar}[Cómo usar esta plantilla]
+El diagnóstico de procesos es el punto de partida de toda intervención de
+Legasoft. Se modela primero el proceso actual (\textbf{AS-IS}) para hacer
+visibles las tareas manuales y las ineficiencias, y después el proceso propuesto
+(\textbf{TO-BE}) que incorpora la digitalización. Duplique la sección del
+diagrama para representar cada uno.
+\end{porcompletar}
+
+% =============================================================================
+\section*{Proceso actual (AS-IS)}
+
+\begin{figure}[H]
+\centering
+\ajustaancho{%
+\begin{tikzpicture}[bpmn, x=1cm, y=1cm]
+
+  % --- Carril 1: solicitante -----------------------------------------------
+  \node[bpmninicio] (ini) at (0,0) {};
+  \node[bpmnetq, below=1pt of ini, fill=none] {\campo{solicitud recibida}};
+
+  \node[bpmntarea, right=1.1cm of ini] (t1) {\campo{Registrar solicitud (manual)}};
+  \node[bpmntarea, right=1.1cm of t1]  (t2) {\campo{Verificar datos}};
+  \node[bpmngateway, right=1.1cm of t2] (g1) {};
+  \node[bpmnetq, above=2pt of g1, fill=none] {\campo{¿completa?}};
+
+  \node[bpmntarea, right=1.4cm of g1] (t3) {\campo{Aprobar y archivar}};
+  \node[bpmnfin, right=1.1cm of t3] (fin) {};
+  \node[bpmnetq, below=1pt of fin, fill=none] {\campo{proceso cerrado}};
+
+  \node[bpmntarea, below=1.3cm of g1] (t4) {\campo{Solicitar corrección}};
+
+  % --- Flujos ---------------------------------------------------------------
+  \draw[bpmnflujo] (ini) -- (t1);
+  \draw[bpmnflujo] (t1) -- (t2);
+  \draw[bpmnflujo] (t2) -- (g1);
+  \draw[bpmnflujo] (g1) -- (t3) node[bpmnetq, pos=0.45] {sí};
+  \draw[bpmnflujo] (t3) -- (fin);
+  \draw[bpmnflujo] (g1) -- (t4) node[bpmnetq, pos=0.5] {no};
+  \draw[bpmnflujo] (t4.west) -- ++(-1.0,0) |- (t2.south);
+
+\end{tikzpicture}}
+\caption{Proceso actual. Las tareas marcadas como manuales son las candidatas a
+digitalización.}
+\end{figure}
+
+% =============================================================================
+\Needspace*{20\baselineskip}
+\section*{Hallazgos del diagnóstico}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}C{1.7cm} Y L{3.4cm}@{}}
+\toprule
+\sffamily\bfseries\color{lgPrimario}ID &
+\sffamily\bfseries\color{lgPrimario}Hallazgo &
+\sffamily\bfseries\color{lgPrimario}Consecuencia observada \\
+\midrule
+H-01 & \campo{tarea manual o repetitiva identificada} & \campo{tiempo, error o retrabajo} \\
+H-02 & \campo{registro disperso o duplicado}          & \campo{información no confiable} \\
+H-03 & \campo{falta de control o trazabilidad}        & \campo{imposibilidad de auditar} \\
+\bottomrule
+\end{tabularx}
+\captionof{table}{Hallazgos que justifican la propuesta de mejora.}
+\end{center}
+
+% =============================================================================
+\Needspace*{20\baselineskip}
+\section*{Proceso propuesto (TO-BE)}
+
+\begin{figure}[H]
+\centering
+\ajustaancho{%
+\begin{tikzpicture}[bpmn, x=1cm, y=1cm]
+
+  \node[bpmninicio] (ini2) at (0,0) {};
+  \node[bpmnetq, below=1pt of ini2, fill=none] {\campo{solicitud en línea}};
+
+  \node[bpmntarea, right=1.1cm of ini2] (u1) {\campo{Registrar en el sistema}};
+  \node[bpmntarea, right=1.1cm of u1]  (u2) {\campo{Validación automática}};
+  \node[bpmngateway, right=1.1cm of u2] (g2) {};
+  \node[bpmnetq, above=2pt of g2, fill=none] {\campo{¿válida?}};
+
+  \node[bpmntarea, right=1.4cm of g2] (u3) {\campo{Aprobar con registro de auditoría}};
+  \node[bpmnfin, right=1.1cm of u3] (fin2) {};
+
+  \node[bpmntarea, below=1.3cm of g2] (u4) {\campo{Notificar al solicitante}};
+
+  \draw[bpmnflujo] (ini2) -- (u1);
+  \draw[bpmnflujo] (u1) -- (u2);
+  \draw[bpmnflujo] (u2) -- (g2);
+  \draw[bpmnflujo] (g2) -- (u3) node[bpmnetq, pos=0.45] {sí};
+  \draw[bpmnflujo] (u3) -- (fin2);
+  \draw[bpmnflujo] (g2) -- (u4) node[bpmnetq, pos=0.5] {no};
+  \draw[bpmnmensaje] (u4.west) -- ++(-1.0,0) |- (u1.south);
+
+\end{tikzpicture}}
+\caption{Proceso propuesto con validación automática, notificación al solicitante
+y registro de auditoría.}
+\end{figure}
+
+% =============================================================================
+\Needspace*{20\baselineskip}
+\section*{Notación empleada}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}L{4.2cm} Y@{}}
+\toprule
+\sffamily\bfseries\color{lgPrimario}Elemento &
+\sffamily\bfseries\color{lgPrimario}Significado \\
+\midrule
+Círculo de borde fino     & Evento de inicio: qué dispara el proceso. \\
+Rectángulo redondeado     & Tarea o actividad realizada por un responsable. \\
+Rombo                     & Compuerta de decisión; las salidas se rotulan con la condición. \\
+Círculo de borde gruesa   & Evento de fin: estado en que termina el proceso. \\
+Flecha continua           & Flujo de secuencia dentro del proceso. \\
+Flecha discontinua        & Flujo de mensaje entre participantes distintos. \\
+\bottomrule
+\end{tabularx}
+\captionof{table}{Elementos BPMN utilizados en los modelos de Legasoft.}
+\end{center}
+
+\begin{nota}[Alcance de la propuesta]
+La comparación AS-IS / TO-BE sustenta la propuesta de mejora ante el cliente. La
+digitalización debe ser proporcional al problema: si una tarea manual no genera
+error ni retrabajo medible, automatizarla no aporta un beneficio verificable.
+\end{nota}
+
+\end{document}

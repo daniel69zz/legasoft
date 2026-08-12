@@ -1,0 +1,108 @@
+%% C4 nivel 1 — Diagrama de contexto (plantilla)
+%% Compilar: tectonic -X compile c4-contexto.tex
+\documentclass[11pt,a4paper]{article}
+\usepackage{../../docs/latex/legasoft}
+\usepackage{../../docs/latex/legasoft-diagramas}
+
+\lgtitulo{C4 nivel 1: diagrama de contexto}
+\lgtituloCorto{C4 — Contexto}
+\lgcodigo{LGS-MOD-C4-1}
+\lgversion{0.1}
+\lgestado{Plantilla}
+\lgfecha{\campo{fecha}}
+\lgautor{\lgArquitecto\ (\lgArquitectoRol)}
+
+\begin{document}
+
+\begin{center}
+{\sffamily\bfseries\LARGE\color{lgPrimario} C4 nivel 1: diagrama de contexto\par}
+\vspace{2pt}
+{\sffamily\normalsize\color{lgGris} \campo{nombre del sistema} · Legasoft\par}
+\end{center}
+\vspace{6pt}
+{\color{lgBorde}\hrule height 0.8pt}
+\vspace{10pt}
+
+\begin{porcompletar}[Cómo usar esta plantilla]
+El nivel 1 muestra el sistema como una \emph{caja negra} y su relación con
+personas y sistemas externos. No incluye tecnología interna ni contenedores: eso
+corresponde al nivel 2. Sustituya los rótulos en ámbar por los elementos reales
+del proyecto y elimine esta caja.
+\end{porcompletar}
+
+% =============================================================================
+\section*{Diagrama}
+
+\begin{figure}[H]
+\centering
+\ajustaancho{%
+\begin{tikzpicture}[c4]
+
+  % --- Personas -------------------------------------------------------------
+  \node[c4persona] (usuario)
+    {\ctexto{\campoclaro{Usuario operativo}}{}{Registra y consulta información en el día a día.}};
+
+  \node[c4persona, right=3.4cm of usuario] (gestor)
+    {\ctexto{\campoclaro{Responsable de gestión}}{}{Consulta reportes y toma decisiones.}};
+
+  % --- Sistema en alcance ---------------------------------------------------
+  \node[c4focoancho, below=2.3cm of $(usuario)!0.5!(gestor)$]
+    (sistema)
+    {\ctexto{\campo{Nombre del sistema}}{}{Digitaliza y controla
+     \campo{el proceso objetivo}.}};
+
+  % --- Sistemas externos ----------------------------------------------------
+  \node[c4externo, below left=2.4cm and 0.4cm of sistema.south] (ext1)
+    {\ctexto{\campo{Sistema externo A}}{}{\campo{Qué provee o consume.}}};
+
+  \node[c4externo, below right=2.4cm and 0.4cm of sistema.south] (ext2)
+    {\ctexto{\campo{Sistema externo B}}{}{\campo{Qué provee o consume.}}};
+
+  % --- Relaciones -----------------------------------------------------------
+  \draw[c4rel] (usuario.south) -- (usuario.south |- sistema.north)
+    node[c4etq, pos=0.5] {\campo{registra datos}\\\campo{HTTPS}};
+
+  \draw[c4rel] (gestor.south) -- (gestor.south |- sistema.north)
+    node[c4etq, pos=0.5] {\campo{consulta reportes}\\\campo{HTTPS}};
+
+  \draw[c4relbi] (sistema.south) -- (ext1.north -| ext1.north)
+    node[c4etq, pos=0.55] {\campo{intercambia}\\\campo{API REST}};
+
+  \draw[c4rel] (sistema.south) -- (ext2.north)
+    node[c4etq, pos=0.55] {\campo{envía}\\\campo{protocolo}};
+
+\end{tikzpicture}}
+\caption{Contexto del sistema: actores, sistema en alcance y sistemas externos.}
+\end{figure}
+
+\cleyenda
+
+% =============================================================================
+\Needspace*{20\baselineskip}
+\section*{Elementos del diagrama}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}L{3.8cm} L{2.6cm} Y@{}}
+\toprule
+\sffamily\bfseries\color{lgPrimario}Elemento &
+\sffamily\bfseries\color{lgPrimario}Tipo &
+\sffamily\bfseries\color{lgPrimario}Descripción y responsabilidad \\
+\midrule
+\campo{Usuario operativo}     & Persona          & \campo{qué hace con el sistema.} \\
+\campo{Responsable de gestión}& Persona          & \campo{qué necesita del sistema.} \\
+\campo{Nombre del sistema}    & Sistema en alcance & \campo{propósito principal.} \\
+\campo{Sistema externo A}     & Sistema externo  & \campo{qué información intercambia y por qué.} \\
+\campo{Sistema externo B}     & Sistema externo  & \campo{qué información intercambia y por qué.} \\
+\bottomrule
+\end{tabularx}
+\captionof{table}{Inventario de elementos del diagrama de contexto.}
+\end{center}
+
+\begin{nota}[Siguiente nivel]
+El detalle interno del sistema se describe en \ruta{c4-contenedores.tex}
+(nivel 2) y la estructura de cada contenedor en \ruta{c4-componentes.tex}
+(nivel 3). La descripción narrativa acompaña al documento de arquitectura
+\texttt{LGS-ARQ-001}.
+\end{nota}
+
+\end{document}

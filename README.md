@@ -1,1 +1,106 @@
-# nexolab
+# Legasoft
+
+Legasoft es una consultora académica de transformación digital e ingeniería de
+software. Su trabajo consiste en acompañar a una organización cliente en el
+análisis de sus procesos, la definición de sus requisitos y el diseño y
+construcción de una solución de software que responda a esas necesidades.
+
+## Propósito del repositorio
+
+Este repositorio concentra en un único lugar todo el trabajo del equipo:
+la documentación institucional y de proyecto, los modelos y diagramas, el
+código fuente y las pruebas. La estructura de carpetas está pensada para que
+cada entregable tenga una ubicación clara y para que el avance del proyecto
+sea trazable a lo largo del curso.
+
+La documentación se escribe en LaTeX y se compila a PDF con `make`.
+
+## Estructura de carpetas
+
+```text
+.
+├── README.md
+├── Makefile             Compila toda la documentación a PDF
+├── docs/
+│   ├── latex/           Estilo compartido de todos los documentos (.sty)
+│   ├── institucional/   Constitución de la empresa y acta de constitución
+│   ├── requisitos/      SRS, historias de usuario y criterios de aceptación
+│   ├── minutas/         Minutas y acuerdos de reuniones
+│   ├── calidad/         Estrategia de QA, plan de pruebas y casos de prueba
+│   └── arquitectura/    Documento de arquitectura y decisiones (ADR)
+├── modelos/
+│   ├── c4/              Diagramas del modelo C4 (contexto, contenedores, componentes)
+│   ├── uml/             Diagramas UML (casos de uso, clases, secuencia)
+│   └── bpmn/            Modelos de procesos de negocio en BPMN (AS-IS / TO-BE)
+├── src/
+│   ├── frontend/        Código fuente de la interfaz de usuario
+│   └── backend/         Código fuente del servidor y la lógica de negocio
+├── tests/
+│   ├── unit/            Pruebas unitarias
+│   ├── integration/     Pruebas de integración
+│   └── acceptance/      Pruebas de aceptación
+└── .github/
+    └── workflows/       Flujos de integración y entrega continua (CI/CD)
+```
+
+Cada carpeta incluye su propio `README.md` con una descripción de lo que
+contiene.
+
+## Documentos
+
+| Código | Documento | Archivo |
+| --- | --- | --- |
+| `LGS-INST-001` | Constitución y estructura organizacional | `docs/institucional/constitucion-legasoft.tex` |
+| `LGS-INST-002` | Acta de constitución del proyecto | `docs/institucional/acta-constitucion.tex` |
+| `LGS-REQ-001` | Especificación de requisitos (SRS) | `docs/requisitos/srs.tex` |
+| `LGS-CAL-001` | Estrategia de calidad y plan de pruebas | `docs/calidad/estrategia-qa.tex` |
+| `LGS-ARQ-001` | Documento de arquitectura | `docs/arquitectura/documento-arquitectura.tex` |
+| `LGS-ADR-NNN` | Plantilla de decisión de arquitectura | `docs/arquitectura/adr-plantilla.tex` |
+| `LGS-MIN-NNN` | Plantilla de minuta de reunión | `docs/minutas/plantilla-minuta.tex` |
+| `LGS-MOD-*` | Diagramas C4, UML y BPMN | `modelos/` |
+
+Salvo la constitución de la empresa, el resto son plantillas: su contenido está
+marcado en ámbar (`[así]`) donde falta un dato del proyecto.
+
+## Compilación de la documentación
+
+Requiere [Tectonic](https://tectonic-typesetting.github.io), que descarga por sí
+solo los paquetes LaTeX que necesite:
+
+```sh
+brew install tectonic
+```
+
+```sh
+make                 # compila todos los documentos a PDF
+make list            # lista los documentos detectados
+make institucional   # compila solo una carpeta
+make clean           # borra los PDF generados
+```
+
+Un documento suelto también se compila por su cuenta:
+
+```sh
+cd docs/institucional && tectonic -X compile constitucion-legasoft.tex
+```
+
+Los PDF son artefactos de compilación y están excluidos por `.gitignore`. Si el
+curso exige entregarlos versionados, comente las dos líneas correspondientes.
+
+## Roles del equipo
+
+| Rol | Integrante | Responsabilidades principales |
+| --- | --- | --- |
+| Director de Proyecto y Analista de Sistemas | Oziel Rodman Ramos Torrez | Planificación y seguimiento del proyecto, coordinación del equipo, relación con la parte interesada, levantamiento y análisis de requisitos. |
+| Arquitecto de Software y Desarrollador Backend | Luis Daniel Rojas Cáceres | Diseño de la arquitectura de la solución, decisiones técnicas y desarrollo del backend. |
+| Especialista en QA y Desarrollador Frontend | Pedro Andrez Condorena Apaza | Estrategia y ejecución de pruebas, aseguramiento de la calidad y desarrollo de la interfaz de usuario. |
+
+## Estado actual
+
+Está terminada la documentación institucional (`LGS-INST-001`). El resto de los
+documentos son plantillas a la espera de que se seleccione la organización
+cliente.
+
+Las tecnologías de frontend, backend y pruebas todavía no se han definido; esas
+decisiones se registrarán como ADR en `docs/arquitectura/` a medida que se
+tomen.

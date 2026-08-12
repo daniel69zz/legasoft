@@ -1,0 +1,298 @@
+%% Especificación de Requisitos de Software (SRS) — plantilla ISO/IEC/IEEE 29148
+%% Compilar: tectonic -X compile srs.tex
+\documentclass[11pt,a4paper]{article}
+\usepackage{../latex/legasoft}
+
+\lgtitulo{Especificación de Requisitos de Software}
+\lgsubtitulo{Estructura conforme a ISO/IEC/IEEE 29148}
+\lgtituloCorto{SRS}
+\lgcodigo{LGS-REQ-001}
+\lgversion{0.1}
+\lgestado{Plantilla — pendiente de completar}
+\lgfecha{\campo{fecha}}
+\lgautor{\lgDirector\ (\lgDirectorRol)}
+
+% --- Ficha reutilizable para un requisito funcional -------------------------
+% Uso: \reqfun{RF-001}{Nombre}{Alta}{Descripción}{Criterio de aceptación}{Origen}
+\newcommand{\reqfun}[6]{%
+\par\vspace{4pt}
+\begin{tabularx}{\linewidth}{@{}L{3.2cm} Y@{}}
+\toprule
+\rowcolor{lgClaro}
+\multicolumn{2}{@{}l@{}}{\sffamily\bfseries\color{lgPrimario} #1 \quad #2} \\
+\midrule
+\sffamily\bfseries\small Prioridad   & #3 \\
+\sffamily\bfseries\small Descripción & #4 \\
+\sffamily\bfseries\small Criterio de aceptación & #5 \\
+\sffamily\bfseries\small Origen      & #6 \\
+\bottomrule
+\end{tabularx}
+\par\vspace{8pt}}
+
+% --- Ficha reutilizable para una historia de usuario -----------------------
+% Uso: \historia{HU-001}{rol}{funcionalidad}{beneficio}{criterios}
+\newcommand{\historia}[5]{%
+\par\vspace{4pt}
+\begin{tabularx}{\linewidth}{@{}L{3.2cm} Y@{}}
+\toprule
+\rowcolor{lgClaro}
+\multicolumn{2}{@{}l@{}}{\sffamily\bfseries\color{lgPrimario} #1} \\
+\midrule
+\sffamily\bfseries\small Como        & #2 \\
+\sffamily\bfseries\small Quiero      & #3 \\
+\sffamily\bfseries\small Para        & #4 \\
+\sffamily\bfseries\small Criterios de aceptación & #5 \\
+\bottomrule
+\end{tabularx}
+\par\vspace{8pt}}
+
+\begin{document}
+\lgportada
+
+\lgcontrolversiones{
+0.1 & \campo{dd-mm-aaaa} & \lgDirector & Plantilla inicial conforme a ISO/IEC/IEEE 29148. \\
+}
+
+\begin{porcompletar}[Cómo usar esta plantilla]
+Los apartados reproducen la estructura recomendada por ISO/IEC/IEEE 29148, que
+Legasoft adopta como referencia (véase \texttt{LGS-INST-001}, sección 8). Los
+campos en ámbar se sustituyen con la información obtenida en el levantamiento.
+Cada requisito debe ser verificable: si no se puede escribir su criterio de
+aceptación, el requisito todavía no está bien definido.
+\end{porcompletar}
+
+\tableofcontents
+\clearpage
+
+% =============================================================================
+\section{Introducción}
+
+\subsection{Propósito}
+
+Este documento especifica los requisitos funcionales y no funcionales del sistema
+\campo{nombre del sistema}, desarrollado por Legasoft para \campo{organización
+cliente}. Está dirigido al equipo del proyecto, a la parte interesada y a
+cualquier persona que deba verificar la correspondencia entre las necesidades
+identificadas y la solución construida.
+
+\subsection{Alcance del producto}
+
+\begin{porcompletar}
+\campo{Nombre del sistema, qué hace y qué no hace, y beneficios esperados para la
+organización cliente.}
+\end{porcompletar}
+
+\subsection{Definiciones, acrónimos y abreviaturas}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}L{3.4cm} Y@{}}
+\toprule
+\sffamily\bfseries\color{lgPrimario}Término &
+\sffamily\bfseries\color{lgPrimario}Definición \\
+\midrule
+SRS      & \emph{Software Requirements Specification}: especificación de requisitos de software. \\
+RF       & Requisito funcional. \\
+RNF      & Requisito no funcional. \\
+HU       & Historia de usuario. \\
+API      & \emph{Application Programming Interface}: interfaz de programación de aplicaciones. \\
+\campo{término} & \campo{definición propia del dominio del cliente} \\
+\bottomrule
+\end{tabularx}
+\captionof{table}{Glosario del documento.}
+\end{center}
+
+\subsection{Referencias}
+
+\begin{itemize}
+  \item ISO/IEC/IEEE 29148 — Ingeniería de requisitos.
+  \item ISO/IEC 25010 — Modelo de calidad del producto de software.
+  \item \texttt{LGS-INST-001} — Constitución y estructura organizacional de Legasoft.
+  \item \texttt{LGS-INST-002} — Acta de constitución del proyecto.
+  \item \campo{Actas de reunión y entrevistas que originan los requisitos.}
+\end{itemize}
+
+\subsection{Visión general del documento}
+
+La sección 2 describe el contexto y las restricciones generales del producto. La
+sección 3 detalla los requisitos específicos. La sección 4 presenta las historias
+de usuario con sus criterios de aceptación y la sección 5 la matriz de
+trazabilidad que conecta necesidad, requisito y verificación.
+
+% =============================================================================
+\section{Descripción general}
+
+\subsection{Perspectiva del producto}
+
+\begin{porcompletar}
+\campo{¿El sistema es autónomo, reemplaza a otro existente o se integra con
+plataformas del cliente? Indicar los sistemas con los que intercambia
+información.}
+\end{porcompletar}
+
+\subsection{Funciones principales del producto}
+
+\begin{porcompletar}
+\campo{Resumen de las capacidades del sistema en un nivel alto, antes del detalle
+de la sección 3.}
+\end{porcompletar}
+
+\subsection{Características de los usuarios}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}L{3.6cm} L{3.6cm} Y@{}}
+\toprule
+\sffamily\bfseries\color{lgPrimario}Tipo de usuario &
+\sffamily\bfseries\color{lgPrimario}Perfil técnico &
+\sffamily\bfseries\color{lgPrimario}Uso previsto del sistema \\
+\midrule
+\campo{rol} & \campo{nivel} & \campo{tareas que realiza} \\
+\campo{rol} & \campo{nivel} & \campo{tareas que realiza} \\
+\bottomrule
+\end{tabularx}
+\captionof{table}{Perfiles de usuario del sistema.}
+\end{center}
+
+\subsection{Restricciones generales}
+
+\begin{porcompletar}
+\campo{Tecnologías obligatorias, normativa aplicable, límites de infraestructura,
+políticas de seguridad o capacidad de adopción del cliente.}
+\end{porcompletar}
+
+\subsection{Suposiciones y dependencias}
+
+\begin{porcompletar}
+\campo{Condiciones asumidas y dependencias externas cuya variación obligaría a
+revisar los requisitos.}
+\end{porcompletar}
+
+% =============================================================================
+\section{Requisitos específicos}
+
+\subsection{Requisitos funcionales}
+
+Cada requisito se identifica de forma única, se prioriza y se acompaña de un
+criterio de aceptación verificable. El campo \emph{Origen} mantiene la
+trazabilidad con la fuente que lo motivó.
+
+\reqfun{RF-001}{\campo{nombre corto del requisito}}
+  {\campo{Alta / Media / Baja}}
+  {El sistema deberá \campo{comportamiento observable, en una sola frase}.}
+  {\campo{Condición comprobable que permite dar el requisito por cumplido.}}
+  {\campo{Entrevista, minuta o documento de origen.}}
+
+\reqfun{RF-002}{\campo{nombre corto del requisito}}
+  {\campo{Alta / Media / Baja}}
+  {El sistema deberá \campo{comportamiento observable}.}
+  {\campo{Criterio de aceptación.}}
+  {\campo{Origen.}}
+
+\begin{nota}[Redacción de requisitos]
+Un requisito bien formulado es unívoco, verificable, necesario y libre de
+detalles de implementación. Evite «el sistema debería», «de forma amigable» o
+«rápido»: sustitúyalos por condiciones medibles.
+\end{nota}
+
+\subsection{Requisitos no funcionales}
+
+Los atributos se organizan según las características de calidad de ISO/IEC 25010,
+norma que Legasoft adopta como referencia para definir y evaluar la calidad del
+producto.
+
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}C{1.9cm} L{3.4cm} Y@{}}
+\toprule
+\sffamily\bfseries\color{lgPrimario}ID &
+\sffamily\bfseries\color{lgPrimario}Característica (25010) &
+\sffamily\bfseries\color{lgPrimario}Requisito y métrica de verificación \\
+\midrule
+RNF-001 & Eficiencia de desempeño & \campo{p. ej. el 95\% de las consultas responde en menos de 2 s con N usuarios concurrentes.} \\
+RNF-002 & Seguridad               & \campo{control de acceso, cifrado, registro de auditoría.} \\
+RNF-003 & Usabilidad              & \campo{criterio observable de facilidad de uso o accesibilidad.} \\
+RNF-004 & Fiabilidad              & \campo{disponibilidad esperada y comportamiento ante fallos.} \\
+RNF-005 & Mantenibilidad          & \campo{modularidad, cobertura de pruebas, documentación exigida.} \\
+RNF-006 & Compatibilidad          & \campo{navegadores, dispositivos o sistemas con los que debe operar.} \\
+\bottomrule
+\end{tabularx}
+\captionof{table}{Requisitos no funcionales por característica de calidad.}
+\end{center}
+
+\subsection{Requisitos de interfaz}
+
+\subsubsection{Interfaces de usuario}
+\begin{porcompletar}
+\campo{Pantallas principales, flujos de navegación y requisitos de accesibilidad.}
+\end{porcompletar}
+
+\subsubsection{Interfaces con otros sistemas}
+\begin{porcompletar}
+\campo{APIs consumidas o expuestas, formatos de intercambio y protocolos. El
+detalle de los contratos se documenta en el documento de arquitectura
+(\texttt{LGS-ARQ-001}).}
+\end{porcompletar}
+
+\subsubsection{Interfaces de datos}
+\begin{porcompletar}
+\campo{Entidades principales, volúmenes estimados y requisitos de integridad,
+disponibilidad y tratamiento responsable de la información.}
+\end{porcompletar}
+
+% =============================================================================
+\section{Historias de usuario y criterios de aceptación}
+
+Las historias de usuario expresan la necesidad desde la perspectiva de quien usa
+el sistema y se acuerdan con el cliente. Los criterios de aceptación son la base
+sobre la que el Especialista en QA construye las pruebas correspondientes.
+
+\historia{HU-001}
+  {\campo{rol de usuario}}
+  {\campo{acción que desea realizar}}
+  {\campo{beneficio que obtiene}}
+  {\campo{Dado \ldots\ cuando \ldots\ entonces \ldots}}
+
+\historia{HU-002}
+  {\campo{rol de usuario}}
+  {\campo{acción que desea realizar}}
+  {\campo{beneficio que obtiene}}
+  {\campo{Dado \ldots\ cuando \ldots\ entonces \ldots}}
+
+% =============================================================================
+\section{Matriz de trazabilidad}
+
+La matriz conecta la necesidad identificada con el requisito que la recoge, el
+elemento de diseño que la implementa y la prueba que la verifica. Es el
+instrumento que sostiene el criterio institucional de trazabilidad entre
+necesidad, solución y calidad comprobada.
+
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}C{1.9cm} L{3.2cm} Y C{2.2cm}@{}}
+\toprule
+\sffamily\bfseries\color{lgPrimario}Requisito &
+\sffamily\bfseries\color{lgPrimario}Necesidad de origen &
+\sffamily\bfseries\color{lgPrimario}Elemento de diseño &
+\sffamily\bfseries\color{lgPrimario}Caso de prueba \\
+\midrule
+RF-001 & \campo{origen} & \campo{componente o módulo} & \campo{CP-001} \\
+RF-002 & \campo{origen} & \campo{componente o módulo} & \campo{CP-002} \\
+RNF-001 & \campo{origen} & \campo{decisión arquitectónica} & \campo{CP-0xx} \\
+\bottomrule
+\end{tabularx}
+\captionof{table}{Trazabilidad entre necesidades, requisitos, diseño y pruebas.}
+\end{center}
+
+% =============================================================================
+\section{Aprobación del documento}
+
+\vspace{1.0cm}
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}Y Y@{}}
+\centering\rule{5.4cm}{0.5pt} &
+\centering\arraybackslash\rule{5.4cm}{0.5pt} \\[-2pt]
+\centering\sffamily\small\lgDirector &
+\centering\arraybackslash\sffamily\small\campo{representante del cliente} \\[-4pt]
+\centering\scriptsize\color{lgGris}Elaboró — \lgDirectorRol &
+\centering\arraybackslash\scriptsize\color{lgGris}Aprobó — organización cliente \\
+\end{tabularx}
+\end{center}
+
+\end{document}

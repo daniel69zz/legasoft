@@ -1,0 +1,124 @@
+%% Plantilla de Registro de Decisión de Arquitectura (ADR)
+%% Uso: copiar como adr/adr-NNN-<slug>.tex, completar y compilar.
+%% Compilar: tectonic -X compile adr-plantilla.tex
+\documentclass[11pt,a4paper]{article}
+\usepackage{../latex/legasoft}
+
+\lgtitulo{ADR-NNN: \campo{título de la decisión}}
+\lgtituloCorto{ADR-NNN}
+\lgcodigo{LGS-ADR-NNN}
+\lgversion{0.1}
+\lgestado{Propuesta}
+\lgfecha{\campo{dd-mm-aaaa}}
+\lgautor{\lgArquitecto\ (\lgArquitectoRol)}
+
+\begin{document}
+
+% Un ADR es un documento corto: sin portada ni índice.
+\begin{center}
+{\sffamily\bfseries\LARGE\color{lgPrimario} ADR-\campo{NNN}\par}
+\vspace{4pt}
+{\sffamily\Large\color{lgPrimario!85!black} \campo{Título de la decisión}\par}
+\end{center}
+\vspace{8pt}
+{\color{lgBorde}\hrule height 0.8pt}
+\vspace{10pt}
+
+\begin{tabularx}{\linewidth}{@{}L{2.8cm} Y L{2.4cm} Y@{}}
+\sffamily\bfseries\small\color{lgPrimario}Estado & \campo{propuesta / aceptada / rechazada / reemplazada por ADR-NNN} &
+\sffamily\bfseries\small\color{lgPrimario}Fecha  & \campo{dd-mm-aaaa} \\
+\sffamily\bfseries\small\color{lgPrimario}Autor  & \lgArquitecto &
+\sffamily\bfseries\small\color{lgPrimario}Revisores & \lgDirector, \lgQA \\
+\end{tabularx}
+
+\vspace{6pt}
+{\color{lgBorde}\hrule height 0.4pt}
+
+\begin{porcompletar}[Cómo usar esta plantilla]
+Copie este archivo como \ruta{adr/adr-NNN-<slug>.tex} y elimine esta caja. Un
+ADR se escribe cuando una decisión condiciona la evolución del producto y
+resultaría costosa de revertir. Los ADR no se editan una vez aceptados: si la
+decisión cambia, se crea uno nuevo que reemplaza al anterior.
+\end{porcompletar}
+
+% =============================================================================
+\section*{Contexto}
+
+Situación que obliga a decidir: requisitos afectados, restricciones vigentes y
+fuerzas en tensión. Debe poder leerse sin conocer la decisión.
+
+\begin{porcompletar}
+\campo{¿Qué problema técnico hay que resolver? ¿Qué requisitos de
+\texttt{LGS-REQ-001} lo motivan? ¿Qué restricciones acotan las opciones
+disponibles?}
+\end{porcompletar}
+
+% =============================================================================
+\section*{Alternativas evaluadas}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}L{3.4cm} Y Y@{}}
+\toprule
+\sffamily\bfseries\color{lgPrimario}Alternativa &
+\sffamily\bfseries\color{lgPrimario}A favor &
+\sffamily\bfseries\color{lgPrimario}En contra \\
+\midrule
+\campo{Opción A} & \campo{ventajas} & \campo{desventajas} \\
+\campo{Opción B} & \campo{ventajas} & \campo{desventajas} \\
+\campo{Opción C} & \campo{ventajas} & \campo{desventajas} \\
+\bottomrule
+\end{tabularx}
+\captionof{table}{Alternativas consideradas antes de decidir.}
+\end{center}
+
+% =============================================================================
+\section*{Decisión}
+
+\begin{nota}[Decisión adoptada]
+\campo{Se adopta \ldots\ porque \ldots} La justificación debe conectar la opción
+elegida con los requisitos y las restricciones descritos en el contexto, no con
+la preferencia del equipo.
+\end{nota}
+
+Cada proyecto debe justificar la tecnología que incorpora: si la alternativa
+elegida añade complejidad, indique qué beneficio verificable la compensa.
+
+% =============================================================================
+\section*{Consecuencias}
+
+\subsection*{Positivas}
+\begin{porcompletar}
+\campo{Qué se gana: atributos de calidad favorecidos, riesgos mitigados,
+capacidades habilitadas.}
+\end{porcompletar}
+
+\subsection*{Negativas y compromisos aceptados}
+\begin{porcompletar}
+\campo{Qué se pierde o se limita, qué deuda técnica se asume y bajo qué
+condiciones convendría revisar esta decisión.}
+\end{porcompletar}
+
+\subsection*{Impacto en el equipo}
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}L{4.4cm} Y@{}}
+\toprule
+\sffamily\bfseries\color{lgPrimario}Rol &
+\sffamily\bfseries\color{lgPrimario}Qué cambia para este rol \\
+\midrule
+\lgDirectorRol   & \campo{impacto en alcance, cronograma o riesgos.} \\
+\lgArquitectoRol & \campo{impacto en implementación y mantenimiento.} \\
+\lgQARol         & \campo{impacto en la estrategia de pruebas y en la integración.} \\
+\bottomrule
+\end{tabularx}
+\captionof{table}{Consecuencias de la decisión por rol.}
+\end{center}
+
+% =============================================================================
+\section*{Referencias}
+
+\begin{itemize}
+  \item \texttt{LGS-ARQ-001} — Documento de arquitectura del sistema.
+  \item \campo{Minutas, pruebas de concepto o documentación externa consultada.}
+\end{itemize}
+
+\end{document}

@@ -1,0 +1,111 @@
+%% UML — Diagrama de casos de uso (plantilla)
+%% Compilar: tectonic -X compile uml-casos-uso.tex
+\documentclass[11pt,a4paper]{article}
+\usepackage{../../docs/latex/legasoft}
+\usepackage{../../docs/latex/legasoft-diagramas}
+
+\lgtitulo{UML: diagrama de casos de uso}
+\lgtituloCorto{UML — Casos de uso}
+\lgcodigo{LGS-MOD-UML-1}
+\lgversion{0.1}
+\lgestado{Plantilla}
+\lgfecha{\campo{fecha}}
+\lgautor{\lgDirector\ (\lgDirectorRol)}
+
+\begin{document}
+
+\begin{center}
+{\sffamily\bfseries\LARGE\color{lgPrimario} UML: diagrama de casos de uso\par}
+\vspace{2pt}
+{\sffamily\normalsize\color{lgGris} \campo{nombre del sistema} · Legasoft\par}
+\end{center}
+\vspace{6pt}
+{\color{lgBorde}\hrule height 0.8pt}
+\vspace{10pt}
+
+\begin{porcompletar}[Cómo usar esta plantilla]
+Cada caso de uso debe corresponder a uno o varios requisitos funcionales de
+\texttt{LGS-REQ-001}. Un caso de uso expresa un objetivo del actor, no una
+pantalla ni una operación técnica.
+\end{porcompletar}
+
+% =============================================================================
+\section*{Diagrama}
+
+\begin{figure}[H]
+\centering
+\ajustaancho{%
+\begin{tikzpicture}[uml]
+
+  % --- Casos de uso ---------------------------------------------------------
+  \node[umlcaso] (cu1) {\campo{CU-01}\\ \campo{Registrar información}};
+  \node[umlcaso, below=0.9cm of cu1] (cu2) {\campo{CU-02}\\ \campo{Consultar registros}};
+  \node[umlcaso, below=0.9cm of cu2] (cu3) {\campo{CU-03}\\ \campo{Generar reporte}};
+  \node[umlcaso, below=0.9cm of cu3] (cu4) {\campo{CU-04}\\ \campo{Administrar usuarios}};
+
+  % Validar credenciales, incluido por otros casos
+  \node[umlcaso, right=2.6cm of cu2, text width=2.6cm, align=center,
+         minimum width=2.9cm]
+    (cu5) {\campo{CU-05}\\ \campo{Autenticarse}};
+
+  % Límite del sistema
+  \begin{scope}[on background layer]
+    \node[umlsistema, fit=(cu1)(cu2)(cu3)(cu4)(cu5),
+          label={[font=\sffamily\small\bfseries, text=lgPrimario,
+                  anchor=north]north:{\campo{Nombre del sistema}}}] {};
+  \end{scope}
+
+  % --- Actores --------------------------------------------------------------
+  \umlactor{-4.2}{-1.35}{\campo{Usuario}\\\campo{operativo}}
+  \coordinate (a1) at (-4.2,-1.35);
+
+  \umlactor{-4.2}{-4.5}{\campo{Administrador}}
+  \coordinate (a2) at (-4.2,-4.5);
+
+  % --- Asociaciones ---------------------------------------------------------
+  \draw[umlasoc] (a1) ++(0.35,0) -- (cu1.west);
+  \draw[umlasoc] (a1) ++(0.35,0) -- (cu2.west);
+  \draw[umlasoc] (a1) ++(0.35,0) -- (cu3.west);
+  \draw[umlasoc] (a2) ++(0.35,0) -- (cu4.west);
+  \draw[umlasoc] (a2) ++(0.35,0) -- (cu3.west);
+
+  % --- Relación «include» ---------------------------------------------------
+  \draw[umlext] (cu1.east) -- (cu5.north west)
+    node[pos=0.5, above, sloped, font=\sffamily\scriptsize] {$\ll$include$\gg$};
+  \draw[umlext] (cu4.east) -- (cu5.south west)
+    node[pos=0.5, below, sloped, font=\sffamily\scriptsize] {$\ll$include$\gg$};
+
+\end{tikzpicture}}
+\caption{Casos de uso del sistema y los actores que los inician.}
+\end{figure}
+
+% =============================================================================
+\Needspace*{20\baselineskip}
+\section*{Especificación resumida de casos de uso}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}C{1.7cm} L{3.4cm} L{2.6cm} Y@{}}
+\toprule
+\sffamily\bfseries\color{lgPrimario}ID &
+\sffamily\bfseries\color{lgPrimario}Caso de uso &
+\sffamily\bfseries\color{lgPrimario}Actor principal &
+\sffamily\bfseries\color{lgPrimario}Requisito asociado \\
+\midrule
+CU-01 & \campo{Registrar información} & \campo{Usuario operativo} & \campo{RF-001} \\
+CU-02 & \campo{Consultar registros}   & \campo{Usuario operativo} & \campo{RF-002} \\
+CU-03 & \campo{Generar reporte}       & \campo{Usuario / Admin}   & \campo{RF-003} \\
+CU-04 & \campo{Administrar usuarios}  & \campo{Administrador}     & \campo{RF-004} \\
+CU-05 & \campo{Autenticarse}          & \campo{Todos}             & \campo{RNF-002} \\
+\bottomrule
+\end{tabularx}
+\captionof{table}{Casos de uso y su trazabilidad con los requisitos.}
+\end{center}
+
+\begin{nota}[Notación]
+La línea continua representa una asociación entre actor y caso de uso. La línea
+discontinua con $\ll$include$\gg$ indica que un caso de uso incorpora
+obligatoriamente el comportamiento de otro. Para comportamiento opcional se usa
+$\ll$extend$\gg$ en sentido inverso.
+\end{nota}
+
+\end{document}

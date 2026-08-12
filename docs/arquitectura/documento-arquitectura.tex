@@ -1,0 +1,238 @@
+%% Documento de arquitectura del sistema
+%% Compilar: tectonic -X compile documento-arquitectura.tex
+\documentclass[11pt,a4paper]{article}
+\usepackage{../latex/legasoft}
+
+\lgtitulo{Documento de arquitectura del sistema}
+\lgsubtitulo{Descripción técnica basada en el modelo C4}
+\lgtituloCorto{Arquitectura}
+\lgcodigo{LGS-ARQ-001}
+\lgversion{0.1}
+\lgestado{Plantilla — pendiente de completar}
+\lgfecha{\campo{fecha}}
+\lgautor{\lgArquitecto\ (\lgArquitectoRol)}
+
+\begin{document}
+\lgportada
+
+\lgcontrolversiones{
+0.1 & \campo{dd-mm-aaaa} & \lgArquitecto & Plantilla inicial basada en el modelo C4. \\
+}
+
+\begin{porcompletar}[Cómo usar esta plantilla]
+La representación de la arquitectura mediante el modelo C4 es responsabilidad del
+\lgArquitectoRol\ (\texttt{LGS-INST-001}, sección 10.2). Los diagramas fuente
+viven en \ruta{modelos/c4/} y se incorporan aquí como figuras una vez
+compilados. Mientras no existan decisiones tomadas, esta plantilla documenta la
+estructura esperada, no una arquitectura definida.
+\end{porcompletar}
+
+\tableofcontents
+\clearpage
+
+% =============================================================================
+\section{Introducción}
+
+\subsection{Propósito}
+
+Este documento describe la arquitectura del sistema \campo{nombre del sistema}:
+su estructura, las decisiones técnicas que la sostienen y las consecuencias de
+esas decisiones para la evolución del producto. Está dirigido al equipo de
+desarrollo y a quien deba mantener la solución después de la entrega.
+
+\subsection{Alcance}
+
+\begin{porcompletar}
+\campo{Partes del sistema cubiertas por esta descripción y aquellas que quedan
+fuera.}
+\end{porcompletar}
+
+\subsection{Documentos relacionados}
+
+\begin{itemize}
+  \item \texttt{LGS-REQ-001} — Especificación de requisitos de software.
+  \item \texttt{LGS-CAL-001} — Estrategia de calidad y plan de pruebas.
+  \item \ruta{modelos/c4/} — Diagramas de contexto, contenedores y componentes.
+  \item \ruta{docs/arquitectura/adr/} — Registros de decisiones de arquitectura.
+\end{itemize}
+
+% =============================================================================
+\section{Restricciones y objetivos de calidad}
+
+La arquitectura debe ser proporcional al problema. Legasoft evita introducir
+complejidad sin un beneficio verificable, y ese criterio gobierna la selección de
+plataformas, patrones, servicios en la nube y mecanismos de automatización.
+
+\subsection{Restricciones}
+
+\begin{porcompletar}
+\campo{Tecnologías impuestas, infraestructura disponible, presupuesto, plazos,
+normativa o capacidad operativa del cliente.}
+\end{porcompletar}
+
+\subsection{Atributos de calidad prioritarios}
+
+Los atributos se toman de \texttt{LGS-REQ-001} y se expresan aquí como fuerzas que
+condicionan el diseño.
+
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}L{3.4cm} C{1.8cm} Y@{}}
+\toprule
+\sffamily\bfseries\color{lgPrimario}Atributo &
+\sffamily\bfseries\color{lgPrimario}Prioridad &
+\sffamily\bfseries\color{lgPrimario}Implicación para la arquitectura \\
+\midrule
+Mantenibilidad & \campo{A/M/B} & \campo{modularidad, separación de responsabilidades.} \\
+Seguridad      & \campo{A/M/B} & \campo{autenticación, autorización, cifrado, auditoría.} \\
+Escalabilidad  & \campo{A/M/B} & \campo{estrategia de crecimiento previsto.} \\
+Fiabilidad     & \campo{A/M/B} & \campo{manejo de fallos y recuperación.} \\
+Desempeño      & \campo{A/M/B} & \campo{tiempos de respuesta y volumen esperado.} \\
+\bottomrule
+\end{tabularx}
+\captionof{table}{Atributos de calidad que condicionan el diseño.}
+\end{center}
+
+% =============================================================================
+\section{Vista de contexto (C4 nivel 1)}
+
+Muestra el sistema como una caja negra y su relación con usuarios y sistemas
+externos.
+
+\begin{porcompletar}[Diagrama pendiente]
+Compilar \ruta{modelos/c4/c4-contexto.tex} e incorporar el resultado aquí:
+
+\vspace{4pt}
+\texttt{\textbackslash includegraphics[width=\textbackslash linewidth]\{../../modelos/c4/c4-contexto.pdf\}}
+\end{porcompletar}
+
+\begin{porcompletar}
+\campo{Descripción de los actores, los sistemas externos y el propósito de cada
+relación.}
+\end{porcompletar}
+
+% =============================================================================
+\section{Vista de contenedores (C4 nivel 2)}
+
+Describe las unidades desplegables del sistema, es decir las aplicaciones, los
+servicios y los almacenes de datos, y cómo se comunican entre sí.
+
+\begin{porcompletar}[Diagrama pendiente]
+Compilar \ruta{modelos/c4/c4-contenedores.tex} e incorporar el resultado aquí.
+\end{porcompletar}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}L{3.4cm} L{3.2cm} Y@{}}
+\toprule
+\sffamily\bfseries\color{lgPrimario}Contenedor &
+\sffamily\bfseries\color{lgPrimario}Tecnología &
+\sffamily\bfseries\color{lgPrimario}Responsabilidad \\
+\midrule
+\campo{Aplicación web} & \campo{por definir} & \campo{responsabilidad} \\
+\campo{API}            & \campo{por definir} & \campo{responsabilidad} \\
+\campo{Base de datos}  & \campo{por definir} & \campo{responsabilidad} \\
+\bottomrule
+\end{tabularx}
+\captionof{table}{Contenedores del sistema y su responsabilidad.}
+\end{center}
+
+\begin{nota}[Estado de las decisiones tecnológicas]
+Las tecnologías de frontend, backend y pruebas todavía no han sido
+seleccionadas. Cada elección deberá justificarse por las necesidades,
+restricciones y recursos del proyecto, y registrarse como ADR en
+\ruta{docs/arquitectura/adr/}.
+\end{nota}
+
+% =============================================================================
+\section{Vista de componentes (C4 nivel 3)}
+
+Detalla la estructura interna de los contenedores relevantes.
+
+\begin{porcompletar}[Diagrama pendiente]
+Compilar \ruta{modelos/c4/c4-componentes.tex} e incorporar el resultado aquí.
+\end{porcompletar}
+
+% =============================================================================
+\section{Modelo de datos}
+
+\begin{porcompletar}
+\campo{Entidades principales, relaciones, reglas de integridad y decisiones de
+modelado. Cuando el contexto lo justifique podrá emplearse SQL Server como gestor
+relacional.}
+\end{porcompletar}
+
+% =============================================================================
+\section{Contratos de integración}
+
+Los contratos entre frontend y backend se documentan para reducir ambigüedades y
+permitir que el \lgQARol\ diseñe pruebas de integración sobre comportamientos
+acordados.
+
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}L{1.9cm} L{3.0cm} Y C{2.7cm}@{}}
+\toprule
+\sffamily\bfseries\color{lgPrimario}Método &
+\sffamily\bfseries\color{lgPrimario}Ruta &
+\sffamily\bfseries\color{lgPrimario}Propósito &
+\sffamily\bfseries\color{lgPrimario}Autorización \\
+\midrule
+\campo{GET}  & \campo{/recurso}      & \campo{descripción} & \campo{rol} \\
+\campo{POST} & \campo{/recurso}      & \campo{descripción} & \campo{rol} \\
+\bottomrule
+\end{tabularx}
+\captionof{table}{Resumen de los contratos expuestos por la API.}
+\end{center}
+
+% =============================================================================
+\section{Seguridad}
+
+\begin{porcompletar}
+\campo{Mecanismos de autenticación y autorización, tratamiento de datos
+sensibles, registro de auditoría y controles sobre acceso, confidencialidad,
+integridad y disponibilidad, tomando ISO/IEC 27001 como referencia.}
+\end{porcompletar}
+
+% =============================================================================
+\section{Despliegue y operación}
+
+La adopción de prácticas de Cloud y DevOps es gradual y debe considerar
+seguridad, costos, capacidad operativa y continuidad. Su propósito es reducir
+errores manuales, mejorar la repetibilidad de las entregas y conservar evidencia
+sobre los cambios realizados.
+
+\begin{porcompletar}
+\campo{Entornos previstos, estrategia de despliegue, contenerización, pipeline de
+integración y entrega continua, y mecanismos de monitoreo. Los workflows se
+alojarán en .github/workflows/.}
+\end{porcompletar}
+
+% =============================================================================
+\section{Decisiones de arquitectura}
+
+Cada decisión relevante se registra como un ADR independiente, con su contexto,
+las alternativas evaluadas y sus consecuencias. La plantilla se encuentra en
+\ruta{docs/arquitectura/adr-plantilla.tex}.
+
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}C{2.0cm} Y C{2.4cm} C{2.2cm}@{}}
+\toprule
+\sffamily\bfseries\color{lgPrimario}ADR &
+\sffamily\bfseries\color{lgPrimario}Decisión &
+\sffamily\bfseries\color{lgPrimario}Estado &
+\sffamily\bfseries\color{lgPrimario}Fecha \\
+\midrule
+ADR-001 & \campo{decisión} & \campo{propuesta} & \campo{fecha} \\
+ADR-002 & \campo{decisión} & \campo{propuesta} & \campo{fecha} \\
+\bottomrule
+\end{tabularx}
+\captionof{table}{Índice de decisiones de arquitectura registradas.}
+\end{center}
+
+% =============================================================================
+\section{Riesgos técnicos y deuda conocida}
+
+\begin{porcompletar}
+\campo{Riesgos técnicos identificados, deuda asumida conscientemente y condiciones
+en las que debería revisarse.}
+\end{porcompletar}
+
+\end{document}

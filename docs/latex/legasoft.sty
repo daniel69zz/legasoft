@@ -1,0 +1,272 @@
+%% legasoft.sty — Estilo común de los documentos de Legasoft
+%% Motor: XeLaTeX (compilar con Tectonic). Ver docs/latex/README.md
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesFile{legasoft.sty}[2026/08/12 Estilo institucional de Legasoft]
+
+% ---------------------------------------------------------------- tipografía
+\RequirePackage{fontspec}
+\setmainfont{texgyrepagella-regular.otf}[
+  BoldFont       = texgyrepagella-bold.otf,
+  ItalicFont     = texgyrepagella-italic.otf,
+  BoldItalicFont = texgyrepagella-bolditalic.otf]
+\setsansfont{texgyreheros-regular.otf}[
+  BoldFont       = texgyreheros-bold.otf,
+  ItalicFont     = texgyreheros-italic.otf,
+  BoldItalicFont = texgyreheros-bolditalic.otf]
+\setmonofont{texgyrecursor-regular.otf}[
+  Scale          = 0.92,
+  BoldFont       = texgyrecursor-bold.otf,
+  ItalicFont     = texgyrecursor-italic.otf,
+  BoldItalicFont = texgyrecursor-bolditalic.otf]
+
+% `es-noshorthands` es obligatorio: sin él, babel-spanish activa `<`, `>` y `"`,
+% y rompe las flechas de TikZ (\draw[<->]) y las opciones de tabularx.
+\RequirePackage[spanish,es-noshorthands,es-tabla,es-nodecimaldot]{babel}
+
+\RequirePackage{microtype}
+\RequirePackage{parskip}
+\RequirePackage{setspace}
+\RequirePackage{ragged2e}
+
+% ------------------------------------------------------------------ paquetes
+\RequirePackage[a4paper,top=2.7cm,bottom=2.6cm,left=2.6cm,right=2.6cm,
+                headheight=22pt,footskip=1.2cm]{geometry}
+\RequirePackage[table]{xcolor}   % `table` habilita \rowcolor / \cellcolor
+\RequirePackage{graphicx}
+\RequirePackage{booktabs}
+\RequirePackage{tabularx}
+\RequirePackage{longtable}
+\RequirePackage{multirow}
+\RequirePackage{array}
+\RequirePackage{enumitem}
+\RequirePackage{caption}
+\RequirePackage{float}
+\RequirePackage{etoolbox}
+\RequirePackage{lastpage}
+\RequirePackage{needspace}
+\RequirePackage{fancyhdr}
+\RequirePackage{titlesec}
+\RequirePackage{tikz}
+\usetikzlibrary{positioning,shapes.geometric,shapes.symbols,shapes.multipart,
+                arrows.meta,calc,fit,backgrounds,decorations.pathreplacing,
+                patterns,matrix,chains}
+\RequirePackage[most]{tcolorbox}
+
+% -------------------------------------------------------------------- colores
+\definecolor{lgPrimario}{HTML}{123A5F}   % azul institucional
+\definecolor{lgAcento}{HTML}{1F7A8C}     % turquesa de apoyo
+\definecolor{lgClaro}{HTML}{E8EFF5}      % fondo suave
+\definecolor{lgGris}{HTML}{4A5568}       % texto secundario
+\definecolor{lgBorde}{HTML}{C7D3E0}
+\definecolor{lgAmbar}{HTML}{B7791F}      % marcas de «por completar»
+\definecolor{lgAmbarClaro}{HTML}{FDF6E3}
+
+% ------------------------------------------------------------------- metadatos
+% Cada documento define estos campos antes de \begin{document}.
+\newcommand{\lgtitulo}[1]{\def\lg@titulo{#1}}
+\newcommand{\lgsubtitulo}[1]{\def\lg@subtitulo{#1}}
+\newcommand{\lgtituloCorto}[1]{\def\lg@tituloCorto{#1}}
+\newcommand{\lgcodigo}[1]{\def\lg@codigo{#1}}
+\newcommand{\lgversion}[1]{\def\lg@version{#1}}
+\newcommand{\lgfecha}[1]{\def\lg@fecha{#1}}
+\newcommand{\lgautor}[1]{\def\lg@autor{#1}}
+\newcommand{\lgestado}[1]{\def\lg@estado{#1}}
+\lgtitulo{Documento sin título}
+\lgsubtitulo{}
+\lgtituloCorto{Documento}
+\lgcodigo{LGS-DOC-000}
+\lgversion{1.0}
+\lgfecha{\today}
+\lgautor{Legasoft}
+\lgestado{Borrador}
+
+% ------------------------------------------------------------- datos del equipo
+% Punto único de edición: si cambia un nombre o un rol, se cambia aquí.
+\newcommand{\lgDirector}{Oziel Rodman Ramos Torrez}
+\newcommand{\lgDirectorRol}{Director de Proyecto y Analista de Sistemas}
+\newcommand{\lgDirectorCV}{https://drive.google.com/file/d/1NV5PdyB_GZzVuR8X0g018u3C9i8M8U_K/view?usp=sharing}
+
+\newcommand{\lgArquitecto}{Luis Daniel Rojas Cáceres}
+\newcommand{\lgArquitectoRol}{Arquitecto de Software y Desarrollador Backend}
+\newcommand{\lgArquitectoCV}{https://drive.google.com/file/d/1K4KXgiovRBW1oyDPpctQFvLok3K-3Laa/view?usp=sharing}
+
+\newcommand{\lgQA}{Pedro Andrez Condorena Apaza}
+\newcommand{\lgQARol}{Especialista en QA y Desarrollador Frontend}
+\newcommand{\lgQACV}{https://drive.google.com/file/d/1Xyfxz9GVVaUEHeEer32nCAzPa4EyXdGX/view?usp=sharing}
+
+\newcommand{\lgDocente}{Miguel Ángel Pacheco Arteaga}
+\newcommand{\lgMateria}{Ingeniería de Software SIS-213}
+\newcommand{\lgCarrera}{Ingeniería de Sistemas (SIS)}
+\newcommand{\lgEquipo}{\lgDirector, \lgArquitecto\ y \lgQA}
+
+% ----------------------------------------------------------- encabezado y pie
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{lgBorde}\leaders\hrule height \headrulewidth\hfill}}
+\renewcommand{\footrule}{\hbox to\headwidth{\color{lgBorde}\leaders\hrule height \footrulewidth\hfill}}
+\fancyhead[L]{\sffamily\footnotesize\color{lgPrimario}\textbf{Legasoft}}
+\fancyhead[R]{\sffamily\footnotesize\color{lgGris}\lg@tituloCorto}
+\fancyfoot[L]{\sffamily\scriptsize\color{lgGris}\lg@codigo\ · v\lg@version}
+\fancyfoot[R]{\sffamily\scriptsize\color{lgGris}Página \thepage\ de \pageref{LastPage}}
+
+\fancypagestyle{lgportada}{%
+  \fancyhf{}%
+  \renewcommand{\headrulewidth}{0pt}%
+  \renewcommand{\footrulewidth}{0pt}%
+}
+
+% ---------------------------------------------------------------- títulos
+\titleformat{\section}
+  {\sffamily\Large\bfseries\color{lgPrimario}}
+  {\thesection}{0.7em}{}
+  [{\vspace{2pt}\color{lgBorde}\titlerule[0.8pt]}]
+\titlespacing*{\section}{0pt}{1.9\baselineskip}{0.7\baselineskip}
+
+\titleformat{\subsection}
+  {\sffamily\large\bfseries\color{lgPrimario!85!black}}
+  {\thesubsection}{0.6em}{}
+\titlespacing*{\subsection}{0pt}{1.3\baselineskip}{0.45\baselineskip}
+
+\titleformat{\subsubsection}
+  {\sffamily\normalsize\bfseries\color{lgGris}}
+  {\thesubsubsection}{0.55em}{}
+\titlespacing*{\subsubsection}{0pt}{1.05\baselineskip}{0.35\baselineskip}
+
+\setcounter{tocdepth}{3}
+\setcounter{secnumdepth}{3}
+
+% ---------------------------------------------------------------- listas
+\setlist[itemize]{leftmargin=1.35em,itemsep=2pt,topsep=4pt,parsep=0pt}
+\setlist[enumerate]{leftmargin=1.6em,itemsep=2pt,topsep=4pt,parsep=0pt}
+\setlist[description]{leftmargin=1.35em,itemsep=3pt,topsep=4pt,font=\sffamily\bfseries\color{lgPrimario}}
+
+% ---------------------------------------------------------------- tablas
+\renewcommand{\arraystretch}{1.25}
+\newcolumntype{L}[1]{>{\RaggedRight\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\Centering\arraybackslash}p{#1}}
+\newcolumntype{Y}{>{\RaggedRight\arraybackslash}X}
+
+% Encabezado de tabla con fondo institucional.
+\newcommand{\lgth}[1]{\textcolor{white}{\sffamily\bfseries #1}}
+\newcommand{\lgfilacab}{\rowcolor{lgPrimario}}
+
+\captionsetup{font={small},labelfont={sf,bf,color=lgPrimario},
+              textfont={color=lgGris},skip=6pt}
+
+% ---------------------------------------------------------------- cajas
+\newtcolorbox{nota}[1][Nota]{%
+  enhanced, breakable, colback=lgClaro, colframe=lgAcento,
+  boxrule=0pt, leftrule=3pt, arc=1pt, left=8pt, right=8pt, top=6pt, bottom=6pt,
+  fonttitle=\sffamily\bfseries\small, coltitle=lgPrimario,
+  attach boxed title to top left={xshift=8pt, yshift=-2pt},
+  boxed title style={colback=lgClaro, boxrule=0pt, arc=0pt},
+  title={#1}}
+
+\newtcolorbox{porcompletar}[1][Por completar]{%
+  enhanced, breakable, colback=lgAmbarClaro, colframe=lgAmbar,
+  boxrule=0pt, leftrule=3pt, arc=1pt, left=8pt, right=8pt, top=6pt, bottom=6pt,
+  fonttitle=\sffamily\bfseries\small, coltitle=lgAmbar,
+  attach boxed title to top left={xshift=8pt, yshift=-2pt},
+  boxed title style={colback=lgAmbarClaro, boxrule=0pt, arc=0pt},
+  title={#1}}
+
+% Marca en línea para un dato que el equipo aún debe rellenar.
+\newcommand{\campo}[1]{\textcolor{lgAmbar}{\sffamily\small[#1]}}
+
+% Igual que \campo, pero para usar sobre fondos oscuros (cajas azules de los
+% diagramas), donde el ámbar normal no tiene contraste suficiente.
+\definecolor{lgAmbarSuave}{HTML}{F4C77E}
+\newcommand{\campoclaro}[1]{\textcolor{lgAmbarSuave}{\sffamily\small[#1]}}
+
+% Reduce una figura solo si excede el ancho del texto; si cabe, no la toca.
+% Uso: \ajustaancho{\begin{tikzpicture}...\end{tikzpicture}}
+\newcommand{\ajustaancho}[1]{%
+  \resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{#1}}
+
+% -------------------------------------------------------------- portada
+\newcommand{\lgportada}{%
+\begin{titlepage}
+\thispagestyle{lgportada}
+\begin{tikzpicture}[remember picture, overlay]
+  \fill[lgPrimario] (current page.north west) rectangle
+       ($(current page.north east)+(0,-6.2cm)$);
+  \fill[lgAcento] ($(current page.north west)+(0,-6.2cm)$) rectangle
+       ($(current page.north east)+(0,-6.5cm)$);
+  \node[anchor=north west, text=white, align=left,
+        font=\sffamily\bfseries\fontsize{34}{38}\selectfont]
+       at ($(current page.north west)+(2.6cm,-2.1cm)$)
+       {Legasoft};
+  \node[anchor=north west, text=lgClaro, align=left,
+        font=\sffamily\fontsize{11}{15}\selectfont]
+       at ($(current page.north west)+(2.6cm,-3.45cm)$)
+       {Consultora de transformación digital\\ e ingeniería de software};
+\end{tikzpicture}
+
+\vspace*{7.6cm}
+\RaggedRight
+{\sffamily\bfseries\fontsize{23}{27}\selectfont\color{lgPrimario}\lg@titulo\par}
+\ifdefempty{\lg@subtitulo}{}{%
+  \vspace{6pt}{\sffamily\fontsize{13}{16}\selectfont\color{lgGris}\lg@subtitulo\par}}
+
+\vspace{1.4cm}
+{\color{lgBorde}\hrule height 0.8pt}
+\vspace{10pt}
+\begin{tabular}{@{}>{\sffamily\bfseries\color{lgPrimario}}l@{\hspace{1.2em}}
+                  >{\RaggedRight\arraybackslash}p{\dimexpr\linewidth-3.6cm\relax}@{}}
+Código        & \lg@codigo \\
+Versión       & \lg@version \\
+Estado        & \lg@estado \\
+Fecha         & \lg@fecha \\
+Elaborado por & \lg@autor \\
+\end{tabular}
+
+\vfill
+{\color{lgBorde}\hrule height 0.8pt}
+\vspace{8pt}
+{\sffamily\footnotesize\color{lgGris}
+Carrera de Ingeniería de Sistemas (SIS) · Ingeniería de Software SIS-213\\
+Docente: Miguel Ángel Pacheco Arteaga\par}
+\end{titlepage}
+\clearpage}
+
+% ------------------------------------------------- tabla de control de versiones
+\newcommand{\lgcontrolversiones}[1]{%
+\section*{Control de versiones}
+\addcontentsline{toc}{section}{Control de versiones}
+\begin{tabularx}{\linewidth}{@{}C{1.6cm} C{2.4cm} L{4.2cm} Y@{}}
+\toprule
+\sffamily\bfseries\color{lgPrimario}Versión &
+\sffamily\bfseries\color{lgPrimario}Fecha &
+\sffamily\bfseries\color{lgPrimario}Autor &
+\sffamily\bfseries\color{lgPrimario}Descripción del cambio \\
+\midrule
+#1
+\bottomrule
+\end{tabularx}
+\vspace{1em}}
+
+% ---------------------------------------------------------------- hyperref
+\RequirePackage[hidelinks,unicode]{hyperref}
+\hypersetup{
+  pdfauthor   = {Legasoft},
+  pdfcreator  = {XeLaTeX / Tectonic},
+  colorlinks  = true,
+  linkcolor   = lgPrimario,
+  urlcolor    = lgAcento,
+  citecolor   = lgAcento}
+\AtBeginDocument{\hypersetup{pdftitle={\lg@titulo}, pdfsubject={\lg@subtitulo}}}
+\RequirePackage{bookmark}
+\urlstyle{sf}
+
+% Ruta de archivo o carpeta. Se compone en monoespaciado y admite cortes de línea
+% tras «/», sin introducir guiones — a diferencia de \texttt, que desborda el
+% margen cuando la ruta es larga.
+\newcommand{\ruta}[1]{\begingroup\urlstyle{tt}\nolinkurl{#1}\endgroup}
+
+% Da algo de elasticidad al espaciado interno de rutas y URL, para que el
+% ajuste de línea no las empuje fuera del margen.
+\setlength{\Urlmuskip}{0mu plus 1.2mu}
+
+\endinput

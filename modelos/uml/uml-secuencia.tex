@@ -1,0 +1,111 @@
+%% UML — Diagrama de secuencia (plantilla)
+%% Compilar: tectonic -X compile uml-secuencia.tex
+\documentclass[11pt,a4paper]{article}
+\usepackage{../../docs/latex/legasoft}
+\usepackage{../../docs/latex/legasoft-diagramas}
+
+\lgtitulo{UML: diagrama de secuencia}
+\lgtituloCorto{UML — Secuencia}
+\lgcodigo{LGS-MOD-UML-3}
+\lgversion{0.1}
+\lgestado{Plantilla}
+\lgfecha{\campo{fecha}}
+\lgautor{\lgArquitecto\ (\lgArquitectoRol)}
+
+\begin{document}
+
+\begin{center}
+{\sffamily\bfseries\LARGE\color{lgPrimario} UML: diagrama de secuencia\par}
+\vspace{2pt}
+{\sffamily\normalsize\color{lgGris} \campo{CU-01 Registrar información} · Legasoft\par}
+\end{center}
+\vspace{6pt}
+{\color{lgBorde}\hrule height 0.8pt}
+\vspace{10pt}
+
+\begin{porcompletar}[Cómo usar esta plantilla]
+Un diagrama de secuencia se elabora por escenario, normalmente el flujo principal
+de un caso de uso. Indique en el título el caso de uso representado y mantenga la
+correspondencia con los contratos documentados en \texttt{LGS-ARQ-001}.
+\end{porcompletar}
+
+% =============================================================================
+\section*{Diagrama}
+
+\begin{figure}[H]
+\centering
+\ajustaancho{%
+\begin{tikzpicture}[uml, x=1cm, y=1cm]
+
+  % --- Participantes --------------------------------------------------------
+  \node[umlobjeto] (a) at (0,0)    {\campo{: Usuario}};
+  \node[umlobjeto] (b) at (3.6,0)  {\campo{: AppWeb}};
+  \node[umlobjeto] (c) at (7.2,0)  {\campo{: API}};
+  \node[umlobjeto] (d) at (10.8,0) {\campo{: BaseDatos}};
+
+  % --- Líneas de vida ------------------------------------------------------
+  \def\vidafin{-8.2}
+  \foreach \n in {a,b,c,d}{
+    \draw[umlvida] (\n.south) -- ($(\n.south)+(0,\vidafin)$);}
+
+  % --- Barras de activación ------------------------------------------------
+  \fill[umlactivacion] ($(b.south)+(-0.10,-0.6)$)  rectangle ($(b.south)+(0.10,-7.4)$);
+  \fill[umlactivacion] ($(c.south)+(-0.10,-1.3)$)  rectangle ($(c.south)+(0.10,-6.6)$);
+  \fill[umlactivacion] ($(d.south)+(-0.10,-2.6)$)  rectangle ($(d.south)+(0.10,-3.9)$);
+  \fill[umlactivacion] ($(d.south)+(-0.10,-4.6)$)  rectangle ($(d.south)+(0.10,-5.6)$);
+
+  % --- Mensajes ------------------------------------------------------------
+  \draw[umlmensaje] ($(a.south)+(0,-0.6)$)  -- ($(b.south)+(-0.10,-0.6)$)
+    node[midway, above] {1: \campo{enviar formulario}};
+
+  \draw[umlmensaje] ($(b.south)+(0.10,-1.3)$) -- ($(c.south)+(-0.10,-1.3)$)
+    node[midway, above] {2: \campo{POST /registro}};
+
+  \draw[umlmensaje] ($(c.south)+(0.10,-2.6)$) -- ($(d.south)+(-0.10,-2.6)$)
+    node[midway, above] {3: \campo{validar unicidad}};
+
+  \draw[umlretorno] ($(d.south)+(-0.10,-3.9)$) -- ($(c.south)+(0.10,-3.9)$)
+    node[midway, above] {4: \campo{resultado}};
+
+  \draw[umlmensaje] ($(c.south)+(0.10,-4.6)$) -- ($(d.south)+(-0.10,-4.6)$)
+    node[midway, above] {5: \campo{insertar registro}};
+
+  \draw[umlretorno] ($(d.south)+(-0.10,-5.6)$) -- ($(c.south)+(0.10,-5.6)$)
+    node[midway, above] {6: \campo{id generado}};
+
+  \draw[umlretorno] ($(c.south)+(-0.10,-6.6)$) -- ($(b.south)+(0.10,-6.6)$)
+    node[midway, above] {7: \campo{201 Created}};
+
+  \draw[umlretorno] ($(b.south)+(-0.10,-7.4)$) -- ($(a.south)+(0,-7.4)$)
+    node[midway, above] {8: \campo{confirmación}};
+
+\end{tikzpicture}}
+\caption{Flujo principal del escenario: mensajes entre los participantes en el
+tiempo. El eje vertical representa el avance temporal.}
+\end{figure}
+
+% =============================================================================
+\Needspace*{20\baselineskip}
+\section*{Escenario representado}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}L{3.6cm} Y@{}}
+\toprule
+\sffamily\bfseries\small\color{lgPrimario}Caso de uso     & \campo{CU-01 Registrar información} \\
+\sffamily\bfseries\small\color{lgPrimario}Requisito       & \campo{RF-001} \\
+\sffamily\bfseries\small\color{lgPrimario}Precondición    & \campo{el usuario está autenticado} \\
+\sffamily\bfseries\small\color{lgPrimario}Postcondición   & \campo{el registro queda persistido y es consultable} \\
+\sffamily\bfseries\small\color{lgPrimario}Flujos alternos & \campo{datos inválidos, registro duplicado, error de conexión} \\
+\bottomrule
+\end{tabularx}
+\captionof{table}{Contexto del escenario representado.}
+\end{center}
+
+\begin{nota}[Notación]
+La flecha continua con punta rellena representa un mensaje síncrono; la flecha
+discontinua, el retorno. Las barras verticales sobre la línea de vida indican el
+periodo en que el participante está activo. Los flujos alternos se modelan en
+diagramas aparte o mediante fragmentos combinados (\texttt{alt}, \texttt{opt}).
+\end{nota}
+
+\end{document}

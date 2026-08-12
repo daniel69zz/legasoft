@@ -1,0 +1,150 @@
+%% Plantilla de minuta de reunión
+%% Uso: copiar como minuta-NNN-<tema>.tex, completar y compilar.
+%% Compilar: tectonic -X compile plantilla-minuta.tex
+\documentclass[11pt,a4paper]{article}
+\usepackage{../latex/legasoft}
+
+\lgtitulo{Minuta de reunión}
+\lgsubtitulo{\campo{Asunto de la reunión}}
+\lgtituloCorto{Minuta \campo{NNN}}
+\lgcodigo{LGS-MIN-NNN}
+\lgversion{0.1}
+\lgestado{Plantilla}
+\lgfecha{\campo{dd-mm-aaaa}}
+\lgautor{\lgDirector\ (\lgDirectorRol)}
+
+\begin{document}
+
+% Una minuta es un documento corto: no lleva portada ni índice.
+\begin{center}
+{\sffamily\bfseries\LARGE\color{lgPrimario} Minuta de reunión\par}
+\vspace{2pt}
+{\sffamily\normalsize\color{lgGris} Legasoft · \campo{asunto}\par}
+\end{center}
+\vspace{6pt}
+{\color{lgBorde}\hrule height 0.8pt}
+\vspace{10pt}
+
+\begin{porcompletar}[Cómo usar esta plantilla]
+Copie este archivo como \ruta{minuta-NNN-<tema>.tex}, sustituya los campos en
+ámbar y elimine esta caja antes de distribuir la minuta. La preparación y
+conservación de las minutas corresponde al \lgDirectorRol\ según
+\texttt{LGS-INST-001}, sección 10.1.
+\end{porcompletar}
+
+% =============================================================================
+\section*{1. Datos de la reunión}
+
+\begin{tabularx}{\linewidth}{@{}L{3.6cm} Y@{}}
+\toprule
+\sffamily\bfseries\small\color{lgPrimario}Código        & LGS-MIN-\campo{NNN} \\
+\sffamily\bfseries\small\color{lgPrimario}Fecha y hora  & \campo{dd-mm-aaaa}, de \campo{hh:mm} a \campo{hh:mm} \\
+\sffamily\bfseries\small\color{lgPrimario}Modalidad     & \campo{presencial / virtual / mixta} \\
+\sffamily\bfseries\small\color{lgPrimario}Lugar o enlace& \campo{sala o plataforma} \\
+\sffamily\bfseries\small\color{lgPrimario}Tipo          & \campo{interna del equipo / con la parte interesada} \\
+\sffamily\bfseries\small\color{lgPrimario}Facilitador   & \lgDirector \\
+\sffamily\bfseries\small\color{lgPrimario}Redactor      & \campo{nombre} \\
+\bottomrule
+\end{tabularx}
+
+% =============================================================================
+\section*{2. Participantes}
+
+\begin{tabularx}{\linewidth}{@{}L{4.6cm} Y C{2.2cm}@{}}
+\toprule
+\sffamily\bfseries\color{lgPrimario}Nombre &
+\sffamily\bfseries\color{lgPrimario}Rol u organización &
+\sffamily\bfseries\color{lgPrimario}Asistencia \\
+\midrule
+\lgDirector   & \lgDirectorRol   & \campo{sí / no} \\
+\lgArquitecto & \lgArquitectoRol & \campo{sí / no} \\
+\lgQA         & \lgQARol         & \campo{sí / no} \\
+\campo{nombre} & \campo{organización cliente} & \campo{sí / no} \\
+\bottomrule
+\end{tabularx}
+
+% =============================================================================
+\section*{3. Agenda}
+
+\begin{enumerate}
+  \item \campo{Punto de agenda}
+  \item \campo{Punto de agenda}
+  \item \campo{Punto de agenda}
+\end{enumerate}
+
+% =============================================================================
+\section*{4. Desarrollo de la reunión}
+
+Resumen de lo tratado en cada punto, con la información relevante para
+reconstruir el contexto de las decisiones.
+
+\begin{porcompletar}
+\campo{Punto 1: qué se expuso, qué se discutió y qué se concluyó.}
+
+\campo{Punto 2: \ldots}
+\end{porcompletar}
+
+% =============================================================================
+\section*{5. Acuerdos y decisiones}
+
+\begin{tabularx}{\linewidth}{@{}C{1.8cm} Y L{3.2cm}@{}}
+\toprule
+\sffamily\bfseries\color{lgPrimario}ID &
+\sffamily\bfseries\color{lgPrimario}Acuerdo o decisión &
+\sffamily\bfseries\color{lgPrimario}Justificación \\
+\midrule
+A-01 & \campo{acuerdo} & \campo{motivo} \\
+A-02 & \campo{acuerdo} & \campo{motivo} \\
+\bottomrule
+\end{tabularx}
+
+% =============================================================================
+\section*{6. Compromisos y seguimiento}
+
+Cada compromiso tiene un responsable y una fecha; su seguimiento se registra en
+Jira, conforme a la responsabilidad de coordinación del proyecto.
+
+\begin{tabularx}{\linewidth}{@{}C{1.8cm} Y L{3.6cm} C{2.2cm} C{2.0cm}@{}}
+\toprule
+\sffamily\bfseries\color{lgPrimario}ID &
+\sffamily\bfseries\color{lgPrimario}Compromiso &
+\sffamily\bfseries\color{lgPrimario}Responsable &
+\sffamily\bfseries\color{lgPrimario}Fecha límite &
+\sffamily\bfseries\color{lgPrimario}Estado \\
+\midrule
+C-01 & \campo{acción concreta} & \campo{nombre} & \campo{dd-mm-aaaa} & \campo{pendiente} \\
+C-02 & \campo{acción concreta} & \campo{nombre} & \campo{dd-mm-aaaa} & \campo{pendiente} \\
+\bottomrule
+\end{tabularx}
+
+% =============================================================================
+\section*{7. Temas pendientes y riesgos detectados}
+
+\begin{porcompletar}
+\campo{Asuntos que quedaron sin resolver, restricciones nuevas o riesgos que
+deban incorporarse al registro del proyecto.}
+\end{porcompletar}
+
+% =============================================================================
+\section*{8. Próxima reunión}
+
+\begin{tabularx}{\linewidth}{@{}L{3.6cm} Y@{}}
+\toprule
+\sffamily\bfseries\small\color{lgPrimario}Fecha prevista & \campo{dd-mm-aaaa} \\
+\sffamily\bfseries\small\color{lgPrimario}Objetivo       & \campo{propósito de la siguiente sesión} \\
+\bottomrule
+\end{tabularx}
+
+\vspace{1.4cm}
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}Y Y@{}}
+\centering\rule{5.4cm}{0.5pt} &
+\centering\arraybackslash\rule{5.4cm}{0.5pt} \\[-2pt]
+\centering\sffamily\small\lgDirector &
+\centering\arraybackslash\sffamily\small\campo{representante del cliente} \\[-4pt]
+\centering\scriptsize\color{lgGris}Por Legasoft &
+\centering\arraybackslash\scriptsize\color{lgGris}Conformidad con lo registrado \\
+\end{tabularx}
+\end{center}
+
+\end{document}

@@ -1,0 +1,179 @@
+%% legasoft-diagramas.sty — Estilos TikZ para los modelos C4, UML y BPMN
+%% Requiere legasoft.sty (colores lgPrimario, lgAcento, lgClaro, lgGris, lgBorde).
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesFile{legasoft-diagramas.sty}[2026/08/12 Estilos de diagramas de Legasoft]
+
+\RequirePackage{tikz}
+\usetikzlibrary{positioning,shapes.geometric,shapes.multipart,shapes.symbols,
+                arrows.meta,calc,fit,backgrounds,decorations.pathreplacing,
+                decorations.markings,patterns,matrix,chains}
+
+\definecolor{lgExterno}{HTML}{7A8794}   % elementos fuera del alcance
+\definecolor{lgDato}{HTML}{2C6E63}      % almacenes de datos
+
+% =============================================================================
+% Modelo C4
+% =============================================================================
+\tikzset{
+  c4/.style={
+    font=\sffamily\footnotesize,
+    node distance=1.5cm and 1.9cm},
+  % Caja base: nombre, [tecnología], descripción
+  c4caja/.style={
+    draw, line width=0.9pt, rounded corners=2pt,
+    text width=3.9cm, align=center, inner sep=6pt, minimum height=1.9cm},
+  c4persona/.style={c4caja, draw=lgPrimario, fill=lgPrimario, text=white,
+    rounded corners=9pt, text width=3.4cm, align=center},
+  c4sistema/.style={c4caja, draw=lgPrimario!80!black, fill=lgPrimario!12,
+    align=center},
+  c4foco/.style={c4caja, draw=lgAcento, fill=lgAcento!15, line width=1.3pt,
+    align=center},
+  c4externo/.style={c4caja, draw=lgExterno, fill=lgExterno!12, text=lgGris,
+    dash pattern=on 3pt off 2pt, align=center},
+  c4contenedor/.style={c4caja, draw=lgAcento, fill=lgAcento!12, align=center},
+  % Variantes anchas. Definirlas aquí (y no con `text width` en el nodo) es lo
+  % que garantiza el centrado: TikZ descarta `align` si `text width` va después.
+  c4focoancho/.style={c4foco, text width=5.6cm, align=center},
+  c4contenedorancho/.style={c4contenedor, text width=4.6cm, align=center},
+  c4componente/.style={c4caja, draw=lgPrimario!70, fill=lgClaro,
+    text width=3.5cm, minimum height=1.6cm, align=center},
+  c4datos/.style={
+    draw=lgDato, line width=0.9pt, fill=lgDato!12, cylinder,
+    shape border rotate=90, aspect=0.28,
+    text width=2.9cm, align=center, inner sep=6pt, minimum height=2.0cm},
+  % Relaciones
+  c4rel/.style={
+    -{Latex[length=2.6mm]}, lgGris, line width=0.8pt,
+    font=\sffamily\scriptsize, text=lgGris},
+  c4relbi/.style={c4rel, {Latex[length=2.6mm]}-{Latex[length=2.6mm]}},
+  c4etq/.style={
+    font=\sffamily\scriptsize, text=lgGris, fill=white, inner sep=2pt,
+    align=center},
+  % Marco de alcance del sistema
+  c4limite/.style={
+    draw=lgPrimario, dash pattern=on 4pt off 3pt, line width=0.8pt,
+    rounded corners=4pt, inner sep=12pt},
+}
+
+% Rótulo interno de una caja C4: \ctexto{Nombre}{Tecnología}{Descripción}
+% La tecnología puede quedar vacía: \ctexto{Nombre}{}{Descripción}
+% El \centering explícito es necesario: cuando el nodo redefine `text width`,
+% TikZ descarta el `align=center` del estilo y vuelve a texto justificado.
+\newcommand{\ctexto}[3]{%
+  \centering
+  {\bfseries #1}%
+  \ifx\relax#2\relax\else\\[1pt]{\scriptsize\itshape [#2]}\fi
+  % Dentro de una caja estrecha, partir palabras («Le-gasoft») se lee mal: es
+  % preferible que la línea corte antes, en un espacio. Las penalizaciones van
+  % dentro del grupo porque TikZ las restablece en cada línea del nodo.
+  \\[2pt]{\scriptsize\hyphenpenalty=10000\exhyphenpenalty=10000\relax #3}}
+
+% Leyenda de un diagrama C4
+\newcommand{\cleyenda}{%
+\begin{center}
+\ajustaancho{%
+\begin{tikzpicture}[c4]
+  \node[c4persona, text width=2.0cm, align=center, minimum height=0.9cm,
+        font=\sffamily\scriptsize] (l1) {Persona};
+  \node[c4foco, text width=2.4cm, align=center, minimum height=0.9cm, right=0.5cm of l1,
+        font=\sffamily\scriptsize] (l2) {Sistema en alcance};
+  \node[c4externo, text width=2.4cm, align=center, minimum height=0.9cm, right=0.5cm of l2,
+        font=\sffamily\scriptsize] (l3) {Sistema externo};
+  \node[c4datos, text width=1.9cm, align=center, minimum height=1.0cm, right=0.5cm of l3,
+        font=\sffamily\scriptsize] (l4) {Almacén de datos};
+\end{tikzpicture}}
+\end{center}}
+
+% =============================================================================
+% UML
+% =============================================================================
+\tikzset{
+  uml/.style={font=\sffamily\footnotesize, node distance=1.3cm and 2.2cm},
+  % Casos de uso
+  umlcaso/.style={
+    draw=lgPrimario, line width=0.8pt, fill=lgClaro, ellipse,
+    align=center, inner sep=4pt, minimum width=3.4cm, minimum height=1.1cm,
+    text width=3.0cm},
+  umlsistema/.style={
+    draw=lgPrimario, line width=0.9pt, rounded corners=2pt, inner sep=14pt},
+  umlrel/.style={lgGris, line width=0.7pt},
+  umlflecha/.style={umlrel, -{Latex[length=2.4mm]}},
+  umlext/.style={umlrel, -{Latex[length=2.4mm]}, dashed,
+    font=\sffamily\scriptsize, text=lgGris},
+  % Clases: rectángulo dividido en nombre / atributos / operaciones
+  umlclase/.style={
+    draw=lgPrimario, line width=0.8pt, fill=white,
+    rectangle split, rectangle split parts=3,
+    rectangle split draw splits=true,
+    text width=4.0cm, align=left, inner sep=5pt,
+    every one node part/.style={font=\sffamily\bfseries\small,
+      align=center, text=lgPrimario},
+    every two node part/.style={font=\ttfamily\scriptsize},
+    every three node part/.style={font=\ttfamily\scriptsize}},
+  % Relaciones entre clases
+  umlherencia/.style={umlrel, -{Triangle[open, length=3mm, width=3mm]}},
+  umlcomposicion/.style={umlrel, {Diamond[length=3mm, width=2mm]}-},
+  umlagregacion/.style={umlrel, {Diamond[open, length=3mm, width=2mm]}-},
+  umlasoc/.style={umlrel},
+  umlmult/.style={font=\sffamily\scriptsize, text=lgGris, inner sep=2pt},
+  % Secuencia
+  umlobjeto/.style={
+    draw=lgPrimario, line width=0.8pt, fill=lgClaro,
+    align=center, inner sep=5pt, minimum width=2.9cm, minimum height=0.85cm,
+    font=\sffamily\small\bfseries, text=lgPrimario},
+  umlvida/.style={lgGris, dash pattern=on 3pt off 3pt, line width=0.6pt},
+  umlactivacion/.style={draw=lgPrimario, fill=lgAcento!25, line width=0.6pt},
+  umlmensaje/.style={-{Latex[length=2.4mm]}, lgPrimario, line width=0.8pt,
+    font=\sffamily\scriptsize, text=lgGris},
+  umlretorno/.style={-{Latex[length=2.2mm]}, lgGris, line width=0.7pt, dashed,
+    font=\sffamily\scriptsize, text=lgGris},
+}
+
+% Figura de actor UML (monigote). Uso: \node[umlactor] ... o \umlactor{x}{y}{Nombre}
+\newcommand{\umlactor}[3]{%
+  \begin{scope}[shift={(#1,#2)}]
+    \draw[lgPrimario, line width=0.8pt] (0,0.42) circle (0.16);
+    \draw[lgPrimario, line width=0.8pt] (0,0.26) -- (0,-0.16);
+    \draw[lgPrimario, line width=0.8pt] (-0.24,0.10) -- (0.24,0.10);
+    \draw[lgPrimario, line width=0.8pt] (0,-0.16) -- (-0.20,-0.52);
+    \draw[lgPrimario, line width=0.8pt] (0,-0.16) -- (0.20,-0.52);
+    \node[font=\sffamily\scriptsize, text=lgPrimario, align=center,
+          anchor=north] at (0,-0.60) {#3};
+  \end{scope}}
+
+% =============================================================================
+% BPMN
+% =============================================================================
+\tikzset{
+  bpmn/.style={font=\sffamily\footnotesize, node distance=1.1cm and 1.3cm},
+  bpmninicio/.style={
+    draw=lgAcento, line width=1.0pt, fill=lgAcento!15, circle,
+    minimum size=0.85cm, inner sep=1pt},
+  bpmnfin/.style={
+    draw=lgPrimario, line width=2.2pt, fill=lgPrimario!12, circle,
+    minimum size=0.85cm, inner sep=1pt},
+  bpmnintermedio/.style={
+    draw=lgGris, line width=0.9pt, fill=white, circle,
+    minimum size=0.85cm, inner sep=1pt, double, double distance=1.4pt},
+  bpmntarea/.style={
+    draw=lgPrimario, line width=0.9pt, fill=lgClaro, rounded corners=4pt,
+    text width=2.5cm, align=center, minimum height=1.25cm, inner sep=4pt},
+  bpmngateway/.style={
+    draw=lgAmbar, line width=0.9pt, fill=lgAmbarClaro, diamond,
+    aspect=1, minimum size=1.05cm, inner sep=1pt},
+  bpmnflujo/.style={
+    -{Latex[length=2.4mm]}, lgPrimario, line width=0.8pt,
+    font=\sffamily\scriptsize, text=lgGris},
+  bpmnmensaje/.style={
+    -{Latex[length=2.4mm, open]}, lgGris, line width=0.8pt, dashed,
+    font=\sffamily\scriptsize, text=lgGris},
+  bpmncarril/.style={
+    draw=lgBorde, line width=0.8pt, fill=white, inner sep=10pt},
+  bpmncarrilrot/.style={
+    font=\sffamily\scriptsize\bfseries, text=lgPrimario, rotate=90,
+    align=center},
+  bpmnetq/.style={
+    font=\sffamily\scriptsize, text=lgGris, fill=white, inner sep=2pt},
+}
+
+\endinput

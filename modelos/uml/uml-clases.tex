@@ -1,0 +1,129 @@
+%% UML — Diagrama de clases (plantilla)
+%% Compilar: tectonic -X compile uml-clases.tex
+\documentclass[11pt,a4paper]{article}
+\usepackage{../../docs/latex/legasoft}
+\usepackage{../../docs/latex/legasoft-diagramas}
+
+\lgtitulo{UML: diagrama de clases}
+\lgtituloCorto{UML — Clases}
+\lgcodigo{LGS-MOD-UML-2}
+\lgversion{0.1}
+\lgestado{Plantilla}
+\lgfecha{\campo{fecha}}
+\lgautor{\lgArquitecto\ (\lgArquitectoRol)}
+
+\begin{document}
+
+\begin{center}
+{\sffamily\bfseries\LARGE\color{lgPrimario} UML: diagrama de clases\par}
+\vspace{2pt}
+{\sffamily\normalsize\color{lgGris} \campo{nombre del sistema} · Legasoft\par}
+\end{center}
+\vspace{6pt}
+{\color{lgBorde}\hrule height 0.8pt}
+\vspace{10pt}
+
+\begin{porcompletar}[Cómo usar esta plantilla]
+Las clases mostradas son un ejemplo de la notación, no un modelo del dominio del
+cliente. Sustitúyalas por las entidades reales una vez definido el alcance en
+\texttt{LGS-REQ-001}. Visibilidad: \texttt{+} pública, \texttt{-} privada,
+\texttt{\#} protegida.
+\end{porcompletar}
+
+% =============================================================================
+\section*{Diagrama}
+
+\begin{figure}[H]
+\centering
+\ajustaancho{%
+\begin{tikzpicture}[uml, node distance=1.6cm and 1.8cm]
+
+  % --- Clases ---------------------------------------------------------------
+  \node[umlclase] (usuario) {%
+    \campo{Usuario}
+    \nodepart{two}
+      - id: int \\
+      - nombre: string \\
+      - correo: string \\
+      - rol: Rol
+    \nodepart{three}
+      + autenticar(): bool \\
+      + tienePermiso(p): bool};
+
+  \node[umlclase, right=2.6cm of usuario] (registro) {%
+    \campo{Registro}
+    \nodepart{two}
+      - id: int \\
+      - fecha: date \\
+      - estado: Estado \\
+      - detalle: string
+    \nodepart{three}
+      + validar(): bool \\
+      + cambiarEstado(e) \\
+      + total(): decimal};
+
+  \node[umlclase, below=2.2cm of registro] (linea) {%
+    \campo{LineaRegistro}
+    \nodepart{two}
+      - id: int \\
+      - cantidad: int \\
+      - precio: decimal
+    \nodepart{three}
+      + subtotal(): decimal};
+
+  \node[umlclase, below=2.2cm of usuario] (admin) {%
+    \campo{Administrador}
+    \nodepart{two}
+      - alcance: string
+    \nodepart{three}
+      + crearUsuario(u) \\
+      + desactivar(u)};
+
+  % --- Relaciones -----------------------------------------------------------
+  % Asociación Usuario 1 --- * Registro
+  \draw[umlasoc] (usuario.east) -- (registro.west)
+    node[umlmult, above, pos=0.08] {1}
+    node[umlmult, above, pos=0.92] {0..*}
+    node[font=\sffamily\scriptsize, text=lgGris, below, pos=0.5] {registra};
+
+  % Composición Registro <>--- * LineaRegistro
+  \draw[umlcomposicion] (registro.south) -- (linea.north)
+    node[umlmult, right, pos=0.12] {1}
+    node[umlmult, right, pos=0.88] {1..*};
+
+  % Herencia Administrador ---|> Usuario
+  \draw[umlherencia] (admin.north) -- (usuario.south);
+
+\end{tikzpicture}}
+\caption{Clases del dominio, sus atributos, operaciones y relaciones.}
+\end{figure}
+
+% =============================================================================
+\Needspace*{20\baselineskip}
+\section*{Notación de relaciones}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}L{3.4cm} L{3.0cm} Y@{}}
+\toprule
+\sffamily\bfseries\color{lgPrimario}Relación &
+\sffamily\bfseries\color{lgPrimario}Símbolo &
+\sffamily\bfseries\color{lgPrimario}Significado \\
+\midrule
+Herencia    & Triángulo hueco   & La subclase especializa a la superclase. \\
+Composición & Rombo relleno     & La parte no existe sin el todo; se elimina con él. \\
+Agregación  & Rombo hueco       & La parte puede existir independientemente del todo. \\
+Asociación  & Línea simple      & Vínculo estructural, con multiplicidad en cada extremo. \\
+Dependencia & Línea discontinua & Uso puntual: un cambio en el destino puede afectar al origen. \\
+\bottomrule
+\end{tabularx}
+\captionof{table}{Relaciones UML empleadas en los modelos de Legasoft.}
+\end{center}
+
+\begin{nota}[Relación con el modelo de datos]
+El diagrama de clases describe el dominio en términos de objetos. El modelo de
+datos relacional que lo persiste se documenta por separado en
+\texttt{LGS-ARQ-001}; ambos deben mantenerse coherentes, pero no son el mismo
+artefacto.
+\end{nota}
+
+\end{document}

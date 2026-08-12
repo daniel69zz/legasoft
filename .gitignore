@@ -1,0 +1,22 @@
+# --- Archivos auxiliares de LaTeX -------------------------------------------
+*.aux
+*.log
+*.toc
+*.lof
+*.lot
+*.out
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.bbl
+*.blg
+*.run.xml
+
+# Los PDF son artefactos de compilación: se generan con `make`.
+# Si el curso exige entregar los PDF versionados, comente estas dos líneas.
+docs/**/*.pdf
+modelos/**/*.pdf
+
+# --- Sistema operativo ------------------------------------------------------
+.DS_Store
+Thumbs.db

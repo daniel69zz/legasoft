@@ -1,0 +1,267 @@
+%% Estrategia de aseguramiento de calidad y plan de pruebas
+%% Compilar: tectonic -X compile estrategia-qa.tex
+\documentclass[11pt,a4paper]{article}
+\usepackage{../latex/legasoft}
+
+\lgtitulo{Estrategia de calidad y plan de pruebas}
+\lgsubtitulo{Aseguramiento de calidad con ISO/IEC 25010 como modelo de referencia}
+\lgtituloCorto{Estrategia de calidad}
+\lgcodigo{LGS-CAL-001}
+\lgversion{0.1}
+\lgestado{Plantilla — pendiente de completar}
+\lgfecha{\campo{fecha}}
+\lgautor{\lgQA\ (\lgQARol)}
+
+% --- Ficha reutilizable para un caso de prueba -----------------------------
+% Uso: \caso{CP-001}{Título}{RF-001}{Precondiciones}{Pasos}{Resultado esperado}
+\newcommand{\caso}[6]{%
+\par\vspace{4pt}
+\begin{tabularx}{\linewidth}{@{}L{3.4cm} Y@{}}
+\toprule
+\rowcolor{lgClaro}
+\multicolumn{2}{@{}l@{}}{\sffamily\bfseries\color{lgPrimario} #1 \quad #2} \\
+\midrule
+\sffamily\bfseries\small Requisito cubierto & #3 \\
+\sffamily\bfseries\small Precondiciones     & #4 \\
+\sffamily\bfseries\small Pasos              & #5 \\
+\sffamily\bfseries\small Resultado esperado & #6 \\
+\bottomrule
+\end{tabularx}
+\par\vspace{8pt}}
+
+\begin{document}
+\lgportada
+
+\lgcontrolversiones{
+0.1 & \campo{dd-mm-aaaa} & \lgQA & Plantilla inicial de estrategia de calidad y plan de pruebas. \\
+}
+
+\begin{porcompletar}[Cómo usar esta plantilla]
+Este documento reúne la estrategia de calidad y el plan de pruebas, ambos
+entregables del \lgQARol\ según \texttt{LGS-INST-001}, sección 10.3. Complete los
+campos en ámbar cuando existan requisitos aprobados en \texttt{LGS-REQ-001}: sin
+criterios de aceptación no es posible diseñar casos de prueba verificables.
+\end{porcompletar}
+
+\tableofcontents
+\clearpage
+
+% =============================================================================
+\section{Propósito y alcance}
+
+Este documento define cómo Legasoft asegura y comprueba la calidad del producto
+\campo{nombre del sistema}. Establece el modelo de calidad adoptado, los niveles
+de prueba, los criterios de entrada y salida, la gestión de defectos y la
+evidencia que debe conservarse antes de cada entrega.
+
+La función de calidad se ejerce de manera preventiva desde la definición de
+requisitos y no solamente al final del desarrollo.
+
+\subsection{Documentos relacionados}
+
+\begin{itemize}
+  \item \texttt{LGS-REQ-001} — Especificación de requisitos de software.
+  \item \texttt{LGS-ARQ-001} — Documento de arquitectura del sistema.
+  \item ISO/IEC 25010 — Modelo de calidad del producto de software.
+\end{itemize}
+
+% =============================================================================
+\section{Modelo de calidad adoptado}
+
+Legasoft utiliza ISO/IEC 25010 como referencia para definir y evaluar los
+atributos del producto. No todas las características aplican con la misma
+intensidad a todos los proyectos: la columna de prioridad se ajusta según el
+alcance y los riesgos identificados.
+
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}L{4.0cm} C{2.0cm} Y@{}}
+\toprule
+\sffamily\bfseries\color{lgPrimario}Característica &
+\sffamily\bfseries\color{lgPrimario}Prioridad &
+\sffamily\bfseries\color{lgPrimario}Cómo se evalúa en este proyecto \\
+\midrule
+Adecuación funcional    & \campo{A/M/B} & Verificación de requisitos y criterios de aceptación. \\
+Eficiencia de desempeño & \campo{A/M/B} & \campo{mediciones de tiempo de respuesta o carga.} \\
+Compatibilidad          & \campo{A/M/B} & \campo{navegadores, dispositivos o sistemas soportados.} \\
+Usabilidad              & \campo{A/M/B} & Revisión de flujos, consistencia y accesibilidad de la interfaz. \\
+Fiabilidad              & \campo{A/M/B} & \campo{comportamiento ante fallos y recuperación.} \\
+Seguridad               & \campo{A/M/B} & Revisión de control de acceso, datos sensibles y registro de auditoría. \\
+Mantenibilidad          & \campo{A/M/B} & Revisiones de código, modularidad y documentación técnica. \\
+Portabilidad            & \campo{A/M/B} & \campo{requisitos de despliegue e instalación.} \\
+\bottomrule
+\end{tabularx}
+\captionof{table}{Características de ISO/IEC 25010 aplicadas al proyecto.}
+\end{center}
+
+% =============================================================================
+\section{Niveles y tipos de prueba}
+
+Estos niveles se reflejan en la estructura de carpetas del repositorio:
+\ruta{tests/unit}, \ruta{tests/integration} y \ruta{tests/acceptance}.
+
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}L{3.2cm} L{3.4cm} Y L{3.0cm}@{}}
+\toprule
+\sffamily\bfseries\color{lgPrimario}Nivel &
+\sffamily\bfseries\color{lgPrimario}Qué verifica &
+\sffamily\bfseries\color{lgPrimario}Responsable y momento &
+\sffamily\bfseries\color{lgPrimario}Ubicación \\
+\midrule
+Unitarias    & Componentes o funciones aisladas.
+             & Quien desarrolla el componente, durante la implementación.
+             & \ruta{tests/unit} \\
+Integración  & Interacción entre componentes, servicios y contratos de API.
+             & \lgQARol\ con el \lgArquitectoRol.
+             & \ruta{tests/integration} \\
+Aceptación   & Cumplimiento de los criterios acordados con el cliente.
+             & \lgQARol, antes de cada entrega.
+             & \ruta{tests/acceptance} \\
+\bottomrule
+\end{tabularx}
+\captionof{table}{Niveles de prueba y su correspondencia con el repositorio.}
+\end{center}
+
+\subsection{Pruebas complementarias}
+
+\begin{itemize}
+  \item \textbf{Usabilidad y accesibilidad:} revisión de los flujos de
+        interacción y de la adaptación de la interfaz a distintos dispositivos.
+  \item \textbf{Regresión:} reejecución del conjunto acordado tras cada cambio
+        que afecte a funcionalidad ya validada.
+  \item \textbf{Seguridad:} verificación de control de acceso, manejo de datos
+        sensibles y trazas de auditoría, dentro del alcance del proyecto.
+\end{itemize}
+
+\subsection{Automatización}
+
+La automatización se aplica cuando resulte adecuada y sostenible para el
+proyecto. Se prioriza automatizar las pruebas de regresión y los flujos críticos
+de negocio; las pruebas exploratorias y de usabilidad permanecen manuales.
+
+\begin{porcompletar}
+\campo{Herramientas de prueba seleccionadas. La decisión se registrará como ADR
+en docs/arquitectura/ cuando se definan las tecnologías del proyecto.}
+\end{porcompletar}
+
+% =============================================================================
+\section{Criterios de entrada y salida}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}L{3.4cm} Y@{}}
+\toprule
+\sffamily\bfseries\color{lgPrimario}Criterio &
+\sffamily\bfseries\color{lgPrimario}Condición \\
+\midrule
+Entrada a pruebas & Requisitos con criterios de aceptación aprobados; funcionalidad integrada y desplegada en el entorno de prueba; datos de prueba disponibles. \\
+Suspensión        & Un defecto bloqueante impide ejecutar el resto del conjunto, o el entorno de prueba no está operativo. \\
+Reanudación       & El defecto bloqueante está corregido y verificado, y el entorno vuelve a estar disponible. \\
+Salida de pruebas & Todos los casos de prioridad alta ejecutados y aprobados; sin defectos abiertos de severidad crítica o alta; evidencia registrada e informe de validación emitido. \\
+\bottomrule
+\end{tabularx}
+\captionof{table}{Criterios que gobiernan el ciclo de pruebas.}
+\end{center}
+
+% =============================================================================
+\section{Diseño de casos de prueba}
+
+Cada caso de prueba se vincula al requisito que verifica, de modo que la matriz
+de trazabilidad de \texttt{LGS-REQ-001} pueda completarse sin ambigüedad.
+
+\caso{CP-001}{\campo{título del caso}}
+  {\campo{RF-001}}
+  {\campo{Estado del sistema y datos necesarios antes de ejecutar.}}
+  {\campo{1. \ldots\ 2. \ldots\ 3. \ldots}}
+  {\campo{Comportamiento observable que confirma el cumplimiento.}}
+
+\caso{CP-002}{\campo{título del caso}}
+  {\campo{RF-002}}
+  {\campo{Precondiciones.}}
+  {\campo{Pasos.}}
+  {\campo{Resultado esperado.}}
+
+% =============================================================================
+\section{Gestión de defectos}
+
+Los defectos se registran con información suficiente para su reproducción y se
+siguen hasta su resolución. La comunicación es objetiva: describe el
+comportamiento observado frente al esperado, sin atribuir responsabilidad.
+
+\subsection{Clasificación por severidad}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}L{2.6cm} Y@{}}
+\toprule
+\sffamily\bfseries\color{lgPrimario}Severidad &
+\sffamily\bfseries\color{lgPrimario}Definición \\
+\midrule
+Crítica & Impide el uso del sistema o compromete la integridad o la seguridad de los datos. Sin solución alternativa. \\
+Alta    & Una función principal no cumple su requisito; existe solución alternativa costosa. \\
+Media   & Comportamiento incorrecto en una función secundaria, con solución alternativa razonable. \\
+Baja    & Defecto cosmético o de redacción que no afecta la operación. \\
+\bottomrule
+\end{tabularx}
+\captionof{table}{Escala de severidad de defectos.}
+\end{center}
+
+\subsection{Información mínima de un reporte}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}L{3.4cm} Y@{}}
+\toprule
+\sffamily\bfseries\small\color{lgPrimario}Identificador   & DEF-\campo{NNN} \\
+\sffamily\bfseries\small\color{lgPrimario}Caso de prueba  & \campo{CP-NNN} \\
+\sffamily\bfseries\small\color{lgPrimario}Severidad       & \campo{crítica / alta / media / baja} \\
+\sffamily\bfseries\small\color{lgPrimario}Entorno         & \campo{versión, navegador o dispositivo} \\
+\sffamily\bfseries\small\color{lgPrimario}Pasos para reproducir & \campo{secuencia mínima que provoca el defecto} \\
+\sffamily\bfseries\small\color{lgPrimario}Resultado obtenido    & \campo{comportamiento observado} \\
+\sffamily\bfseries\small\color{lgPrimario}Resultado esperado    & \campo{comportamiento correcto según el requisito} \\
+\sffamily\bfseries\small\color{lgPrimario}Evidencia       & \campo{captura, registro o traza} \\
+\bottomrule
+\end{tabularx}
+\captionof{table}{Campos obligatorios de un reporte de defecto.}
+\end{center}
+
+% =============================================================================
+\section{Métricas de calidad}
+
+Las métricas se emplean para ajustar los procesos y prevenir la repetición de
+problemas, en línea con el valor de mejora continua.
+
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}L{4.4cm} Y C{2.4cm}@{}}
+\toprule
+\sffamily\bfseries\color{lgPrimario}Métrica &
+\sffamily\bfseries\color{lgPrimario}Cálculo &
+\sffamily\bfseries\color{lgPrimario}Meta \\
+\midrule
+Cobertura de requisitos & Requisitos con al menos un caso de prueba / total de requisitos. & \campo{100\%} \\
+Casos ejecutados        & Casos ejecutados / casos planificados.                            & \campo{meta} \\
+Tasa de aprobación      & Casos aprobados / casos ejecutados.                               & \campo{meta} \\
+Densidad de defectos    & Defectos abiertos / funcionalidades entregadas.                   & \campo{meta} \\
+Defectos reabiertos     & Defectos reabiertos / defectos cerrados.                          & \campo{meta} \\
+\bottomrule
+\end{tabularx}
+\captionof{table}{Métricas de seguimiento del proceso de pruebas.}
+\end{center}
+
+% =============================================================================
+\section{Informe de validación previo a la entrega}
+
+Antes de cada entrega se emite un informe que resume la evidencia y respalda la
+decisión de liberar o no el producto.
+
+\begin{itemize}
+  \item Alcance de lo probado y versión evaluada.
+  \item Resultados por nivel de prueba y por requisito.
+  \item Defectos abiertos con su severidad y el riesgo que representan.
+  \item Verificación de los criterios de salida.
+  \item Recomendación explícita: liberar, liberar con reservas o no liberar.
+\end{itemize}
+
+\begin{nota}[Responsabilidad de la recomendación]
+La recomendación es técnica y se sustenta en evidencia. La decisión de entrega
+corresponde al \lgDirectorRol, que integra el criterio de calidad con el alcance,
+las prioridades y los compromisos asumidos con el cliente.
+\end{nota}
+
+\end{document}

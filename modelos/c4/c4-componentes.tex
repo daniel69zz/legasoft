@@ -1,0 +1,106 @@
+%% C4 nivel 3 — Diagrama de componentes (plantilla)
+%% Compilar: tectonic -X compile c4-componentes.tex
+\documentclass[11pt,a4paper]{article}
+\usepackage{../../docs/latex/legasoft}
+\usepackage{../../docs/latex/legasoft-diagramas}
+
+\lgtitulo{C4 nivel 3: diagrama de componentes}
+\lgtituloCorto{C4 — Componentes}
+\lgcodigo{LGS-MOD-C4-3}
+\lgversion{0.1}
+\lgestado{Plantilla}
+\lgfecha{\campo{fecha}}
+\lgautor{\lgArquitecto\ (\lgArquitectoRol)}
+
+\begin{document}
+
+\begin{center}
+{\sffamily\bfseries\LARGE\color{lgPrimario} C4 nivel 3: diagrama de componentes\par}
+\vspace{2pt}
+{\sffamily\normalsize\color{lgGris} Contenedor \campo{API de aplicación} · Legasoft\par}
+\end{center}
+\vspace{6pt}
+{\color{lgBorde}\hrule height 0.8pt}
+\vspace{10pt}
+
+\begin{porcompletar}[Cómo usar esta plantilla]
+El nivel 3 abre \emph{un} contenedor y muestra sus componentes internos y las
+responsabilidades de cada uno. Se elabora solo para los contenedores cuya
+estructura interna necesite explicarse; no es obligatorio hacerlo para todos.
+\end{porcompletar}
+
+% =============================================================================
+\section*{Diagrama}
+
+\begin{figure}[H]
+\centering
+\ajustaancho{%
+\begin{tikzpicture}[c4]
+
+  \node[c4contenedor, text width=3.4cm, align=center, minimum height=1.5cm] (web)
+    {\ctexto{Aplicación web}{\campo{tecnología}}{Consume la API.}};
+
+  % --- Componentes internos -------------------------------------------------
+  \node[c4componente, below=2.0cm of web] (controlador)
+    {\ctexto{Controladores}{}{Reciben las peticiones y validan la entrada.}};
+
+  \node[c4componente, below=1.5cm of controlador] (servicio)
+    {\ctexto{Servicios de dominio}{}{Concentran las reglas de negocio.}};
+
+  \node[c4componente, below=1.5cm of servicio] (repo)
+    {\ctexto{Repositorios}{}{Aíslan el acceso a la persistencia.}};
+
+  \node[c4componente, right=2.2cm of servicio] (seguridad)
+    {\ctexto{Seguridad}{}{Autenticación, autorización y auditoría.}};
+
+  % Límite del contenedor
+  \begin{scope}[on background layer]
+    \node[c4limite, fit=(controlador)(servicio)(repo)(seguridad),
+          label={[font=\sffamily\scriptsize\itshape, text=lgPrimario,
+                  anchor=north west]north west:{Contenedor: \campo{API de aplicación}}}]
+      {};
+  \end{scope}
+
+  \node[c4datos, below=1.6cm of repo, text width=2.6cm, align=center,
+        minimum height=1.7cm] (bd)
+    {\ctexto{Base de datos}{\campo{gestor}}{Persistencia.}};
+
+  % --- Relaciones -----------------------------------------------------------
+  \draw[c4rel] (web.south) -- (controlador.north)
+    node[c4etq, pos=0.5] {\scriptsize[JSON/HTTPS]};
+  \draw[c4rel] (controlador.south) -- (servicio.north) node[c4etq, pos=0.5] {invoca};
+  \draw[c4rel] (servicio.south) -- (repo.north) node[c4etq, pos=0.5] {consulta};
+  \draw[c4rel] (repo.south) -- (bd.north) node[c4etq, pos=0.5] {\scriptsize\campo{protocolo}};
+  \draw[c4rel] (controlador.east) to[out=0, in=90] (seguridad.north);
+  \draw[c4rel] (servicio.east) -- (seguridad.west) node[c4etq, pos=0.5] {verifica};
+
+\end{tikzpicture}}
+\caption{Componentes internos del contenedor y sus dependencias.}
+\end{figure}
+
+% =============================================================================
+\Needspace*{20\baselineskip}
+\section*{Componentes}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}L{3.6cm} Y@{}}
+\toprule
+\sffamily\bfseries\color{lgPrimario}Componente &
+\sffamily\bfseries\color{lgPrimario}Responsabilidad \\
+\midrule
+Controladores        & Traducen peticiones externas al modelo interno y validan la entrada. No contienen reglas de negocio. \\
+Servicios de dominio & Concentran las reglas de negocio y coordinan las operaciones. \\
+Repositorios         & Aíslan la persistencia para que las reglas de negocio no dependan del gestor de datos. \\
+Seguridad            & Autenticación, autorización y registro de auditoría. \\
+\bottomrule
+\end{tabularx}
+\captionof{table}{Responsabilidad de cada componente.}
+\end{center}
+
+\begin{nota}[Criterio de diseño]
+La separación en capas responde al atributo de mantenibilidad. Si el proyecto no
+justifica esta estructura, simplifíquela: Legasoft evita introducir complejidad
+sin un beneficio verificable.
+\end{nota}
+
+\end{document}

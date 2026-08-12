@@ -1,0 +1,111 @@
+%% C4 nivel 2 — Diagrama de contenedores (plantilla)
+%% Compilar: tectonic -X compile c4-contenedores.tex
+\documentclass[11pt,a4paper]{article}
+\usepackage{../../docs/latex/legasoft}
+\usepackage{../../docs/latex/legasoft-diagramas}
+
+\lgtitulo{C4 nivel 2: diagrama de contenedores}
+\lgtituloCorto{C4 — Contenedores}
+\lgcodigo{LGS-MOD-C4-2}
+\lgversion{0.1}
+\lgestado{Plantilla}
+\lgfecha{\campo{fecha}}
+\lgautor{\lgArquitecto\ (\lgArquitectoRol)}
+
+\begin{document}
+
+\begin{center}
+{\sffamily\bfseries\LARGE\color{lgPrimario} C4 nivel 2: diagrama de contenedores\par}
+\vspace{2pt}
+{\sffamily\normalsize\color{lgGris} \campo{nombre del sistema} · Legasoft\par}
+\end{center}
+\vspace{6pt}
+{\color{lgBorde}\hrule height 0.8pt}
+\vspace{10pt}
+
+\begin{porcompletar}[Cómo usar esta plantilla]
+El nivel 2 abre el sistema y muestra sus unidades desplegables —aplicaciones,
+servicios y almacenes de datos— con la tecnología de cada una. Las tecnologías
+todavía no están decididas: mientras lo estén, deje los campos en ámbar y
+registre cada elección como ADR en \ruta{docs/arquitectura/adr/}.
+\end{porcompletar}
+
+% =============================================================================
+\section*{Diagrama}
+
+\begin{figure}[H]
+\centering
+\ajustaancho{%
+\begin{tikzpicture}[c4]
+
+  % --- Personas -------------------------------------------------------------
+  \node[c4persona, text width=3.0cm, align=center, minimum height=1.5cm] (usuario)
+    {\ctexto{\campoclaro{Usuario}}{}{Usa la aplicación.}};
+
+  % --- Contenedores dentro del límite del sistema ---------------------------
+  \node[c4contenedor, below=2.0cm of usuario] (web)
+    {\ctexto{Aplicación web}{\campo{tecnología}}{Presenta la interfaz y consume la API.}};
+
+  \node[c4contenedor, below=1.7cm of web] (api)
+    {\ctexto{API de aplicación}{\campo{tecnología}}{Expone los contratos y ejecuta la lógica de negocio.}};
+
+  \node[c4datos, right=2.4cm of api] (bd)
+    {\ctexto{Base de datos}{\campo{gestor}}{Persiste la información del dominio.}};
+
+  % Límite del sistema
+  \begin{scope}[on background layer]
+    \node[c4limite, fit=(web)(api)(bd),
+          label={[font=\sffamily\scriptsize\itshape, text=lgPrimario,
+                  anchor=north west]north west:{\campo{Nombre del sistema}}}]
+      (limite) {};
+  \end{scope}
+
+  % --- Sistema externo ------------------------------------------------------
+  \node[c4externo, left=2.4cm of api] (ext)
+    {\ctexto{\campo{Sistema externo}}{}{\campo{Qué provee.}}};
+
+  % --- Relaciones -----------------------------------------------------------
+  \draw[c4rel] (usuario.south) -- (web.north)
+    node[c4etq, pos=0.5] {\campo{opera}\\{\scriptsize[HTTPS]}};
+
+  \draw[c4rel] (web.south) -- (api.north)
+    node[c4etq, pos=0.5] {llama\\{\scriptsize[JSON/HTTPS]}};
+
+  \draw[c4rel] (api.east) -- (bd.west)
+    node[c4etq, pos=0.5] {lee y escribe\\{\scriptsize\campo{protocolo}}};
+
+  \draw[c4relbi] (api.west) -- (ext.east)
+    node[c4etq, pos=0.5] {integra\\{\scriptsize\campo{API}}};
+
+\end{tikzpicture}}
+\caption{Contenedores del sistema, su tecnología y sus relaciones.}
+\end{figure}
+
+\cleyenda
+
+% =============================================================================
+\Needspace*{20\baselineskip}
+\section*{Contenedores}
+
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}L{3.4cm} L{2.8cm} Y@{}}
+\toprule
+\sffamily\bfseries\color{lgPrimario}Contenedor &
+\sffamily\bfseries\color{lgPrimario}Tecnología &
+\sffamily\bfseries\color{lgPrimario}Responsabilidad \\
+\midrule
+Aplicación web     & \campo{por definir} & Interfaz de usuario; no contiene reglas de negocio. \\
+API de aplicación  & \campo{por definir} & Contratos, validación y lógica de negocio. \\
+Base de datos      & \campo{por definir} & Persistencia e integridad de los datos del dominio. \\
+\bottomrule
+\end{tabularx}
+\captionof{table}{Contenedores y su responsabilidad.}
+\end{center}
+
+\begin{nota}[Contratos entre contenedores]
+La definición detallada de los contratos entre la aplicación web y la API se
+documenta en \texttt{LGS-ARQ-001}. Esos contratos son la base sobre la que el
+\lgQARol\ construye las pruebas de integración de \ruta{tests/integration}.
+\end{nota}
+
+\end{document}
