@@ -20,3 +20,7 @@ modelos/**/*.pdf
 # --- Sistema operativo ------------------------------------------------------
 .DS_Store
 Thumbs.db
+
+# Excepción: los documentos entregables del proyecto (DOCn-*.pdf) se versionan,
+# porque su fuente es Word y no se generan con `make`.
+!docs/**/DOC[0-9]-*.pdf
