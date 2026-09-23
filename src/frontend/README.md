@@ -1,7 +1,6 @@
 # Frontend
 
-Espacio reservado para el código fuente de la interfaz de usuario. Todavía no
-contiene código: el desarrollo comienza en la siguiente etapa del proyecto.
+Código fuente de la interfaz de usuario.
 
 ## Tecnología definida
 

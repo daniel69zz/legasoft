@@ -79,9 +79,8 @@ La documentación se escribe en \LaTeX{} y se compila a PDF con un único comand
         su versión y su estado, y abre con una tabla de control de versiones.
 \end{itemize}
 
-Los documentos aún no completados marcan en ámbar los datos que faltan
-(\campo{así}), para que ninguna plantilla pueda confundirse con un documento
-aprobado.
+Las plantillas marcan en ámbar sus campos variables (\campo{así}), para que
+ninguna plantilla pueda confundirse con un documento aprobado.
 
 \subsection{Nomenclatura de los documentos}
 
@@ -142,10 +141,9 @@ Reuniones registradas & Cada reunión con el cliente o interna deja minuta en \r
 \end{center}
 
 \begin{nota}[Alcance de esta infraestructura]
-Las carpetas \ruta{src/} y \ruta{tests/} están creadas y documentadas, pero
-todavía vacías de código: las tecnologías de frontend, backend y pruebas se
-decidirán una vez conocido el cliente y quedarán registradas como decisiones de
-arquitectura (ADR) en \ruta{docs/arquitectura/}. Declararlas ahora contradiría el
-principio de intervención de la consultora, según el cual cada proyecto debe
-justificar la tecnología que incorpora.
+Las tecnologías de frontend, backend y pruebas de las carpetas \ruta{src/} y
+\ruta{tests/} se registran como decisiones de arquitectura (ADR) en
+\ruta{docs/arquitectura/adr/}, de acuerdo con el principio de intervención de la
+consultora, según el cual cada proyecto debe justificar la tecnología que
+incorpora.
 \end{nota}
