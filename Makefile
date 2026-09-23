@@ -1,6 +1,7 @@
 # Compilación de la documentación LaTeX de Legasoft
 #
 #   make            compila todos los documentos a PDF
+#   make entrega    compila solo el PDF único que se presenta
 #   make <ruta>.pdf compila solo uno
 #   make clean      borra los PDF generados
 #   make list       lista los documentos detectados
@@ -13,24 +14,34 @@
 TECTONIC ?= tectonic
 TECTONIC_FLAGS ?= -X compile
 
-# Documentos compilables: todo .tex que no sea un paquete de estilo.
-# Los .sty viven en docs/latex/ y no se compilan por separado.
-SOURCES := $(shell find docs modelos -name '*.tex' -not -path 'docs/latex/*' | sort)
+# Documentos compilables: todo .tex que no sea un paquete de estilo ni un
+# fragmento. Los .sty viven en docs/latex/. Los fragmentos —el cuerpo de la
+# constitución y los anexos— no tienen preámbulo: se incluyen desde el documento
+# de entrega y no se compilan por su cuenta.
+FRAGMENTOS := -not -name '*-cuerpo.tex' -not -name 'anexo-*.tex'
+SOURCES := $(shell find docs modelos -name '*.tex' -not -path 'docs/latex/*' $(FRAGMENTOS) | sort)
 PDFS    := $(SOURCES:.tex=.pdf)
+
+# Si cambia un fragmento, hay que recompilar los documentos que lo incluyen.
+FUENTES_INC := $(shell find docs -name '*-cuerpo.tex' -o -name 'anexo-*.tex' | sort)
 
 # Los estilos compartidos: si cambian, se recompila todo.
 STYLES := docs/latex/legasoft.sty docs/latex/legasoft-diagramas.sty
 
-.PHONY: all clean list institucional srs entrevistas trazabilidad minutas calidad arquitectura modelos
+.PHONY: all entrega clean list institucional requisitos minutas calidad arquitectura modelos
 
 all: $(PDFS)
 	@echo "Listo: $(words $(PDFS)) documento(s) compilado(s)."
 
 # Tectonic resuelve las rutas relativas (\usepackage{../latex/legasoft})
 # respecto al directorio del archivo, así que se compila dentro de su carpeta.
-%.pdf: %.tex $(STYLES)
+%.pdf: %.tex $(STYLES) $(FUENTES_INC)
 	@echo "==> $<"
 	@cd $(dir $<) && $(TECTONIC) $(TECTONIC_FLAGS) $(notdir $<)
+
+# El PDF único que se presenta al docente.
+entrega: docs/entrega/entrega-fase1.pdf
+	@echo "Entrega lista: docs/entrega/entrega-fase1.pdf"
 
 # Atajos por carpeta
 institucional: $(filter docs/institucional/%,$(PDFS))

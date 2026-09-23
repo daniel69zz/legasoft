@@ -17,6 +17,10 @@
 docs/**/*.pdf
 modelos/**/*.pdf
 
+# Excepción deliberada: el PDF de entrega sí se versiona, porque es la evidencia
+# de qué se presentó y en qué fecha.
+!docs/entrega/*.pdf
+
 # --- Sistema operativo ------------------------------------------------------
 .DS_Store
 Thumbs.db
