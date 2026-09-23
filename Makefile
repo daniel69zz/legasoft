@@ -28,7 +28,7 @@ FUENTES_INC := $(shell find docs -name '*-cuerpo.tex' -o -name 'anexo-*.tex' | s
 # Los estilos compartidos: si cambian, se recompila todo.
 STYLES := docs/latex/legasoft.sty docs/latex/legasoft-diagramas.sty
 
-.PHONY: all entrega clean list institucional requisitos minutas calidad arquitectura modelos
+.PHONY: all entrega clean list institucional srs entrevistas trazabilidad minutas calidad arquitectura modelos
 
 all: $(PDFS)
 	@echo "Listo: $(words $(PDFS)) documento(s) compilado(s)."
