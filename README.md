@@ -28,7 +28,9 @@ La documentación se escribe en LaTeX y se compila a PDF con `make`.
 │   ├── trazabilidad/    Matrices de trazabilidad NEC → RF → HU → C4 → CP
 │   ├── arquitectura/    Documento de arquitectura (C4) y decisiones (ADR)
 │   ├── latex/           Estilo compartido de todos los documentos (.sty)
-│   ├── institucional/   Constitución de la empresa y acta de constitución
+│   ├── institucional/   Constitución de la empresa, actas y anexos
+│   ├── cv/              Hojas de vida del equipo
+│   ├── entrega/         Documentos de entrega consolidados (PDF versionado)
 │   ├── minutas/         Minutas y acuerdos de reuniones
 │   └── calidad/         Estrategia de QA, plan de pruebas y casos de prueba
 ├── modelos/
@@ -54,7 +56,10 @@ contiene.
 | Código | Documento | Archivo |
 | --- | --- | --- |
 | `LGS-INST-001` | Constitución y estructura organizacional | `docs/institucional/constitucion-legasoft.tex` |
-| `LGS-INST-002` | Acta de constitución del proyecto | `docs/institucional/acta-constitucion.tex` |
+| `LGS-INST-002` | Acta de constitución de la consultora | `docs/institucional/anexo-acta-constitucion.tex` |
+| `LGS-INST-004` | Infraestructura de trabajo y gestión de configuración | `docs/institucional/anexo-infraestructura.tex` |
+| `LGS-PRY-001` | Acta de constitución del proyecto (plantilla) | `docs/institucional/acta-constitucion-proyecto.tex` |
+| `LGS-ENT-001` | Entrega fase 1: constitución de Legasoft | `docs/entrega/entrega-fase1.tex` |
 | `LGS-REQ-001` | Especificación de requisitos (SRS) | `docs/srs/srs.tex` |
 | `LGS-CAL-001` | Estrategia de calidad y plan de pruebas | `docs/calidad/estrategia-qa.tex` |
 | `LGS-ARQ-001` | Documento de arquitectura | `docs/arquitectura/documento-arquitectura.tex` |
