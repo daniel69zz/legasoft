@@ -20,14 +20,17 @@ La documentación se escribe en LaTeX y se compila a PDF con `make`.
 ```text
 .
 ├── README.md
+├── .gitignore
 ├── Makefile             Compila toda la documentación a PDF
 ├── docs/
+│   ├── entrevistas/     Minutas y transcripciones del relevamiento (ENT / VAL)
+│   ├── srs/             Especificación de requisitos (SRS), historias de usuario
+│   ├── trazabilidad/    Matrices de trazabilidad NEC → RF → HU → C4 → CP
+│   ├── arquitectura/    Documento de arquitectura (C4) y decisiones (ADR)
 │   ├── latex/           Estilo compartido de todos los documentos (.sty)
 │   ├── institucional/   Constitución de la empresa y acta de constitución
-│   ├── requisitos/      SRS, historias de usuario y criterios de aceptación
 │   ├── minutas/         Minutas y acuerdos de reuniones
-│   ├── calidad/         Estrategia de QA, plan de pruebas y casos de prueba
-│   └── arquitectura/    Documento de arquitectura y decisiones (ADR)
+│   └── calidad/         Estrategia de QA, plan de pruebas y casos de prueba
 ├── modelos/
 │   ├── c4/              Diagramas del modelo C4 (contexto, contenedores, componentes)
 │   ├── uml/             Diagramas UML (casos de uso, clases, secuencia)
@@ -52,7 +55,7 @@ contiene.
 | --- | --- | --- |
 | `LGS-INST-001` | Constitución y estructura organizacional | `docs/institucional/constitucion-legasoft.tex` |
 | `LGS-INST-002` | Acta de constitución del proyecto | `docs/institucional/acta-constitucion.tex` |
-| `LGS-REQ-001` | Especificación de requisitos (SRS) | `docs/requisitos/srs.tex` |
+| `LGS-REQ-001` | Especificación de requisitos (SRS) | `docs/srs/srs.tex` |
 | `LGS-CAL-001` | Estrategia de calidad y plan de pruebas | `docs/calidad/estrategia-qa.tex` |
 | `LGS-ARQ-001` | Documento de arquitectura | `docs/arquitectura/documento-arquitectura.tex` |
 | `LGS-ADR-NNN` | Plantilla de decisión de arquitectura | `docs/arquitectura/adr-plantilla.tex` |
@@ -86,6 +89,18 @@ cd docs/institucional && tectonic -X compile constitucion-legasoft.tex
 
 Los PDF son artefactos de compilación y están excluidos por `.gitignore`. Si el
 curso exige entregarlos versionados, comente las dos líneas correspondientes.
+
+## Flujo de trabajo con Git
+
+- **`main`** se mantiene siempre en un estado presentable; no se hacen commits
+  directos sobre ella.
+- **Una rama por entregable o funcionalidad**, con el prefijo de su ámbito:
+  `feat/`, `docs/`, `fix/`, `test/`, `refactor/` o `chore/`
+  (por ejemplo `feat/modelos-c4`).
+- **Commits semánticos** según [Conventional Commits](https://www.conventionalcommits.org/es/):
+  `tipo: descripción en imperativo` (`feat: agregar diagrama C4 de contexto`).
+- **Integración mediante pull request** hacia `main`, con merge commit para
+  conservar la historia de la rama.
 
 ## Roles del equipo
 
