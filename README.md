@@ -62,8 +62,9 @@ contiene.
 | `LGS-MIN-NNN` | Plantilla de minuta de reunión | `docs/minutas/plantilla-minuta.tex` |
 | `LGS-MOD-*` | Diagramas C4, UML y BPMN | `modelos/` |
 
-Salvo la constitución de la empresa, el resto son plantillas: su contenido está
-marcado en ámbar (`[así]`) donde falta un dato del proyecto.
+Los documentos `.tex` son plantillas institucionales: su contenido está marcado
+en ámbar (`[así]`) donde falta un dato. Los entregables del proyecto actual
+(`DOCn-*.pdf`) se describen en **Estado actual**.
 
 ## Compilación de la documentación
 
@@ -112,10 +113,19 @@ curso exige entregarlos versionados, comente las dos líneas correspondientes.
 
 ## Estado actual
 
-Está terminada la documentación institucional (`LGS-INST-001`). El resto de los
-documentos son plantillas a la espera de que se seleccione la organización
-cliente.
+Proyecto en curso: **Sistema de Gestión para Farmacéutica** (farmacia en
+apertura en Sopocachi, La Paz), aplicación de escritorio *local-first* con
+servicios cloud ASP.NET Core y PostgreSQL. Todos los cobros son en efectivo y
+la facturación es simulada.
 
-Las tecnologías de frontend, backend y pruebas todavía no se han definido; esas
-decisiones se registrarán como ADR en `docs/arquitectura/` a medida que se
-tomen.
+| Documento | Contenido | Ubicación |
+| --- | --- | --- |
+| Documento 1 | Minuta de entrevistas y relevamiento (ENT-001, ENT-002, VAL-001; 38 necesidades) | [`docs/entrevistas/`](docs/entrevistas/) |
+| Documento 2 | SRS ISO 29148: 101 RF, 8 RNF, historias y criterios de aceptación | [`docs/srs/`](docs/srs/) |
+| Documento 3 | Arquitectura con modelo C4 (niveles 1 a 3) y ADR-001 a ADR-008 | [`docs/arquitectura/`](docs/arquitectura/) |
+| Diagramas C4 | Contexto, contenedores y componentes (Desktop y Backend) | [`modelos/c4/`](modelos/c4/) |
+| Trazabilidad | NEC → RF/RNF → HU → componente C4 → caso de prueba | [`docs/trazabilidad/`](docs/trazabilidad/) |
+
+Las tecnologías seleccionadas (C# .NET 8, Avalonia UI, ASP.NET Core, SQLite,
+PostgreSQL, Docker) están registradas como ADR en
+[`docs/arquitectura/adr/`](docs/arquitectura/adr/).
