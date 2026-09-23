@@ -1,7 +1,7 @@
 # Workflows de CI/CD
 
-Carpeta reservada para los flujos de trabajo de integración y entrega continua
-de GitHub Actions.
+Flujos de integración y entrega continua del repositorio con GitHub Actions:
 
-Actualmente no hay workflows configurados. Se añadirán cuando se definan las
-tecnologías del proyecto y los pasos de construcción, prueba y despliegue.
+- **Documentación:** compilación de los documentos LaTeX con `make` (Tectonic).
+- **Solución .NET:** compilación y ejecución de las pruebas xUnit de
+  `tests/` sobre el código de `src/`.

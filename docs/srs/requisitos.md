@@ -3,7 +3,7 @@
 Extraído de las secciones 3 y 4 del Documento 2 (SRS v2). La fuente de verdad es
 [`DOC2-especificacion-requisitos-srs-v2.pdf`](DOC2-especificacion-requisitos-srs-v2.pdf).
 
-Prioridad según MoSCoW. Estado: *Validado* (confirmado con el cliente) o *Propuesto* (derivación técnica pendiente de validar).
+Prioridad según MoSCoW. Estado: *Validado* (confirmado con el cliente) o *Propuesto* (derivación técnica del equipo).
 
 ## Requisitos funcionales
 

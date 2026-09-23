@@ -67,8 +67,8 @@ contiene.
 | `LGS-MIN-NNN` | Plantilla de minuta de reunión | `docs/minutas/plantilla-minuta.tex` |
 | `LGS-MOD-*` | Diagramas C4, UML y BPMN | `modelos/` |
 
-Los documentos `.tex` son plantillas institucionales: su contenido está marcado
-en ámbar (`[así]`) donde falta un dato. Los entregables del proyecto actual
+Los documentos `.tex` son plantillas institucionales de Legasoft, con los campos
+variables marcados en ámbar (`[así]`). Los entregables del proyecto
 (`DOCn-*.pdf`) se describen en **Estado actual**.
 
 ## Compilación de la documentación

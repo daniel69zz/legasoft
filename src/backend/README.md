@@ -1,8 +1,6 @@
 # Backend
 
-Espacio reservado para el código fuente de los servicios cloud y de la lógica
-de negocio compartida. Todavía no contiene código: el desarrollo comienza en la
-siguiente etapa del proyecto.
+Código fuente de los servicios cloud y de la lógica de negocio compartida.
 
 ## Tecnología definida
 

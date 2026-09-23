@@ -15,7 +15,7 @@ corporativa, líneas de servicio, misión, visión, valores, objetivos, normas
 adoptadas como referencia, organigrama y definición de los tres roles.
 
 **`acta-constitucion-proyecto.tex`** autoriza formalmente el inicio de un proyecto
-concreto. Se completa cuando se seleccione la organización cliente: alcance,
+concreto con un cliente: alcance,
 entregables, hitos, interesados, supuestos, restricciones y riesgos.
 
 Compilar con `make institucional` desde la raíz del repositorio.
