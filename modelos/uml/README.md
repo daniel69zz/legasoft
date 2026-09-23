@@ -10,7 +10,7 @@ elaborados en TikZ.
 | `uml-secuencia.tex` | Secuencia | `LGS-MOD-UML-3` |
 
 - **Casos de uso:** actores, casos (`CU-NN`) y relaciones `«include»`. Cada caso
-  se vincula a un requisito funcional de `docs/requisitos/`.
+  se vincula a un requisito funcional de `docs/srs/`.
 - **Clases:** entidades del dominio con atributos, operaciones, multiplicidades
   y relaciones (herencia, composición, agregación, asociación).
 - **Secuencia:** un escenario concreto, normalmente el flujo principal de un

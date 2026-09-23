@@ -21,7 +21,7 @@ PDFS    := $(SOURCES:.tex=.pdf)
 # Los estilos compartidos: si cambian, se recompila todo.
 STYLES := docs/latex/legasoft.sty docs/latex/legasoft-diagramas.sty
 
-.PHONY: all clean list institucional requisitos minutas calidad arquitectura modelos
+.PHONY: all clean list institucional srs entrevistas trazabilidad minutas calidad arquitectura modelos
 
 all: $(PDFS)
 	@echo "Listo: $(words $(PDFS)) documento(s) compilado(s)."
@@ -34,7 +34,9 @@ all: $(PDFS)
 
 # Atajos por carpeta
 institucional: $(filter docs/institucional/%,$(PDFS))
-requisitos:    $(filter docs/requisitos/%,$(PDFS))
+srs:           $(filter docs/srs/%,$(PDFS))
+entrevistas:   $(filter docs/entrevistas/%,$(PDFS))
+trazabilidad:  $(filter docs/trazabilidad/%,$(PDFS))
 minutas:       $(filter docs/minutas/%,$(PDFS))
 calidad:       $(filter docs/calidad/%,$(PDFS))
 arquitectura:  $(filter docs/arquitectura/%,$(PDFS))

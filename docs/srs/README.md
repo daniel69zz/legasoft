@@ -1,4 +1,4 @@
-# Requisitos
+# SRS — Especificación de requisitos
 
 Documentación de los requisitos del sistema.
 
@@ -23,4 +23,4 @@ añadir requisitos e historias sin repetir la maquetación de la ficha.
 Un requisito que no puede acompañarse de un criterio de aceptación verificable
 todavía no está bien definido.
 
-Compilar con `make requisitos` desde la raíz del repositorio.
+Compilar con `make srs` desde la raíz del repositorio.

@@ -18,7 +18,7 @@ El documento reúne la estrategia de calidad y el plan de pruebas:
 - Gestión de defectos: escala de severidad e información mínima de un reporte.
 - Métricas de seguimiento e informe de validación previo a la entrega.
 
-Sin criterios de aceptación aprobados en `docs/requisitos/` no es posible
+Sin criterios de aceptación aprobados en `docs/srs/` no es posible
 diseñar casos de prueba verificables.
 
 Compilar con `make calidad` desde la raíz del repositorio.
