@@ -1,0 +1,14 @@
+<svg viewBox="0 0 520 660" xmlns="http://www.w3.org/2000/svg">
+  <rect width="520" height="660" fill="#FFFFFF"/>
+
+  <!-- Hexagon node cluster (network / circuit motif) -->
+  <g>
+    <polygon points="323.9,280 220,340 116.1,280 116.1,160 220,100 323.9,160" fill="#1A1A1A"/>
+    <polygon points="407.9,345 330,390 252.1,345 252.1,255 330,210 407.9,255" fill="#D4213D" opacity="0.94"/>
+    <polygon points="247.6,367.5 200,395 152.4,367.5 152.4,312.5 200,285 247.6,312.5" fill="#FF3B57"/>
+  </g>
+
+  <text x="260" y="580" text-anchor="middle" font-family="'Helvetica Neue', Arial, sans-serif" font-size="56" font-weight="700" letter-spacing="8" fill="#1A1A1A">LEGASOFT</text>
+  <rect x="195" y="600" width="110" height="4" fill="#D4213D"/>
+  <rect x="305" y="594" width="10" height="10" fill="#D4213D"/>
+</svg>

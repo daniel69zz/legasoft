@@ -1,0 +1,75 @@
+%% Documento de entrega — Simulación de constitución de empresa consultora
+%% Compilar: tectonic -X compile entrega-fase1.tex
+%%
+%% Este es el archivo PDF único que se presenta al docente. Reúne la
+%% constitución de la empresa y sus tres anexos bajo un solo índice y un
+%% formato consistente. El contenido no se escribe aquí: se incluye desde los
+%% fragmentos, de modo que no exista una segunda copia que mantener.
+\documentclass[11pt,a4paper]{article}
+\usepackage{../latex/legasoft}
+
+\lgtitulo{Constitución de la consultora Legasoft}
+\lgsubtitulo{Estructura organizacional, roles, hojas de vida e infraestructura de trabajo}
+\lgtituloCorto{Entrega: constitución de Legasoft}
+\lgcodigo{LGS-ENT-001}
+\lgversion{1.0}
+\lgestado{Presentado}
+\lgfecha{12 de agosto de 2026}
+\lgautor{\lgEquipo}
+
+\begin{document}
+\lgportada
+
+% ---------------------------------------------------------------- presentación
+\section*{Presentación de la entrega}
+\addcontentsline{toc}{section}{Presentación de la entrega}
+
+Este documento reúne, en un archivo único, la documentación con la que el equipo
+constituye la consultora \textbf{Legasoft} y formaliza el inicio de sus
+actividades para el \lgSemestre.
+
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}L{2.4cm} Y L{3.6cm}@{}}
+\toprule
+\sffamily\bfseries\color{lgPrimario}Parte &
+\sffamily\bfseries\color{lgPrimario}Contenido &
+\sffamily\bfseries\color{lgPrimario}Documento \\
+\midrule
+Cuerpo   & Identidad corporativa, contexto y líneas de servicio, misión, visión, valores, objetivos, acreditaciones proyectadas, organigrama y definición de los tres roles. & \texttt{LGS-INST-001} v2.0 \\
+Anexo A  & Infraestructura de trabajo: repositorio institucional, estructura de carpetas y convenciones de gestión de configuración. & \texttt{LGS-INST-004} \\
+Anexo B  & Acta que autoriza formalmente el inicio de actividades de la consultora. & \texttt{LGS-INST-002} \\
+Anexo C  & Hojas de vida del equipo, con competencias, experiencia, disponibilidad horaria y coste. & \texttt{LGS-RRHH-001} \\
+\bottomrule
+\end{tabularx}
+\captionof{table}{Composición del documento de entrega.}
+\end{center}
+
+\begin{nota}[Repositorio de la consultora]
+La documentación técnica del proyecto se aloja en
+\href{\lgRepo}{\lgRepoCorto}. El repositorio contiene las fuentes \LaTeX{} de
+este documento, los modelos, el código y las pruebas, con la estructura que
+describe el Anexo A.
+\end{nota}
+
+\lgcontrolversiones{
+1.0 & 12-08-2026 & \lgEquipo & Entrega inicial: constitución de la empresa, infraestructura de trabajo, acta de constitución y hojas de vida del equipo. \\
+}
+
+\clearpage
+\tableofcontents
+\clearpage
+
+% ---------------------------------------------------------------------- cuerpo
+\input{../institucional/constitucion-cuerpo}
+
+% ---------------------------------------------------------------------- anexos
+\clearpage
+\input{../institucional/anexo-infraestructura}
+
+\clearpage
+\input{../institucional/anexo-acta-constitucion}
+
+\clearpage
+\input{../cv/anexo-hojas-de-vida}
+
+\end{document}
