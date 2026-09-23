@@ -14,8 +14,8 @@
 
 # Los PDF son artefactos de compilación: se generan con `make`.
 # Si el curso exige entregar los PDF versionados, comente estas dos líneas.
-docs/**/*.pdf
-modelos/**/*.pdf
+#docs/**/*.pdf
+#modelos/**/*.pdf
 
 # Excepción deliberada: el PDF de entrega sí se versiona, porque es la evidencia
 # de qué se presentó y en qué fecha.
