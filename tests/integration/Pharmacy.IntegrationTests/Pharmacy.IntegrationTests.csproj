@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Pruebas de integración de los servicios cloud con WebApplicationFactory y EF Core en memoria -->
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\backend\Identity.Api\Identity.Api.csproj" />
+    <ProjectReference Include="..\..\..\src\backend\Sync.Api\Sync.Api.csproj" />
+    <ProjectReference Include="..\..\..\src\backend\Business.Api\Business.Api.csproj" />
+  </ItemGroup>
+</Project>
