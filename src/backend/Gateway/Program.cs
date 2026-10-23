@@ -29,5 +29,15 @@ app.Use(async (context, next) =>
 });
 app.UseRateLimiter();
 app.MapHealthChecks("/health");
+
+// Swagger UI con los documentos OpenAPI de cada servicio, que llegan por las rutas /docs/*.
+app.UseSwaggerUI(o =>
+{
+    o.RoutePrefix = "swagger";
+    o.DocumentTitle = "API · Sistema de Gestión para Farmacéutica";
+    o.SwaggerEndpoint("/docs/identity/swagger.json", "Identity Service (login y usuarios)");
+    o.SwaggerEndpoint("/docs/business/swagger.json", "Business Service (catálogo, inventario, reportes)");
+    o.SwaggerEndpoint("/docs/sync/swagger.json", "Sync Service (sincronización de puestos)");
+});
 app.MapReverseProxy();
 app.Run();
