@@ -36,7 +36,11 @@ Requisitos: [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) y
 Docker Desktop.
 
 ```sh
-# 1. Backend: PostgreSQL con schemas por dominio + servicios + Mailpit
+# 0. (Opcional) variables propias; sin .env se usan los valores de desarrollo
+cp .env.example .env
+
+# 1. Backend: PostgreSQL con schemas por dominio + servicios + Mailpit.
+#    Cada servicio aplica sus migraciones EF Core al arrancar.
 docker compose -p farmacia up -d --build
 
 # 2. Aplicación de escritorio (puesto PUESTO-01)
@@ -53,13 +57,29 @@ dotnet test Pharmacy.sln
 | --- | --- |
 | API Gateway (lo usa el Desktop) | <http://localhost:5100> (`/health`) |
 | PostgreSQL | `localhost:5433`, base `farmacia` |
+| Documentación de la API (Swagger UI) | <http://localhost:5100/swagger> |
 | Correos de alerta (Mailpit) | <http://localhost:8025> |
 
 **Usuarios de demostración** (uno por rol del SRS): `admin`, `gerente`,
 `contadora`, `operaciones`, `cajero1`, `cajero2`, `farmaceutico`, `almacen`.
 La contraseña de demostración está en `Seed:DemoPassword` de
-`src/backend/Identity.Api/appsettings.json`. Las claves de `appsettings.json` y
-`docker-compose.yml` son solo para desarrollo.
+`src/backend/Identity.Api/appsettings.json`. Las claves de `appsettings.json`,
+`.env.example` y `docker-compose.yml` son solo para desarrollo.
+
+| Variable de `.env` | Uso | Valor por defecto |
+| --- | --- | --- |
+| `POSTGRES_PASSWORD` | Superusuario de PostgreSQL | `postgres_dev` |
+| `POSTGRES_PORT` | Puerto publicado de PostgreSQL | `5433` |
+| `JWT_KEY` | Firma del JWT (mín. 32 caracteres), igual en todos los servicios | clave de desarrollo |
+| `INTERNAL_KEY` | Clave de los endpoints `/internal` entre servicios | clave de desarrollo |
+| `GATEWAY_PORT` | Puerto del API Gateway (el Desktop usa `--Desktop:GatewayUrl` si cambia) | `5100` |
+| `MAILPIT_PORT` | Bandeja de correos de alerta | `8025` |
+| `ALERT_INTERVAL_MINUTES` | Frecuencia del Notification Worker | `5` |
+
+Si otro proyecto ya usa el puerto 5433 o 5100, cambie `POSTGRES_PORT` o
+`GATEWAY_PORT` en `.env`. El volumen de datos se llama `postgres-data`; si
+quedó el volumen anterior `pgdata` (creado antes de las migraciones), puede
+borrarse con `docker volume rm farmacia_pgdata`.
 
 ### Demostración sugerida
 
@@ -73,14 +93,33 @@ La contraseña de demostración está en `Seed:DemoPassword` de
    envía la cola en orden y la pantalla **Sincronización** la marca como sincronizada.
 5. Cerrar caja contando por denominación: con diferencia exige justificación.
 6. Ingresar como `gerente` y abrir **Reportes**: ventas consolidadas por cajero.
-7. Ingresar como `admin`: registrar y desactivar un usuario; queda en auditoría.
+7. Ingresar como `admin`: registrar un usuario, cambiarle el rol con **Editar** y
+   desactivarlo; cada cambio queda en auditoría.
+8. Ingresar como `farmaceutico` y abrir **Catálogo**: registrar un medicamento,
+   buscarlo por principio activo y desactivarlo. Tras la sincronización ya no
+   aparece en el punto de venta del cajero.
 
 ## Trazabilidad del prototipo
+
+Cada prueba xUnit lleva la clave de Jira y el requisito que verifica:
+
+```csharp
+[Trait("JiraIssue", "SCRUM-15")]
+[Trait("Requirement", "RF-009")]
+```
+
+Así se pueden correr las pruebas de una historia o de un requisito:
+
+```sh
+dotnet test Pharmacy.sln --filter "JiraIssue=SCRUM-15"
+dotnet test Pharmacy.sln --filter "Requirement=RF-001"
+```
 
 | HU / requisito | Implementación | Prueba |
 | --- | --- | --- |
 | HU-01 · RF-001, RNF-004 | `Identity.Api/AuthEndpoints.cs`, `LoginViewModel` | `IdentityApiTests` (login, mensaje genérico, bloqueo) |
-| HU-02 · RF-002 a RF-005, RF-075 | `UserEndpoints.cs`, `RolePermissions`, `UsersViewModel` | `IdentityApiTests` (403, alta, desactivación, auditoría) |
+| HU-02 · RF-002 a RF-005, RF-075 | `UserEndpoints.cs`, `RolePermissions`, `UsersViewModel` | `IdentityApiTests` (403, alta, modificación de rol, desactivación, auditoría) |
+| HU-05 · RF-009 a RF-012 | `CatalogEndpoints.cs`, `Product.UpdateDetails`, `CatalogViewModel` | `ProductTests`, `CatalogApiTests` |
 | RF-006, RF-008 | Dispositivos autorizados y asistencia en `AuthEndpoints.cs` | `Cajero_en_equipo_no_autorizado_es_rechazado` |
 | RF-037 a RF-047, RF-049 | `Sale`, `RegisterSaleHandler`, `PosViewModel` | `SaleTests`, `RegisterSaleHandlerTests` |
 | RF-024, RF-095 | `FefoAllocator`, `Lot.Withdraw` | `FefoAllocatorTests` |
@@ -94,7 +133,10 @@ La contraseña de demostración está en `Seed:DemoPassword` de
 
 ## Límites conocidos del prototipo
 
-- Las tablas se crean al arrancar cada servicio; faltan las **migraciones EF Core**.
+- La base local SQLite del puesto se crea con `EnsureCreated`; las migraciones
+  EF Core solo cubren la base central.
+- El catálogo se administra en línea: sin conexión, el puesto vende con el
+  catálogo descargado pero no puede registrar ni modificar medicamentos.
 - La descarga desde el servidor trae catálogo y precios, **no lotes nuevos**; la
   recepción de compras (RF-030 a RF-033) solo existe como `POST /api/lots`.
 - La entrega de caja entre cajeros está en el dominio, sin pantalla.

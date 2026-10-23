@@ -47,6 +47,8 @@ public static class UserEndpoints
             var user = await db.Users.FindAsync(id);
             if (user is null) return Results.NotFound();
             if (!Roles.IsValid(request.Role)) return Results.Problem("El rol no existe.", statusCode: 400);
+            if (string.IsNullOrWhiteSpace(request.FullName))
+                return Results.Problem("El nombre es obligatorio.", statusCode: 400);
             Audit(db, http, time, "Modificación de usuario",
                 $"{user.UserName}: rol {user.Role} → {request.Role}, nombre «{request.FullName}»");
             user.FullName = request.FullName.Trim();

@@ -74,6 +74,8 @@ public class RegisterSaleHandlerTests
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-21")]
+    [Trait("Requirement", "RF-037")]
     public async Task Sin_caja_abierta_no_se_vende()
     {
         await Assert.ThrowsAsync<DomainException>(() =>
@@ -82,6 +84,8 @@ public class RegisterSaleHandlerTests
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-21")]
+    [Trait("Requirement", "RF-046")]
     public async Task Venta_aplica_FEFO_descuenta_stock_registra_caja_y_outbox_en_una_transaccion()
     {
         await _cash.OpenAsync(100m);
@@ -102,6 +106,8 @@ public class RegisterSaleHandlerTests
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-21")]
+    [Trait("Requirement", "RF-046")]
     public async Task Si_una_regla_falla_no_se_confirma_nada()
     {
         await _cash.OpenAsync(100m);
@@ -115,6 +121,8 @@ public class RegisterSaleHandlerTests
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-21")]
+    [Trait("Requirement", "RF-037")]
     public async Task Valida_el_comando_antes_de_ejecutar()
     {
         await Assert.ThrowsAsync<ValidationException>(() =>
@@ -122,6 +130,8 @@ public class RegisterSaleHandlerTests
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-23")]
+    [Trait("Requirement", "RF-048")]
     public async Task Anular_devuelve_el_stock_a_su_lote()
     {
         await _cash.OpenAsync(100m);

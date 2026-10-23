@@ -1,0 +1,8 @@
+# El contexto de Docker no debe llevar artefactos de compilación del host
+**/bin/
+**/obj/
+**/TestResults/
+.git/
+.vs/
+.idea/
+*.db

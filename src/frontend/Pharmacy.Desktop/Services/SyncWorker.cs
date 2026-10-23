@@ -104,11 +104,18 @@ public sealed class SyncWorker(
         foreach (var p in changes.Products)
         {
             if (local.TryGetValue(p.Id, out var product))
-                product.ApplyCatalogChange(p.Name, p.SalePrice, p.MinimumStock, p.RequiresPrescription, p.IsActive,
-                    p.Location, p.UpdatedAt);
+            {
+                product.ApplyCatalogChange(p.Name, p.ActiveIngredient, p.Concentration, p.Presentation, p.Laboratory,
+                    p.Category, p.RequiresPrescription, p.SalePrice, p.MinimumStock, p.Location, p.IsActive,
+                    p.UpdatedAt);
+            }
             else
-                db.Products.Add(new Product(p.Id, p.Code, p.Name, p.ActiveIngredient, p.Concentration, p.Presentation,
-                    p.Laboratory, p.Category, p.RequiresPrescription, p.SalePrice, p.MinimumStock, p.Location));
+            {
+                var added = new Product(p.Id, p.Code, p.Name, p.ActiveIngredient, p.Concentration, p.Presentation,
+                    p.Laboratory, p.Category, p.RequiresPrescription, p.SalePrice, p.MinimumStock, p.Location);
+                added.SetActive(p.IsActive, p.UpdatedAt);
+                db.Products.Add(added);
+            }
         }
         if (state is null) db.SyncState.Add(state = new SyncState { Key = CatalogVersionKey });
         state.Value = changes.Version.ToString();

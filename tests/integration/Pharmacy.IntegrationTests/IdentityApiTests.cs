@@ -18,6 +18,8 @@ public class IdentityApiTests : IDisposable
         _factory.CreateClient().PostAsJsonAsync("/auth/login", new LoginRequest(user, password, device));
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-2")]
+    [Trait("Requirement", "RF-001")]
     public async Task Login_valido_devuelve_token_con_rol()
     {
         var response = await LoginAsync("admin", Password);
@@ -29,6 +31,8 @@ public class IdentityApiTests : IDisposable
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-2")]
+    [Trait("Requirement", "RF-001")]
     public async Task Credenciales_invalidas_dan_un_mensaje_generico()
     {
         var wrongPassword = await LoginAsync("admin", "otra-clave");
@@ -40,6 +44,8 @@ public class IdentityApiTests : IDisposable
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-11")]
+    [Trait("Requirement", "RF-006")]
     public async Task Cajero_en_equipo_no_autorizado_es_rechazado()
     {
         var response = await LoginAsync("cajero1", Password, device: "LAPTOP-PERSONAL");
@@ -47,6 +53,8 @@ public class IdentityApiTests : IDisposable
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-14")]
+    [Trait("Requirement", "RNF-004")]
     public async Task Cinco_intentos_fallidos_bloquean_la_cuenta()
     {
         for (var i = 0; i < AuthEndpoints.MaxFailedAttempts; i++) await LoginAsync("cajero2", "mala");
@@ -56,6 +64,8 @@ public class IdentityApiTests : IDisposable
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-10")]
+    [Trait("Requirement", "RF-002")]
     public async Task Cajero_no_puede_gestionar_usuarios()
     {
         var response = await _factory.ClientFor(Roles.Cajero).GetAsync("/api/users");
@@ -63,6 +73,9 @@ public class IdentityApiTests : IDisposable
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-10")]
+    [Trait("Requirement", "RF-003")]
+    [Trait("Requirement", "RF-005")]
     public async Task Administrador_registra_desactiva_y_queda_auditado()
     {
         await LoginAsync("admin", Password); // fuerza la siembra
@@ -82,5 +95,26 @@ public class IdentityApiTests : IDisposable
         var audit = await admin.GetFromJsonAsync<List<AuditEntryDto>>("/api/users/audit");
         Assert.Contains(audit!, a => a.Action == "Alta de usuario");
         Assert.Contains(audit!, a => a.Action == "Desactivación de usuario");
+    }
+
+    [Fact]
+    [Trait("JiraIssue", "SCRUM-10")]
+    [Trait("Requirement", "RF-004")]
+    public async Task El_nuevo_rol_se_aplica_en_el_siguiente_inicio_de_sesion()
+    {
+        await LoginAsync("admin", Password); // fuerza la siembra
+        var admin = _factory.ClientFor(Roles.Administrador, "admin");
+        var user = await (await admin.PostAsJsonAsync("/api/users",
+            new CreateUserRequest("auxiliar1", "Auxiliar de farmacia", "ClaveSegura1", Roles.Almacen))).Content
+            .ReadFromJsonAsync<UserDto>();
+
+        var updated = await admin.PutAsJsonAsync($"/api/users/{user!.Id}",
+            new UpdateUserRequest("Auxiliar de farmacia", Roles.Farmaceutico));
+        Assert.Equal(HttpStatusCode.NoContent, updated.StatusCode);
+
+        var login = await (await LoginAsync("auxiliar1", "ClaveSegura1")).Content.ReadFromJsonAsync<LoginResponse>();
+        Assert.Equal(Roles.Farmaceutico, login!.Role);
+        var audit = await admin.GetFromJsonAsync<List<AuditEntryDto>>("/api/users/audit");
+        Assert.Contains(audit!, a => a.Action == "Modificación de usuario");
     }
 }

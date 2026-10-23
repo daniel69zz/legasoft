@@ -39,6 +39,8 @@ public class SyncApiTests : IDisposable
         new(Guid.NewGuid(), device, SyncModules.Sales, EventTypes.SaleCreated, Guid.NewGuid(), 1, at, "{}");
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-35")]
+    [Trait("Requirement", "RF-102")]
     public async Task Un_evento_repetido_se_descarta_sin_duplicar()
     {
         var client = _factory.ClientFor(Roles.Cajero);
@@ -53,6 +55,8 @@ public class SyncApiTests : IDisposable
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-35")]
+    [Trait("Requirement", "RF-081")]
     public async Task Los_eventos_se_despachan_en_orden_cronologico()
     {
         var t = DateTimeOffset.UtcNow;
@@ -65,6 +69,8 @@ public class SyncApiTests : IDisposable
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-35")]
+    [Trait("Requirement", "RF-080")]
     public async Task Si_el_dominio_no_responde_el_evento_queda_para_reintentar()
     {
         _dispatcher.BusinessDown = true;
@@ -76,6 +82,8 @@ public class SyncApiTests : IDisposable
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-35")]
+    [Trait("Requirement", "RF-080")]
     public async Task Rechaza_lotes_de_otro_dispositivo_y_sin_token()
     {
         var spoofed = await _factory.ClientFor(Roles.Cajero, device: "PUESTO-01")

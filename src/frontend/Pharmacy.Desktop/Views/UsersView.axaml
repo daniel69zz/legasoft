@@ -13,7 +13,7 @@
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="c:UserDto">
                 <Border Classes="row">
-                  <Grid ColumnDefinitions="140,*,170,90,Auto">
+                  <Grid ColumnDefinitions="140,*,170,90,Auto,Auto" ColumnSpacing="6">
                     <TextBlock Text="{Binding UserName}" FontWeight="SemiBold" VerticalAlignment="Center" />
                     <TextBlock Grid.Column="1" Text="{Binding FullName}" VerticalAlignment="Center" />
                     <TextBlock Grid.Column="2" Classes="muted" Text="{Binding Role}" VerticalAlignment="Center" />
@@ -23,7 +23,10 @@
                     <Border Grid.Column="3" Classes="badge danger" VerticalAlignment="Center" HorizontalAlignment="Left" IsVisible="{Binding !IsActive}">
                       <TextBlock Text="Inactivo" FontSize="11" Foreground="{StaticResource Danger}" />
                     </Border>
-                    <Button Grid.Column="4" Classes="small" Content="Activar / desactivar"
+                    <Button Grid.Column="4" Classes="small" Content="Editar"
+                            Command="{Binding $parent[UserControl].((vm:UsersViewModel)DataContext).EditCommand}"
+                            CommandParameter="{Binding}" />
+                    <Button Grid.Column="5" Classes="small" Content="Activar / desactivar"
                             Command="{Binding $parent[UserControl].((vm:UsersViewModel)DataContext).ToggleCommand}"
                             CommandParameter="{Binding}" />
                   </Grid>
@@ -53,17 +56,32 @@
       </Border>
     </StackPanel>
 
-    <Border Grid.Column="1" Classes="card" VerticalAlignment="Top">
-      <StackPanel Spacing="10">
-        <TextBlock Classes="h2" Text="Registrar usuario (RF-003)" />
-        <TextBox Watermark="Usuario" Text="{Binding NewUserName}" />
-        <TextBox Watermark="Nombre completo" Text="{Binding NewFullName}" />
-        <TextBox Watermark="Contraseña inicial (mín. 8)" PasswordChar="●" Text="{Binding NewPassword}" />
-        <ComboBox ItemsSource="{Binding AvailableRoles}" SelectedItem="{Binding NewRole}" HorizontalAlignment="Stretch" />
-        <Button Classes="primary" Content="Registrar" Command="{Binding CreateCommand}" />
-        <TextBlock Classes="error" Text="{Binding Error}" IsVisible="{Binding Error, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-        <TextBlock Classes="ok" Text="{Binding Info}" IsVisible="{Binding Info, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-      </StackPanel>
-    </Border>
+    <StackPanel Grid.Column="1" Spacing="16">
+      <Border Classes="card" VerticalAlignment="Top" IsVisible="{Binding Editing, Converter={x:Static ObjectConverters.IsNotNull}}">
+        <StackPanel Spacing="10">
+          <TextBlock Classes="h2" Text="Modificar usuario (RF-004)" />
+          <TextBlock Classes="muted" Text="{Binding Editing.UserName}" />
+          <TextBox Watermark="Nombre completo" Text="{Binding EditFullName}" />
+          <ComboBox ItemsSource="{Binding AvailableRoles}" SelectedItem="{Binding EditRole}" HorizontalAlignment="Stretch" />
+          <TextBlock Classes="muted" TextWrapping="Wrap" Text="El nuevo rol se aplica en su siguiente inicio de sesión." />
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Button Classes="primary" Content="Guardar cambios" Command="{Binding SaveEditCommand}" />
+            <Button Content="Cancelar" Command="{Binding CancelEditCommand}" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+      <Border Classes="card" VerticalAlignment="Top">
+        <StackPanel Spacing="10">
+          <TextBlock Classes="h2" Text="Registrar usuario (RF-003)" />
+          <TextBox Watermark="Usuario" Text="{Binding NewUserName}" />
+          <TextBox Watermark="Nombre completo" Text="{Binding NewFullName}" />
+          <TextBox Watermark="Contraseña inicial (mín. 8)" PasswordChar="●" Text="{Binding NewPassword}" />
+          <ComboBox ItemsSource="{Binding AvailableRoles}" SelectedItem="{Binding NewRole}" HorizontalAlignment="Stretch" />
+          <Button Classes="primary" Content="Registrar" Command="{Binding CreateCommand}" />
+          <TextBlock Classes="error" Text="{Binding Error}" IsVisible="{Binding Error, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+          <TextBlock Classes="ok" Text="{Binding Info}" IsVisible="{Binding Info, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+        </StackPanel>
+      </Border>
+    </StackPanel>
   </Grid>
 </UserControl>

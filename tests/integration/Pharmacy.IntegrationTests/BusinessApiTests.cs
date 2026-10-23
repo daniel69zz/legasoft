@@ -37,6 +37,8 @@ public class BusinessApiTests : IDisposable
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-31")]
+    [Trait("Requirement", "RF-104")]
     public async Task Los_endpoints_internos_exigen_la_clave_interna()
     {
         var response = await _factory.CreateClient().PostAsJsonAsync("/internal/events",
@@ -45,6 +47,8 @@ public class BusinessApiTests : IDisposable
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-31")]
+    [Trait("Requirement", "RF-104")]
     public async Task Una_venta_sincronizada_se_consolida_y_descuenta_el_stock_central()
     {
         var lotId = new Guid("00000000-0000-0000-0002-000000000002");
@@ -68,6 +72,8 @@ public class BusinessApiTests : IDisposable
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-35")]
+    [Trait("Requirement", "RF-102")]
     public async Task Un_evento_desconocido_se_rechaza_de_forma_permanente()
     {
         var message = new SyncEnvelope(Guid.NewGuid(), "PUESTO-01", "sales", "Inventado", Guid.NewGuid(), 1,
@@ -77,6 +83,8 @@ public class BusinessApiTests : IDisposable
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-32")]
+    [Trait("Requirement", "RF-073")]
     public async Task El_cajero_no_ve_el_dashboard_gerencial()
     {
         var response = await _factory.ClientFor(Roles.Cajero).GetAsync("/api/dashboard");
