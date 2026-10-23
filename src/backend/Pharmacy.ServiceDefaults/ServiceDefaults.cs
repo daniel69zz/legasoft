@@ -3,12 +3,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Pharmacy.Domain.Common;
 using Serilog;
 
@@ -32,7 +31,10 @@ public static class ServiceDefaults
     public const string CorrelationHeader = "X-Correlation-Id";
     public const string InternalKeyHeader = "X-Internal-Key";
 
-    /// <summary>Serilog, ProblemDetails, health check y validación del JWT emitido por el Identity Service.</summary>
+    /// <summary>
+    /// Serilog, ProblemDetails, health check, documento OpenAPI y validación del JWT emitido
+    /// por el Identity Service.
+    /// </summary>
     public static WebApplicationBuilder AddServiceDefaults(this WebApplicationBuilder builder)
     {
         builder.Host.UseSerilog((context, config) => config
@@ -44,6 +46,7 @@ public static class ServiceDefaults
 
         builder.Services.AddProblemDetails();
         builder.Services.AddHealthChecks();
+        builder.Services.AddOpenApiDocument(builder.Environment.ApplicationName);
 
         var jwt = builder.Configuration.GetSection("Jwt").Get<JwtOptions>() ?? new JwtOptions();
         if (jwt.Key.Length < 32)
@@ -95,15 +98,47 @@ public static class ServiceDefaults
         app.UseAuthentication();
         app.UseAuthorization();
         app.MapHealthChecks("/health");
+        // Solo el JSON: la interfaz Swagger UI está en el Gateway y reúne los tres servicios.
+        app.UseSwagger();
         return app;
     }
 
+    /// <summary>OpenAPI del servicio con autenticación Bearer. Los endpoints /internal no se documentan.</summary>
+    private static void AddOpenApiDocument(this IServiceCollection services, string serviceName)
+    {
+        services.AddEndpointsApiExplorer();
+        services.AddSwaggerGen(o =>
+        {
+            o.SwaggerDoc("v1", new OpenApiInfo
+            {
+                Title = serviceName,
+                Version = "v1",
+                Description = "Sistema de Gestión para Farmacéutica (Legasoft). Se consume a través del API Gateway.",
+            });
+            o.DocInclusionPredicate((_, api) => api.RelativePath?.StartsWith("internal") != true);
+            o.CustomSchemaIds(t => t.FullName?.Replace('+', '.'));
+            var bearer = new OpenApiSecurityScheme
+            {
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT",
+                In = ParameterLocation.Header,
+                Description = "Token obtenido con POST /auth/login.",
+                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" },
+            };
+            o.AddSecurityDefinition("Bearer", bearer);
+            o.AddSecurityRequirement(new OpenApiSecurityRequirement { [bearer] = [] });
+        });
+    }
+
     /// <summary>
-    /// Registra el DbContext sobre PostgreSQL (un usuario por servicio, ADR-005).
+    /// Registra el DbContext sobre PostgreSQL (un usuario por servicio, ADR-005). El historial de
+    /// migraciones va en un schema propio del servicio, porque nadie puede crear objetos en public.
     /// Con una cadena "InMemory:nombre" usa el proveedor en memoria para pruebas.
     /// </summary>
     public static IServiceCollection AddPharmacyDb<TContext>(this IServiceCollection services,
-        IConfiguration configuration, string name) where TContext : DbContext
+        IConfiguration configuration, string name, string historySchema) where TContext : DbContext
     {
         var connection = configuration.GetConnectionString(name)
             ?? throw new InvalidOperationException($"Falta ConnectionStrings:{name}.");
@@ -112,17 +147,17 @@ public static class ServiceDefaults
             if (connection.StartsWith("InMemory:", StringComparison.Ordinal))
                 o.UseInMemoryDatabase(connection["InMemory:".Length..]);
             else
-                o.UseNpgsql(connection).UseSnakeCaseNamingConvention();
+                o.UseNpgsql(connection, npgsql => npgsql.MigrationsHistoryTable("__ef_migrations_history", historySchema))
+                    .UseSnakeCaseNamingConvention();
         });
     }
 
     /// <summary>
-    /// Crea las tablas del servicio si su schema aún no las tiene. Varios servicios
-    /// comparten la instancia, por eso no se usa EnsureCreated. Las migraciones EF Core
-    /// reemplazarán este paso cuando el modelo se estabilice.
+    /// Aplica las migraciones EF Core pendientes del servicio (carpeta Migrations) y luego la
+    /// semilla. Espera a PostgreSQL porque en Docker el servicio puede arrancar antes que la base.
     /// </summary>
-    public static async Task EnsureSchemaAsync<TContext>(this IServiceProvider services, string probeTable,
-        Func<TContext, Task>? seed = null) where TContext : DbContext
+    public static async Task MigrateAsync<TContext>(this IServiceProvider services, Func<TContext, Task>? seed = null)
+        where TContext : DbContext
     {
         using var scope = services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<TContext>();
@@ -132,21 +167,15 @@ public static class ServiceDefaults
             {
                 try
                 {
-                    await db.Database.OpenConnectionAsync();
+                    await db.Database.MigrateAsync();
                     break;
                 }
-                catch (Exception) when (attempt < 10)
+                catch (Npgsql.NpgsqlException) when (attempt < 10)
                 {
                     Log.Warning("PostgreSQL no responde todavía (intento {Attempt}); reintentando", attempt);
                     await Task.Delay(TimeSpan.FromSeconds(3));
                 }
             }
-            await using var command = db.Database.GetDbConnection().CreateCommand();
-            command.CommandText = $"SELECT to_regclass('{probeTable}') IS NOT NULL";
-            var exists = (bool)(await command.ExecuteScalarAsync())!;
-            if (!exists)
-                await db.GetService<IRelationalDatabaseCreator>().CreateTablesAsync();
-            await db.Database.CloseConnectionAsync();
         }
         if (seed is not null) await seed(db);
     }

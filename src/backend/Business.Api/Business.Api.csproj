@@ -1,6 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <!-- Business Service: ventas, inventario, caja, reportes y auditoría consolidados (schemas sales, inventory, cash, audit) -->
   <ItemGroup>
+    <!-- Solo para generar migraciones con dotnet ef; no se publica -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Pharmacy.ServiceDefaults\Pharmacy.ServiceDefaults.csproj" />
   </ItemGroup>
 </Project>

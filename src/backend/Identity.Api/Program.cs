@@ -4,14 +4,14 @@ using Pharmacy.ServiceDefaults;
 var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 builder.Services.AddSingleton(TimeProvider.System);
-builder.Services.AddPharmacyDb<IdentityDb>(builder.Configuration, "Identity");
+builder.Services.AddPharmacyDb<IdentityDb>(builder.Configuration, "Identity", historySchema: "identity");
 
 var app = builder.Build();
 app.UseServiceDefaults();
 app.MapAuthEndpoints();
 app.MapUserEndpoints();
 
-await app.Services.EnsureSchemaAsync<IdentityDb>("identity.users",
+await app.Services.MigrateAsync<IdentityDb>(
     db => IdentitySeed.RunAsync(db, app.Configuration["Seed:DemoPassword"] ?? "Farmacia2026!"));
 app.Run();
 
