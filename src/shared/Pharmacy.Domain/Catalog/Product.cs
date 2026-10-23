@@ -12,9 +12,7 @@ public class Product
         decimal salePrice, int minimumStock, string location = "")
     {
         if (string.IsNullOrWhiteSpace(code)) throw new DomainException("El código del producto es obligatorio.");
-        if (string.IsNullOrWhiteSpace(name)) throw new DomainException("El nombre comercial es obligatorio.");
-        if (salePrice <= 0) throw new DomainException("El precio de venta debe ser mayor a cero.");
-        if (minimumStock < 0) throw new DomainException("El stock mínimo no puede ser negativo.");
+        Validate(name, salePrice, minimumStock);
 
         Id = id;
         Code = code.Trim();
@@ -30,6 +28,13 @@ public class Product
         Location = location;
         IsActive = true;
         UpdatedAt = DateTimeOffset.UtcNow;
+    }
+
+    private static void Validate(string name, decimal salePrice, int minimumStock)
+    {
+        if (string.IsNullOrWhiteSpace(name)) throw new DomainException("El nombre comercial es obligatorio.");
+        if (salePrice <= 0) throw new DomainException("El precio de venta debe ser mayor a cero.");
+        if (minimumStock < 0) throw new DomainException("El stock mínimo no puede ser negativo.");
     }
 
     public Guid Id { get; private set; }
@@ -62,16 +67,41 @@ public class Product
         UpdatedAt = now;
     }
 
+    /// <summary>Modifica los datos del medicamento (RF-010). El código no cambia porque identifica al producto.</summary>
+    public void UpdateDetails(string name, string activeIngredient, string concentration, string presentation,
+        string laboratory, string category, bool requiresPrescription, decimal salePrice, int minimumStock,
+        string location, DateTimeOffset now)
+    {
+        Validate(name, salePrice, minimumStock);
+        Name = name.Trim();
+        ActiveIngredient = activeIngredient.Trim();
+        Concentration = concentration.Trim();
+        Presentation = presentation.Trim();
+        Laboratory = laboratory.Trim();
+        Category = category.Trim();
+        RequiresPrescription = requiresPrescription;
+        SalePrice = MoneyMath.Round(salePrice);
+        MinimumStock = minimumStock;
+        Location = location.Trim();
+        UpdatedAt = now;
+    }
+
     /// <summary>Aplica en el puesto un cambio de catálogo descargado del servidor.</summary>
-    public void ApplyCatalogChange(string name, decimal salePrice, int minimumStock, bool requiresPrescription,
-        bool isActive, string location, DateTimeOffset updatedAt)
+    public void ApplyCatalogChange(string name, string activeIngredient, string concentration, string presentation,
+        string laboratory, string category, bool requiresPrescription, decimal salePrice, int minimumStock,
+        string location, bool isActive, DateTimeOffset updatedAt)
     {
         Name = name;
+        ActiveIngredient = activeIngredient;
+        Concentration = concentration;
+        Presentation = presentation;
+        Laboratory = laboratory;
+        Category = category;
+        RequiresPrescription = requiresPrescription;
         SalePrice = salePrice;
         MinimumStock = minimumStock;
-        RequiresPrescription = requiresPrescription;
-        IsActive = isActive;
         Location = location;
+        IsActive = isActive;
         UpdatedAt = updatedAt;
     }
 
