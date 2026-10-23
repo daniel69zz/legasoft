@@ -127,6 +127,9 @@ feature/SCRUM-15-catalogo-medicamentos ──PR──► develop ──PR (fin d
 - **Pruebas vinculadas:** cada prueba xUnit lleva `[Trait("JiraIssue", "SCRUM-n")]`
   y `[Trait("Requirement", "RF-xxx")]`.
 
+Para consultas rápidas sobre sincronización, revisión de cambios y mensajes de
+commit, ver la [guía de contribución](docs/guia-rapida-git.md).
+
 ## Roles del equipo
 
 | Rol | Integrante | Responsabilidades principales |
