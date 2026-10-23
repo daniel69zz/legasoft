@@ -1,0 +1,650 @@
+{
+  "info": {
+    "name": "Sistema de Gestión para Farmacéutica (Legasoft)",
+    "description": "Endpoints del API Gateway (Sprint 1). Levante el backend con `docker compose -p farmacia up -d --build` y ejecute primero **Login como admin**. La especificación OpenAPI completa está en http://localhost:5100/swagger.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5100"
+    },
+    {
+      "key": "password",
+      "value": "Farmacia2026!"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "userId",
+      "value": ""
+    },
+    {
+      "key": "productId",
+      "value": "00000000-0000-0000-0001-000000000001"
+    }
+  ],
+  "item": [
+    {
+      "name": "HU-01 · Inicio de sesión (SCRUM-2)",
+      "item": [
+        {
+          "name": "Login como admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "RF-001. Guarda el token en la variable de colección `token`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userName\": \"admin\",\n  \"password\": \"{{password}}\",\n  \"deviceId\": \"PUESTO-01\"\n}"
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Login correcto', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('token', pm.response.json().token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login como farmaceutico",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "RF-001. Guarda el token en la variable de colección `token`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userName\": \"farmaceutico\",\n  \"password\": \"{{password}}\",\n  \"deviceId\": \"PUESTO-01\"\n}"
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Login correcto', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('token', pm.response.json().token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login como cajero1",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "RF-001. Guarda el token en la variable de colección `token`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userName\": \"cajero1\",\n  \"password\": \"{{password}}\",\n  \"deviceId\": \"PUESTO-01\"\n}"
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Login correcto', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('token', pm.response.json().token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Credenciales inválidas (401 genérico)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "RF-001: el mensaje no indica qué campo falló.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userName\": \"admin\",\n  \"password\": \"incorrecta\",\n  \"deviceId\": \"PUESTO-01\"\n}"
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Health del Gateway",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "",
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "HU-02 · Usuarios, roles y permisos (SCRUM-10)",
+      "item": [
+        {
+          "name": "Listar usuarios",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
+            },
+            "description": "RF-002. Solo Administrador; con otro rol responde 403."
+          }
+        },
+        {
+          "name": "Registrar usuario",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
+            },
+            "description": "RF-003. Usuario duplicado → 409.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userName\": \"cajero3\",\n  \"fullName\": \"Cajero de prueba\",\n  \"password\": \"ClaveSegura1\",\n  \"role\": \"Cajero\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) pm.collectionVariables.set('userId', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Modificar usuario (nombre y rol)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "{{userId}}"
+              ]
+            },
+            "description": "RF-004. El rol nuevo se aplica en el siguiente inicio de sesión.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Cajero de prueba\",\n  \"role\": \"Farmaceutico\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Desactivar usuario",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}/deactivate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "{{userId}}",
+                "deactivate"
+              ]
+            },
+            "description": "RF-005. El usuario ya no puede iniciar sesión."
+          }
+        },
+        {
+          "name": "Reactivar usuario",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/{{userId}}/activate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "{{userId}}",
+                "activate"
+              ]
+            },
+            "description": "RF-005."
+          }
+        },
+        {
+          "name": "Auditoría de usuarios",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/audit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "audit"
+              ]
+            },
+            "description": "RF-075."
+          }
+        }
+      ]
+    },
+    {
+      "name": "HU-05 · Catálogo de medicamentos (SCRUM-15)",
+      "item": [
+        {
+          "name": "Buscar medicamentos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/catalog?search=para",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "catalog"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "para"
+                }
+              ]
+            },
+            "description": "RF-012. Busca por nombre, código, principio activo o categoría. Permiso Catálogo: Administrador, Farmacéutico, Gerente de Operaciones."
+          }
+        },
+        {
+          "name": "Registrar medicamento",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/catalog",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "catalog"
+              ]
+            },
+            "description": "RF-009. Código duplicado → 409.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"MED-001\",\n  \"name\": \"Ibuprofeno\",\n  \"activeIngredient\": \"Ibuprofeno\",\n  \"concentration\": \"400 mg\",\n  \"presentation\": \"Tableta\",\n  \"laboratory\": \"Inti\",\n  \"category\": \"Analgésicos\",\n  \"requiresPrescription\": false,\n  \"salePrice\": 0.8,\n  \"minimumStock\": 20,\n  \"location\": \"Estante B1\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) pm.collectionVariables.set('productId', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Modificar medicamento",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/catalog/{{productId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "catalog",
+                "{{productId}}"
+              ]
+            },
+            "description": "RF-010. El código no cambia.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"MED-001\",\n  \"name\": \"Ibuprofeno Forte\",\n  \"activeIngredient\": \"Ibuprofeno\",\n  \"concentration\": \"600 mg\",\n  \"presentation\": \"Tableta\",\n  \"laboratory\": \"Inti\",\n  \"category\": \"Analgésicos\",\n  \"requiresPrescription\": false,\n  \"salePrice\": 1.1,\n  \"minimumStock\": 20,\n  \"location\": \"Estante B1\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Desactivar medicamento",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/catalog/{{productId}}/deactivate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "catalog",
+                "{{productId}}",
+                "deactivate"
+              ]
+            },
+            "description": "RF-011. Deja de ofrecerse en el punto de venta tras la sincronización."
+          }
+        },
+        {
+          "name": "Activar medicamento",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/catalog/{{productId}}/activate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "catalog",
+                "{{productId}}",
+                "activate"
+              ]
+            },
+            "description": "RF-011."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Inventario, reportes y auditoría (avance de próximos sprints)",
+      "item": [
+        {
+          "name": "Stock por producto",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/products",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "products"
+              ]
+            },
+            "description": "RF-013."
+          }
+        },
+        {
+          "name": "Dashboard gerencial",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/dashboard",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "dashboard"
+              ]
+            },
+            "description": "RF-073, RF-074. Gerente General, Contadora, Gerente de Operaciones o Administrador."
+          }
+        },
+        {
+          "name": "Ventas por cajero",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/sales",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reports",
+                "sales"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Cierres de caja",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/cash/closures",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "cash",
+                "closures"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Auditoría de operaciones",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/audit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "audit"
+              ]
+            },
+            "description": "RF-075."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sincronización (Sync Service)",
+      "item": [
+        {
+          "name": "Estado de un puesto",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sync/status/PUESTO-01",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sync",
+                "status",
+                "PUESTO-01"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Descargar catálogo desde una versión",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sync/pull?since=0",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sync",
+                "pull"
+              ],
+              "query": [
+                {
+                  "key": "since",
+                  "value": "0"
+                }
+              ]
+            },
+            "description": "RF-080. Lo usa el Sync Worker del Desktop."
+          }
+        }
+      ]
+    }
+  ]
+}

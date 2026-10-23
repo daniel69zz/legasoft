@@ -32,13 +32,17 @@ La documentación se escribe en LaTeX y se compila a PDF con `make`.
 │   ├── cv/              Hojas de vida del equipo
 │   ├── entrega/         Documentos de entrega consolidados (PDF versionado)
 │   ├── minutas/         Minutas y acuerdos de reuniones
-│   └── calidad/         Estrategia de QA, plan de pruebas y casos de prueba
+│   ├── calidad/         Estrategia de QA, plan de pruebas y casos de prueba
+│   ├── scrum/           Sprint planning, review, retrospectiva y plan de contingencia
+│   └── api/             Documentación de la API: Swagger y colección Postman
 ├── modelos/
 │   ├── c4/              Diagramas del modelo C4 (contexto, contenedores, componentes)
 │   ├── uml/             Diagramas UML (casos de uso, clases, secuencia)
-│   └── bpmn/            Modelos de procesos de negocio en BPMN (AS-IS / TO-BE)
+│   ├── bpmn/            Modelos de procesos de negocio en BPMN (AS-IS / TO-BE)
+│   └── bd/              Modelo entidad-relación y migraciones de la base de datos
 ├── Pharmacy.sln         Solución .NET 8 del prototipo (ver src/README.md)
 ├── docker-compose.yml   Backend completo para desarrollo
+├── .env.example         Variables del backend local (copiar a .env)
 ├── deploy/              Dockerfile de los servicios y schemas de PostgreSQL
 ├── src/
 │   ├── shared/          Pharmacy.Domain y Pharmacy.Application (lógica compartida)
@@ -102,15 +106,26 @@ curso exige entregarlos versionados, comente las dos líneas correspondientes.
 
 ## Flujo de trabajo con Git
 
-- **`main`** se mantiene siempre en un estado presentable; no se hacen commits
-  directos sobre ella.
-- **Una rama por entregable o funcionalidad**, con el prefijo de su ámbito:
-  `feat/`, `docs/`, `fix/`, `test/`, `refactor/` o `chore/`
-  (por ejemplo `feat/modelos-c4`).
-- **Commits semánticos** según [Conventional Commits](https://www.conventionalcommits.org/es/):
-  `tipo: descripción en imperativo` (`feat: agregar diagrama C4 de contexto`).
-- **Integración mediante pull request** hacia `main`, con merge commit para
-  conservar la historia de la rama.
+El equipo sigue GitFlow y enlaza cada cambio con su ticket de Jira
+(proyecto `SCRUM`), como pide la guía de la asignatura:
+
+```text
+feature/SCRUM-15-catalogo-medicamentos ──PR──► develop ──PR (fin de sprint)──► main
+```
+
+- **`main`** contiene solo lo entregado al cierre de cada sprint; no se hacen
+  commits directos sobre ella.
+- **`develop`** integra las funcionalidades terminadas durante el sprint.
+- **Una rama por ticket**, que nace de `develop` e incluye la clave de Jira:
+  `feature/SCRUM-n-descripcion`, `fix/SCRUM-n-descripcion` o
+  `docs/SCRUM-n-descripcion`.
+- **Commits semánticos con clave Jira** según [Conventional Commits](https://www.conventionalcommits.org/es/):
+  `tipo(SCRUM-n): descripción en imperativo` (`feat(SCRUM-15): agregar API de catálogo`).
+- **Pull request** con la clave en el título (`SCRUM-15: Catálogo de medicamentos`),
+  revisado por otro integrante y con la CI en verde. Al fusionarlo, la
+  automatización de Jira pasa el ticket a *Finalizado*.
+- **Pruebas vinculadas:** cada prueba xUnit lleva `[Trait("JiraIssue", "SCRUM-n")]`
+  y `[Trait("Requirement", "RF-xxx")]`.
 
 ## Roles del equipo
 
@@ -134,7 +149,9 @@ la facturación es simulada.
 | Documento 3 | Arquitectura con modelo C4 (niveles 1 a 3) y ADR-001 a ADR-008 | [`docs/arquitectura/`](docs/arquitectura/) |
 | Diagramas C4 | Contexto, contenedores y componentes (Desktop y Backend) | [`modelos/c4/`](modelos/c4/) |
 | Trazabilidad | NEC → RF/RNF → HU → componente C4 → caso de prueba | [`docs/trazabilidad/`](docs/trazabilidad/) |
-
+| Modelo de datos | Modelo entidad-relación y migraciones EF Core | [`modelos/bd/`](modelos/bd/) |
+| Sprint 1 | Planning, review, retrospectiva y plan de contingencia de la demo | [`docs/scrum/sprint-1/`](docs/scrum/sprint-1/) |
+| API | Swagger UI en el Gateway y colección Postman | [`docs/api/`](docs/api/) |
 | Prototipo inicial | Desktop Avalonia local-first, servicios cloud y pruebas xUnit | [`src/`](src/README.md) |
 
 Las tecnologías seleccionadas (C# .NET 8, Avalonia UI, ASP.NET Core, SQLite,
