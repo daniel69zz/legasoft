@@ -1,0 +1,76 @@
+# Backend completo en local: PostgreSQL + Gateway + Identity + Sync + Business + Notification + Mailpit.
+# El Desktop se ejecuta aparte y apunta al Gateway en http://localhost:5100.
+x-service: &service
+  restart: unless-stopped
+  depends_on:
+    postgres:
+      condition: service_healthy
+
+x-common-env: &common-env
+  Jwt__Key: solo-para-desarrollo-cambiar-en-produccion-0123456789
+  Internal__Key: clave-interna-solo-desarrollo
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: farmacia
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_dev
+    ports: ["5433:5432"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./deploy/postgres:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d farmacia"]
+      interval: 3s
+      retries: 20
+
+  identity:
+    <<: *service
+    build: { context: ., dockerfile: deploy/Dockerfile, args: { PROJECT: Identity.Api } }
+    environment:
+      <<: *common-env
+      ConnectionStrings__Identity: Host=postgres;Database=farmacia;Username=identity_svc;Password=identity_dev
+
+  business:
+    <<: *service
+    build: { context: ., dockerfile: deploy/Dockerfile, args: { PROJECT: Business.Api } }
+    environment:
+      <<: *common-env
+      ConnectionStrings__Business: Host=postgres;Database=farmacia;Username=business_svc;Password=business_dev
+
+  sync:
+    <<: *service
+    build: { context: ., dockerfile: deploy/Dockerfile, args: { PROJECT: Sync.Api } }
+    environment:
+      <<: *common-env
+      ConnectionStrings__Sync: Host=postgres;Database=farmacia;Username=sync_svc;Password=sync_dev
+      Services__Business: http://business:8080
+
+  notification:
+    restart: unless-stopped
+    build: { context: ., dockerfile: deploy/Dockerfile, args: { PROJECT: Notification.Worker } }
+    depends_on: [business, mailpit]
+    environment:
+      Notification__BusinessUrl: http://business:8080
+      Notification__InternalKey: clave-interna-solo-desarrollo
+      Notification__SmtpHost: mailpit
+      Notification__IntervalMinutes: "5"
+
+  gateway:
+    restart: unless-stopped
+    build: { context: ., dockerfile: deploy/Dockerfile, args: { PROJECT: Gateway } }
+    depends_on: [identity, sync, business]
+    ports: ["5100:8080"]
+    environment:
+      ReverseProxy__Clusters__identity__Destinations__d1__Address: http://identity:8080
+      ReverseProxy__Clusters__sync__Destinations__d1__Address: http://sync:8080
+      ReverseProxy__Clusters__business__Destinations__d1__Address: http://business:8080
+
+  mailpit:
+    image: axllent/mailpit:v1.21
+    ports: ["8025:8025"]
+
+volumes:
+  pgdata:
