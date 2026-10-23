@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Reglas de negocio compartidas por el puesto y el servidor, sin dependencias de infraestructura (ADR-004) -->
+  <PropertyGroup>
+    <RootNamespace>Pharmacy.Domain</RootNamespace>
+  </PropertyGroup>
+</Project>
