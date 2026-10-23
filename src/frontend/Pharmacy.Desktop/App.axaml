@@ -1,0 +1,17 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:Pharmacy.Desktop"
+             x:Class="Pharmacy.Desktop.App"
+             RequestedThemeVariant="Light">
+  <Application.DataTemplates>
+    <local:ViewLocator />
+  </Application.DataTemplates>
+  <Application.Styles>
+    <FluentTheme>
+      <FluentTheme.Palettes>
+        <ColorPaletteResources x:Key="Light" Accent="#0F8B6E" RegionColor="#FFFFFF" ErrorText="#B83A3A" />
+      </FluentTheme.Palettes>
+    </FluentTheme>
+    <StyleInclude Source="avares://Pharmacy.Desktop/Styles/Theme.axaml" />
+  </Application.Styles>
+</Application>

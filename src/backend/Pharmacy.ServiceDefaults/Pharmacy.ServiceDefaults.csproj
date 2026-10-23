@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Configuración común de los servicios cloud: Serilog, ProblemDetails, JWT y acceso a PostgreSQL -->
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+    <PackageReference Include="EFCore.NamingConventions" />
+    <PackageReference Include="Serilog.AspNetCore" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\shared\Pharmacy.Application\Pharmacy.Application.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,90 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Pharmacy.Desktop.ViewModels"
+             xmlns:inv="using:Pharmacy.Application.Inventory"
+             xmlns:dom="using:Pharmacy.Domain.Inventory"
+             x:Class="Pharmacy.Desktop.Views.InventoryView"
+             x:DataType="vm:InventoryViewModel">
+  <Grid ColumnDefinitions="*,380" ColumnSpacing="20">
+    <Border Classes="card">
+      <DockPanel>
+        <TextBox DockPanel.Dock="Top" Watermark="Buscar producto" Text="{Binding Search}" Margin="0,0,0,12" />
+        <Grid DockPanel.Dock="Top" ColumnDefinitions="*,120,80,80,110" Margin="10,0,10,6">
+          <TextBlock Classes="muted" Text="Producto" />
+          <TextBlock Grid.Column="1" Classes="muted" Text="Ubicación" />
+          <TextBlock Grid.Column="2" Classes="muted" Text="Stock" HorizontalAlignment="Right" />
+          <TextBlock Grid.Column="3" Classes="muted" Text="Mínimo" HorizontalAlignment="Right" />
+          <TextBlock Grid.Column="4" Classes="muted" Text="Próx. venc." HorizontalAlignment="Right" />
+        </Grid>
+        <ScrollViewer>
+          <ItemsControl ItemsSource="{Binding Rows}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="inv:StockRow">
+                <Border Classes="row">
+                  <Grid ColumnDefinitions="*,120,80,80,110">
+                    <StackPanel>
+                      <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                      <TextBlock Classes="muted">
+                        <Run Text="{Binding Code, Mode=OneWay}" /><Run Text=" · " /><Run Text="{Binding Category, Mode=OneWay}" />
+                      </TextBlock>
+                    </StackPanel>
+                    <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{Binding Location}" />
+                    <TextBlock Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" FontWeight="SemiBold"
+                               Text="{Binding Stock}" Foreground="{StaticResource Navy}" />
+                    <TextBlock Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Right" Classes="muted"
+                               Text="{Binding MinimumStock}" />
+                    <TextBlock Grid.Column="4" VerticalAlignment="Center" HorizontalAlignment="Right"
+                               Text="{Binding NextExpiration, StringFormat='{}{0:dd/MM/yyyy}'}" />
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </DockPanel>
+    </Border>
+
+    <ScrollViewer Grid.Column="1">
+      <StackPanel Spacing="16">
+        <Border Classes="card">
+          <StackPanel>
+            <TextBlock Classes="h2" Text="Vencimientos (umbral 60 días)" />
+            <ItemsControl ItemsSource="{Binding ExpiryAlerts}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="dom:ExpiryAlert">
+                  <Border Classes="row">
+                    <StackPanel>
+                      <TextBlock Text="{Binding ProductName}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                      <TextBlock Classes="muted">
+                        <Run Text="Lote " /><Run Text="{Binding LotNumber, Mode=OneWay}" /><Run Text=" · " /><Run Text="{Binding Quantity, Mode=OneWay}" /><Run Text=" u. · " /><Run Text="{Binding Description, Mode=OneWay}" FontWeight="SemiBold" />
+                      </TextBlock>
+                    </StackPanel>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </Border>
+        <Border Classes="card">
+          <StackPanel>
+            <TextBlock Classes="h2" Text="Stock mínimo alcanzado" />
+            <ItemsControl ItemsSource="{Binding LowStockAlerts}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="dom:LowStockAlert">
+                  <Border Classes="row">
+                    <Grid ColumnDefinitions="*,Auto">
+                      <TextBlock Text="{Binding ProductName}" TextWrapping="Wrap" />
+                      <TextBlock Grid.Column="1" Foreground="{StaticResource Danger}" FontWeight="SemiBold">
+                        <Run Text="{Binding Stock, Mode=OneWay}" /><Run Text=" / " /><Run Text="{Binding MinimumStock, Mode=OneWay}" />
+                      </TextBlock>
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </Border>
+      </StackPanel>
+    </ScrollViewer>
+  </Grid>
+</UserControl>

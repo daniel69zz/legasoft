@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Aplicación Desktop local-first: Avalonia (MVVM) + SQLite + Outbox + Sync Worker (Documento 3, C2 y C3) -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <AssemblyName>Pharmacy.Desktop</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="Avalonia.Fonts.Inter" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="Microsoft.Extensions.Http" />
+    <PackageReference Include="Microsoft.Extensions.Identity.Core" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\shared\Pharmacy.Application\Pharmacy.Application.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

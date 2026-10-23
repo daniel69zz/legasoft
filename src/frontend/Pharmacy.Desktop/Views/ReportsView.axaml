@@ -1,0 +1,62 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Pharmacy.Desktop.ViewModels"
+             xmlns:c="using:Pharmacy.Application.Contracts"
+             x:Class="Pharmacy.Desktop.Views.ReportsView"
+             x:DataType="vm:ReportsViewModel">
+  <ScrollViewer>
+    <StackPanel Spacing="16">
+      <TextBlock Classes="error" Text="{Binding Error}" IsVisible="{Binding Error, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+      <TextBlock Classes="muted" Text="Datos consolidados en el servidor (PostgreSQL) a partir de lo sincronizado por todos los puestos." />
+      <Grid ColumnDefinitions="*,*,*,*,*" ColumnSpacing="16" IsVisible="{Binding Summary, Converter={x:Static ObjectConverters.IsNotNull}}">
+        <Border Classes="card"><StackPanel><TextBlock Classes="muted" Text="Ventas de hoy" /><TextBlock Classes="kpi" Text="{Binding Summary.SalesToday, StringFormat='Bs {0:N2}'}" /><TextBlock Classes="muted" Text="{Binding Summary.SalesCountToday, StringFormat='{}{0} ventas'}" /></StackPanel></Border>
+        <Border Grid.Column="1" Classes="card"><StackPanel><TextBlock Classes="muted" Text="Últimos 7 días" /><TextBlock Classes="kpi" Text="{Binding Summary.SalesLast7Days, StringFormat='Bs {0:N2}'}" /></StackPanel></Border>
+        <Border Grid.Column="2" Classes="card"><StackPanel><TextBlock Classes="muted" Text="Productos en stock mínimo" /><TextBlock Classes="kpi" Foreground="{StaticResource Danger}" Text="{Binding Summary.LowStockProducts}" /></StackPanel></Border>
+        <Border Grid.Column="3" Classes="card"><StackPanel><TextBlock Classes="muted" Text="Lotes por vencer / vencidos" /><TextBlock Classes="kpi" Foreground="{StaticResource Warn}"><Run Text="{Binding Summary.ExpiringLots, Mode=OneWay}" /><Run Text=" / " /><Run Text="{Binding Summary.ExpiredLots, Mode=OneWay}" /></TextBlock></StackPanel></Border>
+        <Border Grid.Column="4" Classes="card"><StackPanel><TextBlock Classes="muted" Text="Cierres con diferencia" /><TextBlock Classes="kpi" Foreground="{StaticResource Navy}" Text="{Binding Summary.ClosuresWithDifference}" /></StackPanel></Border>
+      </Grid>
+      <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
+        <Border Classes="card">
+          <StackPanel>
+            <TextBlock Classes="h2" Text="Ventas por cajero y día (RF-074)" />
+            <ItemsControl ItemsSource="{Binding SalesByCashier}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="c:SalesByCashierRow">
+                  <Border Classes="row">
+                    <Grid ColumnDefinitions="100,*,70,110">
+                      <TextBlock Text="{Binding Day, StringFormat='{}{0:dd/MM/yyyy}'}" />
+                      <TextBlock Grid.Column="1" Text="{Binding CashierName}" FontWeight="SemiBold" />
+                      <TextBlock Grid.Column="2" Classes="muted" Text="{Binding Sales, StringFormat='{}{0} ventas'}" />
+                      <TextBlock Grid.Column="3" HorizontalAlignment="Right" Text="{Binding Total, StringFormat='Bs {0:N2}'}" />
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </Border>
+        <Border Grid.Column="1" Classes="card">
+          <StackPanel>
+            <TextBlock Classes="h2" Text="Auditoría de operaciones críticas (RF-075)" />
+            <ItemsControl ItemsSource="{Binding Audit}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="c:AuditEntryDto">
+                  <Border Classes="row">
+                    <StackPanel>
+                      <TextBlock>
+                        <Run Text="{Binding Action, Mode=OneWay}" FontWeight="SemiBold" /><Run Text=" · " /><Run Text="{Binding UserName, Mode=OneWay}" />
+                      </TextBlock>
+                      <TextBlock Classes="muted" TextWrapping="Wrap">
+                        <Run Text="{Binding OccurredAt, StringFormat='{}{0:dd/MM HH:mm}'}" /><Run Text=" · " /><Run Text="{Binding Detail, Mode=OneWay}" />
+                      </TextBlock>
+                    </StackPanel>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </Border>
+      </Grid>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

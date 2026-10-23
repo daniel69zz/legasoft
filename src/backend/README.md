@@ -17,3 +17,5 @@ Registrada en [ADR-001](../../docs/arquitectura/adr/adr-001-framework-backend.md
 | Base de datos | PostgreSQL administrado con schemas por dominio (EF Core / Npgsql) |
 | Autenticación | ASP.NET Core Identity + JWT / refresh tokens |
 | Logging y validación | Serilog y FluentValidation |
+
+El código del prototipo y cómo ejecutarlo se describen en [`src/README.md`](../README.md).

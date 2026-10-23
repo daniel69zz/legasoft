@@ -1,0 +1,56 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Pharmacy.Desktop.ViewModels"
+             xmlns:sync="using:Pharmacy.Application.Sync"
+             x:Class="Pharmacy.Desktop.Views.SyncView"
+             x:DataType="vm:SyncViewModel">
+  <DockPanel>
+    <Border DockPanel.Dock="Top" Classes="card" Margin="0,0,0,16">
+      <Grid ColumnDefinitions="*,Auto">
+        <StackPanel Spacing="4">
+          <TextBlock Classes="h2" Text="{Binding Status.Summary}" Margin="0" />
+          <TextBlock Classes="muted" Text="{Binding Status.LastSync, StringFormat='Última sincronización: {0:dd/MM/yyyy HH:mm:ss}', TargetNullValue='Aún no se sincronizó en esta sesión'}" />
+          <TextBlock Classes="muted" TextWrapping="Wrap"
+                     Text="Cada operación se guarda junto con su mensaje Outbox en una sola transacción SQLite. El Sync Worker los envía en orden y el Sync Service descarta los duplicados por eventId." />
+          <TextBlock Classes="error" Text="{Binding Error}" IsVisible="{Binding Error, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+          <TextBlock Classes="ok" Text="{Binding Info}" IsVisible="{Binding Info, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+        </StackPanel>
+        <Button Grid.Column="1" Classes="primary" Content="Sincronizar ahora" VerticalAlignment="Center"
+                Command="{Binding SyncNowCommand}" />
+      </Grid>
+    </Border>
+    <Border Classes="card">
+      <DockPanel>
+        <Grid DockPanel.Dock="Top" ColumnDefinitions="130,90,200,110,70,*" Margin="10,0,10,6">
+          <TextBlock Classes="muted" Text="Fecha" />
+          <TextBlock Grid.Column="1" Classes="muted" Text="Módulo" />
+          <TextBlock Grid.Column="2" Classes="muted" Text="Evento" />
+          <TextBlock Grid.Column="3" Classes="muted" Text="Estado" />
+          <TextBlock Grid.Column="4" Classes="muted" Text="Intentos" />
+          <TextBlock Grid.Column="5" Classes="muted" Text="eventId / error" />
+        </Grid>
+        <ScrollViewer>
+          <ItemsControl ItemsSource="{Binding Messages}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="sync:OutboxMessage">
+                <Border Classes="row">
+                  <Grid ColumnDefinitions="130,90,200,110,70,*">
+                    <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:dd/MM HH:mm:ss}'}" />
+                    <TextBlock Grid.Column="1" Text="{Binding Module}" />
+                    <TextBlock Grid.Column="2" Text="{Binding EventType}" FontWeight="SemiBold" />
+                    <TextBlock Grid.Column="3" Text="{Binding Status}" />
+                    <TextBlock Grid.Column="4" Text="{Binding Attempts}" />
+                    <StackPanel Grid.Column="5">
+                      <TextBlock Classes="muted" FontFamily="{StaticResource Mono}" Text="{Binding EventId}" />
+                      <TextBlock Classes="error" FontSize="11" Text="{Binding LastError}" />
+                    </StackPanel>
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </DockPanel>
+    </Border>
+  </DockPanel>
+</UserControl>

@@ -1,0 +1,65 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Pharmacy.Desktop.ViewModels"
+             x:Class="Pharmacy.Desktop.Views.LoginView"
+             x:DataType="vm:LoginViewModel">
+  <Grid ColumnDefinitions="5*,4*">
+    <!-- Panel de marca -->
+    <Border>
+      <Border.Background>
+        <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+          <GradientStop Offset="0" Color="#0F8B6E" />
+          <GradientStop Offset="1" Color="#123A5F" />
+        </LinearGradientBrush>
+      </Border.Background>
+      <StackPanel VerticalAlignment="Center" Margin="64" Spacing="18">
+        <Border Width="72" Height="72" CornerRadius="18" Background="#26FFFFFF" HorizontalAlignment="Left">
+          <PathIcon Data="{StaticResource CrossIcon}" Width="38" Height="38" Foreground="White" />
+        </Border>
+        <TextBlock Text="Sistema de Gestión para Farmacéutica" FontSize="32" FontWeight="Bold"
+                   Foreground="White" TextWrapping="Wrap" />
+        <TextBlock Text="Ventas, caja e inventario que siguen funcionando sin Internet. Cada operación se guarda en el puesto y se sincroniza sola cuando vuelve la conexión."
+                   FontSize="15" Foreground="#E3F4EF" TextWrapping="Wrap" MaxWidth="460" HorizontalAlignment="Left" />
+        <WrapPanel>
+          <Border Classes="badge" Background="#26FFFFFF" Margin="0,0,8,8">
+            <TextBlock Text="FEFO y lotes vencidos" Foreground="White" FontSize="12" />
+          </Border>
+          <Border Classes="badge" Background="#26FFFFFF" Margin="0,0,8,8">
+            <TextBlock Text="Outbox + sincronización" Foreground="White" FontSize="12" />
+          </Border>
+          <Border Classes="badge" Background="#26FFFFFF" Margin="0,0,8,8">
+            <TextBlock Text="Roles y auditoría" Foreground="White" FontSize="12" />
+          </Border>
+        </WrapPanel>
+        <TextBlock Text="Prototipo inicial · Legasoft · UCB 2026" Foreground="#A9C7D8" FontSize="12" Margin="0,24,0,0" />
+      </StackPanel>
+    </Border>
+
+    <!-- Formulario -->
+    <Border Grid.Column="1" Classes="card" Margin="56" VerticalAlignment="Center" Padding="32">
+      <StackPanel Spacing="14">
+        <TextBlock Classes="h1" Text="Iniciar sesión" />
+        <TextBlock Classes="muted" TextWrapping="Wrap">
+          <Run Text="Puesto" />
+          <Run Text="{Binding DeviceId, Mode=OneWay}" FontWeight="SemiBold" />
+          <Run Text="· servidor" />
+          <Run Text="{Binding Server, Mode=OneWay}" />
+        </TextBlock>
+        <TextBox Watermark="Usuario" Text="{Binding UserName}" />
+        <TextBox Watermark="Contraseña" PasswordChar="●" Text="{Binding Password}">
+          <TextBox.KeyBindings>
+            <KeyBinding Gesture="Enter" Command="{Binding LoginCommand}" />
+          </TextBox.KeyBindings>
+        </TextBox>
+        <Button Classes="primary" Content="Ingresar" HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Center" Command="{Binding LoginCommand}" IsDefault="True" />
+        <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
+        <TextBlock Classes="error" Text="{Binding Error}" IsVisible="{Binding Error, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+        <Border Background="{StaticResource Canvas}" CornerRadius="8" Padding="12" Margin="0,8,0,0">
+          <TextBlock Classes="muted" TextWrapping="Wrap"
+                     Text="Usuarios de demostración: admin, cajero1, cajero2, farmaceutico, gerente, contadora, operaciones, almacen. Contraseña de demo en appsettings.json (Seed:DemoPassword)." />
+        </Border>
+      </StackPanel>
+    </Border>
+  </Grid>
+</UserControl>

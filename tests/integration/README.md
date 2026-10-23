@@ -7,3 +7,7 @@ sistema.
 PostgreSQL (incluidas las diferencias entre ambos motores) y la sincronización
 local–cloud: envío del Outbox, idempotencia por `eventId`, versiones por módulo
 y resolución de conflictos.
+
+Proyecto: [`Pharmacy.IntegrationTests`](Pharmacy.IntegrationTests/), con
+`WebApplicationFactory` y EF Core en memoria; la integración real con
+PostgreSQL se verifica con `docker compose`.

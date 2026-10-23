@@ -1,0 +1,98 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Pharmacy.Desktop.ViewModels"
+             x:Class="Pharmacy.Desktop.Views.CashView"
+             x:DataType="vm:CashViewModel">
+  <ScrollViewer>
+    <StackPanel Spacing="16">
+      <TextBlock Classes="error" Text="{Binding Error}" IsVisible="{Binding Error, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+      <TextBlock Classes="ok" Text="{Binding Info}" IsVisible="{Binding Info, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+      <!-- Apertura -->
+      <Border Classes="card" IsVisible="{Binding !IsOpen}" MaxWidth="520" HorizontalAlignment="Left">
+        <StackPanel Spacing="10">
+          <TextBlock Classes="h2" Text="Apertura de caja (RF-052)" />
+          <TextBlock Classes="muted" Text="Monto inicial en efectivo" />
+          <NumericUpDown Value="{Binding OpeningAmount}" Minimum="0" Increment="50" FormatString="N2" />
+          <Button Classes="primary" Content="Abrir caja" Command="{Binding OpenCommand}" />
+        </StackPanel>
+      </Border>
+
+      <!-- Turno abierto -->
+      <Grid IsVisible="{Binding IsOpen}" ColumnDefinitions="*,*,*,*" ColumnSpacing="16">
+        <Border Classes="card"><StackPanel><TextBlock Classes="muted" Text="Monto inicial" /><TextBlock Classes="kpi" Text="{Binding OpeningShown, StringFormat='Bs {0:N2}'}" /></StackPanel></Border>
+        <Border Grid.Column="1" Classes="card"><StackPanel><TextBlock Classes="muted" Text="Ventas" /><TextBlock Classes="kpi" Text="{Binding SalesTotal, StringFormat='Bs {0:N2}'}" /></StackPanel></Border>
+        <Border Grid.Column="2" Classes="card"><StackPanel><TextBlock Classes="muted" Text="Egresos y anulaciones" /><TextBlock Classes="kpi" Foreground="{StaticResource Danger}" Text="{Binding ExpensesTotal, StringFormat='Bs {0:N2}'}" /></StackPanel></Border>
+        <Border Grid.Column="3" Classes="card"><StackPanel><TextBlock Classes="muted" Text="Esperado en caja (RF-057)" /><TextBlock Classes="kpi" Foreground="{StaticResource Navy}" Text="{Binding Expected, StringFormat='Bs {0:N2}'}" /></StackPanel></Border>
+      </Grid>
+
+      <Grid IsVisible="{Binding IsOpen}" ColumnDefinitions="*,*" ColumnSpacing="16">
+        <StackPanel Spacing="16">
+          <Border Classes="card">
+            <StackPanel Spacing="8">
+              <TextBlock Classes="h2" Text="Registrar egreso (RF-055)" />
+              <Grid ColumnDefinitions="140,*" ColumnSpacing="8">
+                <NumericUpDown Value="{Binding ExpenseAmount}" Minimum="0" Increment="5" FormatString="N2" Watermark="Monto" />
+                <ComboBox Grid.Column="1" ItemsSource="{Binding Categories}" SelectedItem="{Binding ExpenseCategory}" HorizontalAlignment="Stretch" />
+              </Grid>
+              <TextBox Watermark="Motivo" Text="{Binding ExpenseReason}" />
+              <Button Content="Registrar egreso" Command="{Binding RegisterExpenseCommand}" />
+            </StackPanel>
+          </Border>
+          <Border Classes="card">
+            <StackPanel>
+              <TextBlock Classes="h2" Text="Movimientos del turno" />
+              <ItemsControl ItemsSource="{Binding Movements}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:MovementRow">
+                    <Grid ColumnDefinitions="60,130,*,100" Margin="0,3">
+                      <TextBlock Classes="muted" Text="{Binding OccurredAt, StringFormat='{}{0:HH:mm}'}" />
+                      <TextBlock Grid.Column="1" Text="{Binding Type}" />
+                      <TextBlock Grid.Column="2" Classes="muted" Text="{Binding Detail}" TextTrimming="CharacterEllipsis" />
+                      <TextBlock Grid.Column="3" HorizontalAlignment="Right" FontWeight="SemiBold"
+                                 Text="{Binding SignedAmount, StringFormat='Bs {0:N2}'}" />
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+
+        <Border Grid.Column="1" Classes="card">
+          <StackPanel Spacing="8">
+            <TextBlock Classes="h2" Text="Cierre con conteo por denominación (RF-054, RF-058)" />
+            <ItemsControl ItemsSource="{Binding Denominations}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:DenominationEntry">
+                  <Grid ColumnDefinitions="*,120,110" ColumnSpacing="8" Margin="0,2">
+                    <TextBlock Text="{Binding Label}" VerticalAlignment="Center" />
+                    <NumericUpDown Grid.Column="1" Value="{Binding Count}" Minimum="0" Increment="1" FormatString="0" Watermark="0" />
+                    <TextBlock Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right" Classes="muted"
+                               Text="{Binding Subtotal, StringFormat='Bs {0:N2}'}" />
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <Grid ColumnDefinitions="*,Auto" Margin="0,8,0,0">
+              <TextBlock Text="Contado" FontWeight="SemiBold" />
+              <TextBlock Grid.Column="1" FontWeight="SemiBold" Text="{Binding Counted, StringFormat='Bs {0:N2}'}" />
+            </Grid>
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Text="Diferencia (RF-059)" FontWeight="SemiBold" />
+              <TextBlock Grid.Column="1" FontWeight="Bold" Foreground="{StaticResource Navy}" Text="{Binding Difference, StringFormat='Bs {0:N2}'}" />
+            </Grid>
+            <TextBox Watermark="Justificación (obligatoria si hay diferencia, RF-106)" Text="{Binding Justification}"
+                     AcceptsReturn="True" Height="60" TextWrapping="Wrap" />
+            <Button Classes="primary" Content="Cerrar caja" Command="{Binding CloseCommand}" />
+          </StackPanel>
+        </Border>
+      </Grid>
+
+      <Border Classes="card" MaxWidth="520" HorizontalAlignment="Left"
+              IsVisible="{Binding ClosingReport, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+        <SelectableTextBlock FontFamily="{StaticResource Mono}" FontSize="12" Text="{Binding ClosingReport}" />
+      </Border>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>
