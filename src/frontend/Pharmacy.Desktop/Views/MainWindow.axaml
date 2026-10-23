@@ -1,0 +1,11 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Pharmacy.Desktop.ViewModels"
+        x:Class="Pharmacy.Desktop.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="Farmacia · Sistema de Gestión (Legasoft)"
+        Width="1320" Height="820" MinWidth="1080" MinHeight="700"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource Canvas}">
+  <ContentControl Content="{Binding Current}" />
+</Window>

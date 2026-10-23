@@ -1,0 +1,69 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Pharmacy.Desktop.ViewModels"
+             xmlns:c="using:Pharmacy.Application.Contracts"
+             x:Class="Pharmacy.Desktop.Views.UsersView"
+             x:DataType="vm:UsersViewModel">
+  <Grid ColumnDefinitions="*,360" ColumnSpacing="20">
+    <StackPanel Spacing="16">
+      <Border Classes="card">
+        <StackPanel>
+          <TextBlock Classes="h2" Text="Usuarios del sistema" />
+          <ItemsControl ItemsSource="{Binding Users}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="c:UserDto">
+                <Border Classes="row">
+                  <Grid ColumnDefinitions="140,*,170,90,Auto">
+                    <TextBlock Text="{Binding UserName}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="1" Text="{Binding FullName}" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="2" Classes="muted" Text="{Binding Role}" VerticalAlignment="Center" />
+                    <Border Grid.Column="3" Classes="badge" VerticalAlignment="Center" HorizontalAlignment="Left" IsVisible="{Binding IsActive}">
+                      <TextBlock Text="Activo" FontSize="11" Foreground="{StaticResource BrandDark}" />
+                    </Border>
+                    <Border Grid.Column="3" Classes="badge danger" VerticalAlignment="Center" HorizontalAlignment="Left" IsVisible="{Binding !IsActive}">
+                      <TextBlock Text="Inactivo" FontSize="11" Foreground="{StaticResource Danger}" />
+                    </Border>
+                    <Button Grid.Column="4" Classes="small" Content="Activar / desactivar"
+                            Command="{Binding $parent[UserControl].((vm:UsersViewModel)DataContext).ToggleCommand}"
+                            CommandParameter="{Binding}" />
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+      </Border>
+      <Border Classes="card">
+        <StackPanel>
+          <TextBlock Classes="h2" Text="Auditoría de usuarios y permisos (RF-075)" />
+          <ItemsControl ItemsSource="{Binding Audit}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="c:AuditEntryDto">
+                <TextBlock Margin="0,2" TextWrapping="Wrap">
+                  <Run Text="{Binding OccurredAt, StringFormat='{}{0:dd/MM HH:mm}'}" Foreground="{StaticResource Muted}" />
+                  <Run Text="{Binding UserName, Mode=OneWay}" FontWeight="SemiBold" />
+                  <Run Text="{Binding Action, Mode=OneWay}" />
+                  <Run Text="·" />
+                  <Run Text="{Binding Detail, Mode=OneWay}" Foreground="{StaticResource Muted}" />
+                </TextBlock>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+      </Border>
+    </StackPanel>
+
+    <Border Grid.Column="1" Classes="card" VerticalAlignment="Top">
+      <StackPanel Spacing="10">
+        <TextBlock Classes="h2" Text="Registrar usuario (RF-003)" />
+        <TextBox Watermark="Usuario" Text="{Binding NewUserName}" />
+        <TextBox Watermark="Nombre completo" Text="{Binding NewFullName}" />
+        <TextBox Watermark="Contraseña inicial (mín. 8)" PasswordChar="●" Text="{Binding NewPassword}" />
+        <ComboBox ItemsSource="{Binding AvailableRoles}" SelectedItem="{Binding NewRole}" HorizontalAlignment="Stretch" />
+        <Button Classes="primary" Content="Registrar" Command="{Binding CreateCommand}" />
+        <TextBlock Classes="error" Text="{Binding Error}" IsVisible="{Binding Error, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+        <TextBlock Classes="ok" Text="{Binding Info}" IsVisible="{Binding Info, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+      </StackPanel>
+    </Border>
+  </Grid>
+</UserControl>

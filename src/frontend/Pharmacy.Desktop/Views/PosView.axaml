@@ -1,0 +1,136 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Pharmacy.Desktop.ViewModels"
+             xmlns:inv="using:Pharmacy.Application.Inventory"
+             x:Class="Pharmacy.Desktop.Views.PosView"
+             x:DataType="vm:PosViewModel">
+  <Grid ColumnDefinitions="*,400" RowDefinitions="*,Auto" ColumnSpacing="20" RowSpacing="16">
+    <!-- Catálogo -->
+    <Border Classes="card">
+      <DockPanel>
+        <TextBox DockPanel.Dock="Top" Watermark="Buscar por nombre, código, principio activo o categoría"
+                 Text="{Binding Search}" Margin="0,0,0,12" />
+        <ScrollViewer>
+          <ItemsControl ItemsSource="{Binding Results}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="inv:StockRow">
+                <Border Classes="row">
+                  <Grid ColumnDefinitions="*,Auto,90,80,Auto" ColumnSpacing="12">
+                    <StackPanel>
+                      <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                      <TextBlock Classes="muted">
+                        <Run Text="{Binding Code, Mode=OneWay}" /><Run Text=" · " /><Run Text="{Binding Category, Mode=OneWay}" /><Run Text=" · " /><Run Text="{Binding Location, Mode=OneWay}" />
+                      </TextBlock>
+                    </StackPanel>
+                    <Border Grid.Column="1" Classes="badge warn" VerticalAlignment="Center"
+                            IsVisible="{Binding RequiresPrescription}">
+                      <TextBlock Text="Receta" FontSize="11" Foreground="{StaticResource Warn}" />
+                    </Border>
+                    <TextBlock Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right"
+                               Text="{Binding SalePrice, StringFormat='Bs {0:N2}'}" FontWeight="SemiBold" />
+                    <TextBlock Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Right" Classes="muted"
+                               Text="{Binding Stock, StringFormat='{}{0} u.'}" />
+                    <Button Grid.Column="4" Classes="small" Content="Agregar"
+                            Command="{Binding $parent[UserControl].((vm:PosViewModel)DataContext).AddCommand}"
+                            CommandParameter="{Binding}" />
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </DockPanel>
+    </Border>
+
+    <!-- Carrito y cobro -->
+    <Border Grid.Column="1" Grid.RowSpan="2" Classes="card">
+      <ScrollViewer>
+        <StackPanel Spacing="10">
+          <TextBlock Classes="h2" Text="Venta en curso" />
+          <ItemsControl ItemsSource="{Binding Cart}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:CartItem">
+                <Border Classes="row">
+                  <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                    <StackPanel>
+                      <TextBlock Text="{Binding Product.Name}" TextWrapping="Wrap" />
+                      <TextBlock Classes="muted" Text="{Binding Subtotal, StringFormat='Bs {0:N2}'}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                      <Button Classes="small" Content="−"
+                              Command="{Binding $parent[UserControl].((vm:PosViewModel)DataContext).DecreaseCommand}"
+                              CommandParameter="{Binding}" />
+                      <TextBlock Text="{Binding Quantity}" MinWidth="24" TextAlignment="Center" VerticalAlignment="Center" />
+                      <Button Classes="small" Content="+"
+                              Command="{Binding $parent[UserControl].((vm:PosViewModel)DataContext).IncreaseCommand}"
+                              CommandParameter="{Binding}" />
+                    </StackPanel>
+                    <Button Grid.Column="2" Classes="small danger" Content="Quitar" VerticalAlignment="Center"
+                            Command="{Binding $parent[UserControl].((vm:PosViewModel)DataContext).RemoveCommand}"
+                            CommandParameter="{Binding}" />
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <Grid ColumnDefinitions="*,Auto" Margin="0,6,0,0">
+            <TextBlock Text="Total" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="1" Classes="kpi" Text="{Binding Total, StringFormat='Bs {0:N2}'}" />
+          </Grid>
+
+          <StackPanel Spacing="6" IsVisible="{Binding NeedsPrescription}">
+            <TextBlock Text="La venta incluye medicamentos con receta (RF-091)" Foreground="{StaticResource Warn}" FontSize="12" />
+            <TextBox Watermark="N.º de receta médica" Text="{Binding PrescriptionNumber}" />
+          </StackPanel>
+          <Grid ColumnDefinitions="*,120" ColumnSpacing="8">
+            <TextBox Watermark="Cliente (opcional)" Text="{Binding CustomerName}" />
+            <TextBox Grid.Column="1" Watermark="NIT / CI" Text="{Binding CustomerTaxId}" />
+          </Grid>
+          <TextBlock Classes="muted" Text="Efectivo recibido (único medio de pago)" />
+          <NumericUpDown Value="{Binding CashReceived}" Minimum="0" Increment="10" FormatString="N2" />
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Text="Cambio" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="1" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource Navy}"
+                       Text="{Binding ChangePreview, StringFormat='Bs {0:N2}', FallbackValue='—', TargetNullValue='—'}" />
+          </Grid>
+          <Button Classes="primary" Content="Cobrar y emitir recibo" HorizontalAlignment="Stretch"
+                  HorizontalContentAlignment="Center" Command="{Binding ConfirmCommand}" />
+          <TextBlock Classes="error" Text="{Binding Error}" IsVisible="{Binding Error, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+          <TextBlock Classes="ok" Text="{Binding Info}" IsVisible="{Binding Info, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+          <Border Background="{StaticResource Canvas}" CornerRadius="8" Padding="12"
+                  IsVisible="{Binding Receipt, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+            <SelectableTextBlock Classes="mono" FontFamily="{StaticResource Mono}" FontSize="12" Text="{Binding Receipt}" />
+          </Border>
+        </StackPanel>
+      </ScrollViewer>
+    </Border>
+
+    <!-- Últimas ventas -->
+    <Border Grid.Row="1" Classes="card">
+      <StackPanel Spacing="6">
+        <Grid ColumnDefinitions="*,280">
+          <TextBlock Classes="h2" Text="Últimas ventas del puesto" />
+          <TextBox Grid.Column="1" Watermark="Motivo de anulación (RF-048)" Text="{Binding VoidReason}" />
+        </Grid>
+        <ItemsControl ItemsSource="{Binding RecentSales}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:RecentSale">
+              <Grid ColumnDefinitions="170,120,*,110,Auto" Margin="0,2">
+                <TextBlock Text="{Binding ReceiptNumber}" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Classes="muted" VerticalAlignment="Center"
+                           Text="{Binding CreatedAt, StringFormat='{}{0:dd/MM HH:mm}'}" />
+                <TextBlock Grid.Column="2" Classes="muted" VerticalAlignment="Center" Text="{Binding Status}" />
+                <TextBlock Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,12,0"
+                           Text="{Binding Total, StringFormat='Bs {0:N2}'}" />
+                <Button Grid.Column="4" Classes="small danger" Content="Anular" IsVisible="{Binding CanVoid}"
+                        Command="{Binding $parent[UserControl].((vm:PosViewModel)DataContext).VoidCommand}"
+                        CommandParameter="{Binding}" />
+              </Grid>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+    </Border>
+  </Grid>
+</UserControl>
