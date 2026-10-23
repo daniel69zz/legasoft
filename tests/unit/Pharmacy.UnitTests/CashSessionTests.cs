@@ -16,12 +16,16 @@ public class CashSessionTests
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-25")]
+    [Trait("Requirement", "RF-053")]
     public void Esperado_es_inicial_mas_ventas_menos_egresos()
     {
         Assert.Equal(237.50m, OpenWithSales().ExpectedAmount);
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-26")]
+    [Trait("Requirement", "RF-059")]
     public void Cierre_sin_diferencia_no_exige_justificacion()
     {
         var session = OpenWithSales();
@@ -32,6 +36,8 @@ public class CashSessionTests
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-26")]
+    [Trait("Requirement", "RF-106")]
     public void Cierre_con_diferencia_exige_justificacion()
     {
         var session = OpenWithSales();
@@ -45,6 +51,8 @@ public class CashSessionTests
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-25")]
+    [Trait("Requirement", "RF-055")]
     public void Egreso_no_puede_superar_el_efectivo_disponible()
     {
         var session = CashSession.Open(Guid.NewGuid(), "PUESTO-01", "cajero1", 50m, Now);
@@ -52,6 +60,8 @@ public class CashSessionTests
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-25")]
+    [Trait("Requirement", "RF-055")]
     public void Egreso_exige_motivo_y_categoria()
     {
         var session = CashSession.Open(Guid.NewGuid(), "PUESTO-01", "cajero1", 50m, Now);
@@ -60,6 +70,8 @@ public class CashSessionTests
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-26")]
+    [Trait("Requirement", "RF-062")]
     public void La_entrega_queda_pendiente_hasta_la_conformidad_del_cajero_entrante()
     {
         var session = CashSession.Open(Guid.NewGuid(), "PUESTO-01", "cajero1", 100m, Now);
@@ -74,12 +86,16 @@ public class CashSessionTests
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-25")]
+    [Trait("Requirement", "RF-054")]
     public void El_conteo_rechaza_denominaciones_inexistentes()
     {
         Assert.Throws<DomainException>(() => new CashCount(new Dictionary<decimal, int> { [3m] = 1 }));
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-25")]
+    [Trait("Requirement", "RF-053")]
     public void No_se_registran_ventas_con_la_caja_cerrada()
     {
         var session = CashSession.Open(Guid.NewGuid(), "PUESTO-01", "cajero1", 0m, Now);

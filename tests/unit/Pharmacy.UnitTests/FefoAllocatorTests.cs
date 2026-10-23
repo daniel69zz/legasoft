@@ -8,6 +8,8 @@ namespace Pharmacy.UnitTests;
 public class FefoAllocatorTests
 {
     [Fact]
+    [Trait("JiraIssue", "SCRUM-17")]
+    [Trait("Requirement", "RF-095")]
     public void Asigna_primero_el_lote_que_vence_antes()
     {
         var p = Product();
@@ -21,6 +23,8 @@ public class FefoAllocatorTests
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-17")]
+    [Trait("Requirement", "RF-095")]
     public void Reparte_entre_lotes_cuando_el_primero_no_alcanza()
     {
         var p = Product();
@@ -33,6 +37,8 @@ public class FefoAllocatorTests
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-17")]
+    [Trait("Requirement", "RF-024")]
     public void Nunca_asigna_lotes_vencidos()
     {
         var p = Product();
@@ -45,6 +51,8 @@ public class FefoAllocatorTests
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-17")]
+    [Trait("Requirement", "RF-024")]
     public void Un_lote_que_vence_hoy_ya_no_es_vendible()
     {
         var p = Product();
@@ -52,6 +60,8 @@ public class FefoAllocatorTests
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-21")]
+    [Trait("Requirement", "RF-039")]
     public void Rechaza_cuando_el_stock_vigente_no_alcanza()
     {
         var p = Product();
@@ -61,6 +71,8 @@ public class FefoAllocatorTests
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-16")]
+    [Trait("Requirement", "RF-013")]
     public void Stock_vendible_excluye_vencidos()
     {
         var p = Product();
@@ -68,6 +80,8 @@ public class FefoAllocatorTests
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-17")]
+    [Trait("Requirement", "RF-024")]
     public void Withdraw_de_un_lote_vencido_falla()
     {
         var lot = Lot(Product(), "V", -3, 10);

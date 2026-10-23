@@ -11,7 +11,7 @@ public sealed class ApiException(int status, string message) : Exception(message
 }
 
 /// <summary>Cliente HTTPS/REST hacia el API Gateway (Identity, Sync y Business).</summary>
-public sealed class ApiClient(IHttpClientFactory factory, Session session)
+public sealed partial class ApiClient(IHttpClientFactory factory, Session session)
 {
     public Task<LoginResponse> LoginAsync(LoginRequest request) =>
         SendAsync<LoginResponse>(HttpMethod.Post, "/auth/login", request, authenticated: false);
@@ -33,6 +33,9 @@ public sealed class ApiClient(IHttpClientFactory factory, Session session)
 
     public Task<UserDto> CreateUserAsync(CreateUserRequest request) =>
         SendAsync<UserDto>(HttpMethod.Post, "/api/users", request);
+
+    public Task UpdateUserAsync(Guid id, UpdateUserRequest request) =>
+        SendAsync<object>(HttpMethod.Put, $"/api/users/{id}", request);
 
     public Task SetUserActiveAsync(Guid id, bool active) =>
         SendAsync<object>(HttpMethod.Post, $"/api/users/{id}/{(active ? "activate" : "deactivate")}");

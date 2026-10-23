@@ -6,14 +6,14 @@ using Pharmacy.ServiceDefaults;
 var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 builder.Services.AddSingleton(TimeProvider.System);
-builder.Services.AddPharmacyDb<BusinessDb>(builder.Configuration, "Business");
+builder.Services.AddPharmacyDb<BusinessDb>(builder.Configuration, "Business", historySchema: "inventory");
 builder.Services.AddScoped<EventApplier>();
 
 var app = builder.Build();
 app.UseServiceDefaults();
 app.MapBusinessEndpoints();
 
-await app.Services.EnsureSchemaAsync<BusinessDb>("inventory.products", async db =>
+await app.Services.MigrateAsync<BusinessDb>(async db =>
 {
     if (await db.Products.AnyAsync()) return;
     db.Products.AddRange(DemoCatalog.Products());

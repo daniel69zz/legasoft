@@ -17,6 +17,14 @@ public class CashierFlowTests
     private static readonly string? Screenshots = Environment.GetEnvironmentVariable("SCREENSHOTS_DIR");
 
     [AvaloniaFact]
+    [Trait("JiraIssue", "SCRUM-2")]
+    [Trait("JiraIssue", "SCRUM-25")]
+    [Trait("JiraIssue", "SCRUM-21")]
+    [Trait("JiraIssue", "SCRUM-26")]
+    [Trait("Requirement", "RF-001")]
+    [Trait("Requirement", "RF-052")]
+    [Trait("Requirement", "RF-037")]
+    [Trait("Requirement", "RF-058")]
     public async Task Cajero_abre_caja_vende_y_cierra()
     {
         var main = App.Services.GetRequiredService<MainWindowViewModel>();
@@ -31,6 +39,7 @@ public class CashierFlowTests
         await login.LoginCommand.ExecuteAsync(null);
         var shell = Assert.IsType<ShellViewModel>(main.Current);
         Assert.DoesNotContain(shell.Items, i => i.Title == "Usuarios");
+        Assert.DoesNotContain(shell.Items, i => i.Title == "Catálogo");
 
         // Caja
         shell.Selected = shell.Items.Single(i => i.Title == "Caja");
