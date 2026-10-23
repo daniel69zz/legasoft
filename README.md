@@ -37,7 +37,11 @@ La documentación se escribe en LaTeX y se compila a PDF con `make`.
 │   ├── c4/              Diagramas del modelo C4 (contexto, contenedores, componentes)
 │   ├── uml/             Diagramas UML (casos de uso, clases, secuencia)
 │   └── bpmn/            Modelos de procesos de negocio en BPMN (AS-IS / TO-BE)
+├── Pharmacy.sln         Solución .NET 8 del prototipo (ver src/README.md)
+├── docker-compose.yml   Backend completo para desarrollo
+├── deploy/              Dockerfile de los servicios y schemas de PostgreSQL
 ├── src/
+│   ├── shared/          Pharmacy.Domain y Pharmacy.Application (lógica compartida)
 │   ├── frontend/        Código fuente de la interfaz de usuario
 │   └── backend/         Código fuente del servidor y la lógica de negocio
 ├── tests/
@@ -130,6 +134,8 @@ la facturación es simulada.
 | Documento 3 | Arquitectura con modelo C4 (niveles 1 a 3) y ADR-001 a ADR-008 | [`docs/arquitectura/`](docs/arquitectura/) |
 | Diagramas C4 | Contexto, contenedores y componentes (Desktop y Backend) | [`modelos/c4/`](modelos/c4/) |
 | Trazabilidad | NEC → RF/RNF → HU → componente C4 → caso de prueba | [`docs/trazabilidad/`](docs/trazabilidad/) |
+
+| Prototipo inicial | Desktop Avalonia local-first, servicios cloud y pruebas xUnit | [`src/`](src/README.md) |
 
 Las tecnologías seleccionadas (C# .NET 8, Avalonia UI, ASP.NET Core, SQLite,
 PostgreSQL, Docker) están registradas como ADR en

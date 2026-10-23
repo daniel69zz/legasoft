@@ -16,3 +16,5 @@ descrita en el Documento 3 y en
 | Base local | SQLite (una por puesto) con EF Core / Dapper |
 | Sincronización | Outbox + Sync Worker (BackgroundService) hacia el Sync Service |
 | Actualizaciones | Velopack |
+
+El código del prototipo y cómo ejecutarlo se describen en [`src/README.md`](../README.md).
