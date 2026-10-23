@@ -15,6 +15,7 @@ public static class BusinessEndpoints
     public static void MapBusinessEndpoints(this WebApplication app)
     {
         MapInternal(app);
+        app.MapCatalogEndpoints();
 
         var api = app.MapGroup("/api");
 
