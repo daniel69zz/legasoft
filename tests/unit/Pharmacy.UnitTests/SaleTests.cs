@@ -12,6 +12,8 @@ public class SaleTests
         Guid.NewGuid(), Now);
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-22")]
+    [Trait("Requirement", "RF-045")]
     public void Calcula_total_y_cambio()
     {
         var p = Product(price: 2.50m);
@@ -26,6 +28,8 @@ public class SaleTests
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-29")]
+    [Trait("Requirement", "RF-091")]
     public void Exige_receta_para_medicamentos_que_la_requieren()
     {
         var p = Product(prescription: true);
@@ -38,6 +42,8 @@ public class SaleTests
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-22")]
+    [Trait("Requirement", "RF-044")]
     public void Rechaza_efectivo_insuficiente()
     {
         var p = Product(price: 45m);
@@ -48,6 +54,8 @@ public class SaleTests
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-30")]
+    [Trait("Requirement", "RF-096")]
     public void Descuento_autorizado_reduce_el_total_y_no_supera_el_subtotal()
     {
         var p = Product(price: 10m);
@@ -60,6 +68,8 @@ public class SaleTests
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-23")]
+    [Trait("Requirement", "RF-048")]
     public void Anular_exige_motivo()
     {
         var p = Product();
@@ -73,6 +83,8 @@ public class SaleTests
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-15")]
+    [Trait("Requirement", "RF-011")]
     public void No_se_vende_un_producto_desactivado()
     {
         var p = Product();
