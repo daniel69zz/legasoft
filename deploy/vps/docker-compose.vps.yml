@@ -1,0 +1,14 @@
+# Ajustes del VPS sobre docker-compose.yml. Nada queda expuesto a Internet:
+# el Gateway y Mailpit solo escuchan en 127.0.0.1 y PostgreSQL no publica puertos.
+#   docker compose -p farmacia -f docker-compose.yml -f deploy/vps/docker-compose.vps.yml up -d
+services:
+  postgres:
+    restart: unless-stopped
+    ports: !reset []
+
+  gateway:
+    ports: !override ["127.0.0.1:${GATEWAY_PORT:-5100}:8080"]
+
+  mailpit:
+    restart: unless-stopped
+    ports: !override ["127.0.0.1:${MAILPIT_PORT:-8025}:8025"]
