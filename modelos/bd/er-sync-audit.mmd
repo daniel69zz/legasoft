@@ -1,0 +1,32 @@
+---
+title: Sync Service y auditoría · schemas sync, audit
+---
+erDiagram
+    RECEIVED_EVENTS {
+        uuid event_id PK "clave de idempotencia"
+        text device_id
+        text module
+        text event_type
+        uuid entity_id
+        int version
+        timestamptz timestamp
+        timestamptz received_at
+        text payload "JSON"
+    }
+    MODULE_VERSIONS {
+        text device_id PK
+        text module PK
+        bigint version
+        timestamptz updated_at
+    }
+    AUDIT_ENTRIES {
+        uuid id PK
+        timestamptz occurred_at
+        text user_name
+        text device_id
+        text action
+        text detail
+        uuid event_id "nullable"
+    }
+    RECEIVED_EVENTS }o..|| MODULE_VERSIONS : "avanza la versión"
+    RECEIVED_EVENTS |o..o| AUDIT_ENTRIES : "origen del registro"
