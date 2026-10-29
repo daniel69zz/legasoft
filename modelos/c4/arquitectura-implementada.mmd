@@ -1,0 +1,57 @@
+---
+title: Arquitectura implementada · Sistema de Gestión para Farmacéutica (Sprint 1)
+---
+flowchart TB
+    cajero(["👤 Cajero<br/><i>solo en PUESTO-01 / PUESTO-02</i>"])
+    admin(["👤 Administrador · Gerentes · Contadora<br/>Farmacéutico · Almacén"])
+
+    subgraph puesto["PUESTO DE CAJA (local)"]
+        direction TB
+        desktop["<b>Aplicación Desktop</b><br/>C# .NET 8 · Avalonia UI · MVVM<br/>Pharmacy.Domain + Pharmacy.Application<br/><i>Punto de venta, caja, inventario,<br/>catálogo, reportes, usuarios</i>"]
+        worker["<b>Sync Worker</b><br/>BackgroundService en el mismo proceso<br/><i>Envía el Outbox en orden y<br/>descarga catálogo y precios</i>"]
+        sqlite[("<b>SQLite local</b><br/>EF Core<br/><i>catálogo, lotes, ventas, caja,<br/>sync_outbox, credenciales en caché</i>")]
+        desktop --> sqlite
+        worker --> sqlite
+        desktop -. "mismo proceso" .- worker
+    end
+
+    subgraph nube["BACKEND (Docker Compose)"]
+        direction TB
+        gateway["<b>API Gateway</b><br/>ASP.NET Core + YARP · :5100<br/><i>rutas, límite por puesto,<br/>X-Correlation-Id, Swagger UI</i>"]
+        identity["<b>Identity Service</b><br/>ASP.NET Core · JWT<br/><i>login, usuarios y roles,<br/>equipos autorizados, asistencia,<br/>bloqueo por intentos</i>"]
+        sync["<b>Sync Service</b><br/>ASP.NET Core Web API<br/><i>/sync/push · /sync/pull<br/>idempotencia por event_id</i>"]
+        business["<b>Business Service</b><br/>ASP.NET Core Web API<br/><i>catálogo, inventario, ventas,<br/>caja, dashboard, auditoría</i>"]
+        notification["<b>Notification Worker</b><br/>.NET BackgroundService<br/><i>alertas de vencimiento<br/>y stock mínimo</i>"]
+        pg[("<b>PostgreSQL 16</b> · :5434<br/>migraciones EF Core<br/><i>schemas identity · inventory · sales<br/>cash · audit · sync<br/>un usuario por servicio</i>")]
+        mail["<b>Mailpit</b> · :8025<br/>SMTP de desarrollo"]
+
+        gateway -- "/auth, /api/users" --> identity
+        gateway -- "/sync/*" --> sync
+        gateway -- "/api/*" --> business
+        sync -- "/internal/events<br/>X-Internal-Key" --> business
+        notification -- "/internal/alerts<br/>X-Internal-Key" --> business
+        notification -- "SMTP" --> mail
+        identity -- "schema identity" --> pg
+        sync -- "schema sync" --> pg
+        business -- "inventory · sales · cash · audit" --> pg
+    end
+
+    cajero --> desktop
+    admin --> desktop
+    desktop -- "HTTP/JSON + JWT<br/>login y consultas en línea" --> gateway
+    worker -- "HTTP/JSON + JWT<br/>lotes de eventos" --> gateway
+
+    ci["<b>GitHub Actions</b><br/>build + 62 pruebas xUnit<br/>en cada pull request"]
+
+    classDef local fill:#e3f1ee,stroke:#0f7a6a,color:#12242c
+    classDef svc fill:#ffffff,stroke:#0f7a6a,color:#12242c
+    classDef db fill:#0f7a6a,stroke:#0b5e52,color:#ffffff
+    classDef ext fill:#f4f4f2,stroke:#8a9a9e,color:#12242c,stroke-dasharray:4 3
+    classDef person fill:#12242c,stroke:#12242c,color:#ffffff
+    class desktop,worker local
+    class gateway,identity,sync,business,notification svc
+    class sqlite,pg db
+    class mail,ci ext
+    class cajero,admin person
+    style puesto fill:#f3f8f7,stroke:#0f7a6a,stroke-width:2px
+    style nube fill:#f7f9fa,stroke:#12242c,stroke-width:2px
