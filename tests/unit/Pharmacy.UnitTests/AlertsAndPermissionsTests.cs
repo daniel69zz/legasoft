@@ -11,7 +11,7 @@ public class AlertsAndPermissionsTests
     [InlineData(0, ExpiryStatus.Vencido)]
     [InlineData(60, ExpiryStatus.PorVencer)]
     [InlineData(61, ExpiryStatus.Vigente)]
-    [Trait("JiraIssue", "SCRUM-17")]
+    [Trait("JiraIssue", "SCRUM-59")]
     [Trait("Requirement", "RF-022")]
     public void Clasifica_vencimientos_con_umbral_de_60_dias(int days, ExpiryStatus expected)
     {
@@ -19,7 +19,7 @@ public class AlertsAndPermissionsTests
     }
 
     [Fact]
-    [Trait("JiraIssue", "SCRUM-16")]
+    [Trait("JiraIssue", "SCRUM-59")]
     [Trait("Requirement", "RF-018")]
     public void Alerta_de_stock_minimo_usa_solo_stock_vigente()
     {

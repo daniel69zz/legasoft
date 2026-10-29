@@ -8,7 +8,7 @@ namespace Pharmacy.UnitTests;
 public class FefoAllocatorTests
 {
     [Fact]
-    [Trait("JiraIssue", "SCRUM-17")]
+    [Trait("JiraIssue", "SCRUM-60")]
     [Trait("Requirement", "RF-095")]
     public void Asigna_primero_el_lote_que_vence_antes()
     {
@@ -23,7 +23,7 @@ public class FefoAllocatorTests
     }
 
     [Fact]
-    [Trait("JiraIssue", "SCRUM-17")]
+    [Trait("JiraIssue", "SCRUM-60")]
     [Trait("Requirement", "RF-095")]
     public void Reparte_entre_lotes_cuando_el_primero_no_alcanza()
     {
@@ -37,7 +37,7 @@ public class FefoAllocatorTests
     }
 
     [Fact]
-    [Trait("JiraIssue", "SCRUM-17")]
+    [Trait("JiraIssue", "SCRUM-60")]
     [Trait("Requirement", "RF-024")]
     public void Nunca_asigna_lotes_vencidos()
     {
@@ -51,7 +51,7 @@ public class FefoAllocatorTests
     }
 
     [Fact]
-    [Trait("JiraIssue", "SCRUM-17")]
+    [Trait("JiraIssue", "SCRUM-60")]
     [Trait("Requirement", "RF-024")]
     public void Un_lote_que_vence_hoy_ya_no_es_vendible()
     {
@@ -60,7 +60,7 @@ public class FefoAllocatorTests
     }
 
     [Fact]
-    [Trait("JiraIssue", "SCRUM-21")]
+    [Trait("JiraIssue", "SCRUM-62")]
     [Trait("Requirement", "RF-039")]
     public void Rechaza_cuando_el_stock_vigente_no_alcanza()
     {
@@ -71,7 +71,7 @@ public class FefoAllocatorTests
     }
 
     [Fact]
-    [Trait("JiraIssue", "SCRUM-16")]
+    [Trait("JiraIssue", "SCRUM-59")]
     [Trait("Requirement", "RF-013")]
     public void Stock_vendible_excluye_vencidos()
     {
@@ -80,7 +80,7 @@ public class FefoAllocatorTests
     }
 
     [Fact]
-    [Trait("JiraIssue", "SCRUM-17")]
+    [Trait("JiraIssue", "SCRUM-60")]
     [Trait("Requirement", "RF-024")]
     public void Withdraw_de_un_lote_vencido_falla()
     {

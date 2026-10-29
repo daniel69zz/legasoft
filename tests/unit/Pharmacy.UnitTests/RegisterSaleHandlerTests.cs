@@ -74,7 +74,7 @@ public class RegisterSaleHandlerTests
     }
 
     [Fact]
-    [Trait("JiraIssue", "SCRUM-21")]
+    [Trait("JiraIssue", "SCRUM-62")]
     [Trait("Requirement", "RF-037")]
     public async Task Sin_caja_abierta_no_se_vende()
     {
@@ -84,7 +84,7 @@ public class RegisterSaleHandlerTests
     }
 
     [Fact]
-    [Trait("JiraIssue", "SCRUM-21")]
+    [Trait("JiraIssue", "SCRUM-62")]
     [Trait("Requirement", "RF-046")]
     public async Task Venta_aplica_FEFO_descuenta_stock_registra_caja_y_outbox_en_una_transaccion()
     {
@@ -106,7 +106,7 @@ public class RegisterSaleHandlerTests
     }
 
     [Fact]
-    [Trait("JiraIssue", "SCRUM-21")]
+    [Trait("JiraIssue", "SCRUM-62")]
     [Trait("Requirement", "RF-046")]
     public async Task Si_una_regla_falla_no_se_confirma_nada()
     {
@@ -121,7 +121,7 @@ public class RegisterSaleHandlerTests
     }
 
     [Fact]
-    [Trait("JiraIssue", "SCRUM-21")]
+    [Trait("JiraIssue", "SCRUM-62")]
     [Trait("Requirement", "RF-037")]
     public async Task Valida_el_comando_antes_de_ejecutar()
     {
@@ -130,7 +130,7 @@ public class RegisterSaleHandlerTests
     }
 
     [Fact]
-    [Trait("JiraIssue", "SCRUM-23")]
+    [Trait("JiraIssue", "SCRUM-64")]
     [Trait("Requirement", "RF-048")]
     public async Task Anular_devuelve_el_stock_a_su_lote()
     {

@@ -10,6 +10,9 @@ Cada puesto de caja guarda además una copia local en SQLite (ADR-002).
 | `LGS-MOD-BD-1` | Base central PostgreSQL (schemas `identity`, `inventory`, `sales`, `cash`, `audit`, `sync`) | Migraciones `Inicial` de cada servicio |
 | `LGS-MOD-BD-2` | Base local SQLite del puesto | `src/frontend/Pharmacy.Desktop/Data/LocalDb.cs` |
 
+Para entender de qué trata cada grupo de tablas, con ejemplos del negocio, lee
+[`contexto-tablas.md`](contexto-tablas.md).
+
 ## Migraciones
 
 | Servicio | Schemas | Migración | Historial |
@@ -30,6 +33,28 @@ Los servicios no comparten tablas: se comunican por API. Por eso las relaciones
 entre schemas (por ejemplo, `sales.sale_lines.product_id` → `inventory.products`)
 son **referencias lógicas** sin clave foránea, y en el diagrama se dibujan con
 línea punteada. La única clave foránea física es `sale_lines.sale_id` → `sales.id`.
+
+## Imágenes
+
+| Diagrama | SVG (vectorial) | PNG | Fuente Mermaid |
+| --- | --- | --- | --- |
+| Identity Service | `er-identity.svg` | `er-identity.png` | `er-identity.mmd` |
+| Business Service | `er-business.svg` | `er-business.png` | `er-business.mmd` |
+| Sync Service y auditoría | `er-sync-audit.svg` | `er-sync-audit.png` | `er-sync-audit.mmd` |
+| Base central completa | `er-completo.svg` | `er-completo.png` | `er-completo.mmd` |
+
+Se regeneran con Mermaid CLI:
+
+```sh
+docker run --rm -v "$PWD/modelos/bd":/data minlag/mermaid-cli:11.4.2 \
+  -i /data/er-business.mmd -o /data/er-business.svg -b white
+```
+
+![Identity Service](er-identity.svg)
+
+![Business Service](er-business.svg)
+
+![Sync Service y auditoría](er-sync-audit.svg)
 
 ## Base central (PostgreSQL)
 

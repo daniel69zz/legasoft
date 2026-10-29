@@ -1,0 +1,97 @@
+---
+title: Business Service · schemas inventory, sales, cash
+---
+erDiagram
+    PRODUCTS {
+        uuid id PK
+        text code UK "código de producto"
+        text name "nombre comercial"
+        text active_ingredient
+        text concentration
+        text presentation
+        text laboratory
+        text category
+        boolean requires_prescription
+        numeric sale_price "12,2"
+        int minimum_stock
+        text location
+        boolean is_active
+        timestamptz updated_at "versión para la descarga incremental"
+    }
+    LOTS {
+        uuid id PK
+        uuid product_id
+        text lot_number
+        date expiration_date
+        int quantity
+    }
+    STOCK_MOVEMENTS {
+        uuid id PK
+        uuid product_id
+        uuid lot_id
+        text type "Venta, Compra, Ajuste, Retiro"
+        int quantity
+        text reason
+        text user_name
+        timestamptz occurred_at
+    }
+    SALES {
+        uuid id PK
+        text receipt_number
+        text device_id
+        text cashier_name
+        uuid cash_session_id
+        timestamptz created_at
+        numeric subtotal
+        numeric discount
+        numeric total
+        numeric cash_received
+        numeric change
+        text prescription_number
+        text customer_name
+        text customer_tax_id
+        text status "Completada, Anulada"
+        text void_reason
+    }
+    SALE_LINES {
+        uuid id PK
+        uuid sale_id FK
+        uuid product_id
+        text product_name
+        uuid lot_id
+        text lot_number
+        int quantity
+        numeric unit_price
+    }
+    CASH_SESSIONS {
+        uuid id PK
+        text device_id
+        text cashier_name
+        timestamptz opened_at
+        numeric opening_amount
+        text status "Abierta, Cerrada"
+        numeric sales_total "nullable"
+        numeric expenses_total "nullable"
+        numeric expected_amount "nullable"
+        numeric counted_amount "nullable"
+        numeric difference "nullable"
+        text justification
+        timestamptz closed_at "nullable"
+    }
+    CASH_MOVEMENTS {
+        uuid id PK
+        uuid cash_session_id
+        text type "Venta, Egreso, AnulacionVenta"
+        numeric amount
+        text reason
+        text category
+        text user_name
+        timestamptz occurred_at
+    }
+    PRODUCTS ||..o{ LOTS : "tiene"
+    LOTS ||..o{ STOCK_MOVEMENTS : "registra"
+    SALES ||--|{ SALE_LINES : "contiene"
+    PRODUCTS ||..o{ SALE_LINES : "vendido en"
+    LOTS ||..o{ SALE_LINES : "sale del lote (FEFO)"
+    CASH_SESSIONS ||..o{ CASH_MOVEMENTS : "registra"
+    CASH_SESSIONS ||..o{ SALES : "cobra"
