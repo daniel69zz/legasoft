@@ -32,7 +32,7 @@ la guía: **20 SP**.
 
 | Clave | Tipo | Elemento | RF | MoSCoW | Responsable | SP |
 | --- | --- | --- | --- | --- | --- | --- |
-| SCRUM-1 | Tarea técnica | Repositorio, solución .NET, Gateway y pipeline CI con xUnit | — | Must | Luis | 3 |
+| SCRUM-69 | Tarea técnica | Repositorio, solución .NET, Gateway y pipeline CI con xUnit | — | Must | Luis | 3 |
 | SCRUM-2 | Historia | HU-01 Inicio de sesión con credenciales válidas | RF-001 | Must | Luis | 3 |
 | SCRUM-3 | Tarea técnica | Integración GitHub–Jira y transición automática al fusionar el PR | — | Must | Oziel | 2 |
 | SCRUM-10 | Historia | HU-02 Gestión de usuarios, roles y permisos | RF-002 a RF-005 | Must | Luis | 5 |
@@ -52,16 +52,16 @@ los próximos sprints.
 
 Capacidad por integrante: 4 h/día × 10 días − 8 h de eventos Scrum = **32 h**.
 
-### SCRUM-1 · Base técnica (3 SP)
+### SCRUM-69 · Base técnica (3 SP)
 
 | Clave | Tarea | Resp. | Horas |
 | --- | --- | --- | --- |
-| SCRUM-52 | Solución .NET 8 y docker-compose con PostgreSQL por schemas (ADR-001, ADR-005) | Luis | 5 |
-| SCRUM-53 | API Gateway YARP: rutas, límite de solicitudes y correlación | Pedro | 3 |
-| SCRUM-54 | Pipeline GitHub Actions: build y pruebas xUnit en cada PR | Pedro | 3 |
-| SCRUM-55 | Migraciones EF Core iniciales y modelo entidad-relación | Luis | 4 |
-| SCRUM-56 | Documentación de API: Swagger UI en el Gateway y colección Postman | Oziel | 3 |
-| SCRUM-51 | `[Trait]` JiraIssue y Requirement en todas las pruebas xUnit | Oziel | 2 |
+| SCRUM-70 | Solución .NET 8 y docker-compose con PostgreSQL por schemas (ADR-001, ADR-005) | Luis | 5 |
+| SCRUM-71 | API Gateway YARP: rutas, límite de solicitudes y correlación | Pedro | 3 |
+| SCRUM-72 | Pipeline GitHub Actions: build y pruebas xUnit en cada PR | Pedro | 3 |
+| SCRUM-73 | Migraciones EF Core iniciales y modelo entidad-relación | Luis | 4 |
+| SCRUM-74 | Documentación de API: Swagger UI en el Gateway y colección Postman | Oziel | 3 |
+| SCRUM-75 | `[Trait]` JiraIssue y Requirement en todas las pruebas xUnit | Oziel | 2 |
 
 ### SCRUM-2 · HU-01 Inicio de sesión (3 SP)
 
@@ -98,9 +98,9 @@ Capacidad por integrante: 4 h/día × 10 días − 8 h de eventos Scrum = **32 h
 
 | Integrante | Tareas | Horas | Capacidad | Uso |
 | --- | --- | --- | --- | --- |
-| Luis | SCRUM-52, 55, 42, 45, 48 | 29 | 32 | 91 % |
-| Pedro | SCRUM-53, 54, 43, 46, 49 | 29 | 32 | 91 % |
-| Oziel | SCRUM-56, 51, 3, 4, 44, 47, 50 | 27 | 32 | 84 % |
+| Luis | SCRUM-70, 73, 42, 45, 48 | 29 | 32 | 91 % |
+| Pedro | SCRUM-71, 72, 43, 46, 49 | 29 | 32 | 91 % |
+| Oziel | SCRUM-74, 75, 3, 4, 44, 47, 50 | 27 | 32 | 84 % |
 | **Equipo** | 21 tareas | **85** | **96** | **89 %** |
 
 Oziel tiene menos horas de desarrollo porque además facilita los eventos Scrum y
@@ -110,8 +110,8 @@ coordina con el cliente.
 
 | Semana | Foco |
 | --- | --- |
-| 1 (2–9 oct) | Base técnica (SCRUM-52 a 54), login de punta a punta (SCRUM-42, 43), matriz de permisos (SCRUM-44) e integración GitHub–Jira (SCRUM-3) |
-| 2 (12–16 oct) | API y pantalla de usuarios (SCRUM-45, 46), catálogo (SCRUM-48, 49), migraciones y API documentada (SCRUM-55, 56), pruebas con trazabilidad (SCRUM-4, 47, 50, 51) |
+| 1 (2–9 oct) | Base técnica (SCRUM-70 a 72), login de punta a punta (SCRUM-42, 43), matriz de permisos (SCRUM-44) e integración GitHub–Jira (SCRUM-3) |
+| 2 (12–16 oct) | API y pantalla de usuarios (SCRUM-45, 46), catálogo (SCRUM-48, 49), migraciones y API documentada (SCRUM-73, 56), pruebas con trazabilidad (SCRUM-4, 47, 50, 75) |
 
 ## 4. Criterios de aceptación
 
@@ -143,7 +143,7 @@ Los criterios Gherkin completos están en cada historia de Jira. Resumen:
 
 ## 7. Compromiso
 
-El equipo se compromete con el **objetivo del sprint** y con **18 SP** (SCRUM-1,
+El equipo se compromete con el **objetivo del sprint** y con **18 SP** (SCRUM-69,
 2, 3, 10 y 15).
 
 | Integrante | Conformidad |
@@ -151,3 +151,17 @@ El equipo se compromete con el **objetivo del sprint** y con **18 SP** (SCRUM-1,
 | Oziel Rodman Ramos Torrez | ☐ |
 | Luis Daniel Rojas Cáceres | ☐ |
 | Pedro Andrez Condorena Apaza | ☐ |
+
+## 8. Cambios posteriores al planning
+
+Esta planificación registra lo acordado el 2 de octubre de 2026. Durante el
+sprint hubo tres cambios, todos reflejados en Jira:
+
+| Cambio | Detalle | Efecto en el compromiso |
+| --- | --- | --- |
+| Tarea técnica recreada | SCRUM-1 y sus subtareas SCRUM-51 a 56 se eliminaron por error. Se recrearon como **SCRUM-69** y **SCRUM-70 a 75**; los commits y PR ya publicados conservan las claves antiguas. | Sin cambio (3 SP) |
+| SCRUM-3 retirada del sprint | La integración GitHub for Jira no se configuró y la tarea volvió al backlog. | 18 → **16 SP** (80 %) |
+| Historias incorporadas | Al cierre se incorporaron **SCRUM-57 a 68** (HU-03.1 a HU-22.1, 48 SP): funciones que el prototipo ya tenía implementadas y que se verificaron con pruebas automatizadas, para que el sprint refleje el incremento demostrable. | +48 SP incorporados |
+
+**Sprint 1 en Jira:** compromiso inicial de 16 SP más 48 SP incorporados, 64 SP en
+total, todos en *Finalizado*.

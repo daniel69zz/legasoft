@@ -10,6 +10,7 @@ al 3. Corresponden a las Figuras 1 a 4 del Documento 3
 | 2 — Contenedores | Entorno local y entorno cloud | `c4-2-contenedores.drawio` | `c4-2-contenedores.png` | `LGS-MOD-C4-2` |
 | 3 — Componentes | Aplicación Desktop | `c4-3a-componentes-desktop.drawio` | `c4-3a-componentes-desktop.png` | `LGS-MOD-C4-3A` |
 | 3 — Componentes | Backend Cloud | `c4-3b-componentes-backend.drawio` | `c4-3b-componentes-backend.png` | `LGS-MOD-C4-3B` |
+| Implementada | Arquitectura en ejecución del Sprint 1 (puertos, contenedores, protocolos) | `arquitectura-implementada.mmd` | `arquitectura-implementada.svg` / `.png` | `LGS-MOD-ARQ-1` |
 
 ## Contexto (nivel 1)
 
@@ -46,3 +47,14 @@ Después de editar uno, exporte la imagen con **Archivo → Exportar como → PN
 Las plantillas TikZ (`c4-contexto.tex`, `c4-contenedores.tex`,
 `c4-componentes.tex`) se conservan como plantilla institucional de Legasoft; los
 diagramas vigentes del proyecto son los `.drawio`.
+
+## Arquitectura implementada (Sprint 1)
+
+Los diagramas C4 describen el diseño completo del Documento 3. Este diagrama
+muestra lo que hoy está construido y en ejecución: los contenedores de Docker
+Compose con sus puertos, las rutas del Gateway, las llamadas internas protegidas
+con `X-Internal-Key` y los schemas de PostgreSQL de cada servicio. Del diseño
+todavía no están implementados el servidor de actualizaciones (Velopack), TLS en
+el Gateway ni la renovación de tokens.
+
+![Arquitectura implementada](arquitectura-implementada.svg)

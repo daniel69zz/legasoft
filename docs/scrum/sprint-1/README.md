@@ -2,7 +2,7 @@
 
 | Documento | Contenido |
 | --- | --- |
-| [`sprint-planning.md`](sprint-planning.md) | Objetivo, Sprint Backlog (18 SP de 20), tareas con clave Jira, responsables y horas, Definition of Done |
+| [`sprint-planning.md`](sprint-planning.md) | Objetivo, Sprint Backlog (16 SP comprometidos + 48 incorporados), tareas con clave Jira, responsables y horas, Definition of Done |
 | [`sprint-review.md`](sprint-review.md) | Incremento entregado, evidencias, métricas y retroalimentación |
 | [`retrospectiva.md`](retrospectiva.md) | Plantilla de la retrospectiva con puntos sugeridos |
 | [`plan-contingencia.md`](plan-contingencia.md) | Preparación, guion de la demo y respuestas ante fallas |

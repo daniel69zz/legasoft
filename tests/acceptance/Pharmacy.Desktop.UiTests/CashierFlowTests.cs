@@ -18,9 +18,9 @@ public class CashierFlowTests
 
     [AvaloniaFact]
     [Trait("JiraIssue", "SCRUM-2")]
-    [Trait("JiraIssue", "SCRUM-25")]
-    [Trait("JiraIssue", "SCRUM-21")]
-    [Trait("JiraIssue", "SCRUM-26")]
+    [Trait("JiraIssue", "SCRUM-65")]
+    [Trait("JiraIssue", "SCRUM-62")]
+    [Trait("JiraIssue", "SCRUM-66")]
     [Trait("Requirement", "RF-001")]
     [Trait("Requirement", "RF-052")]
     [Trait("Requirement", "RF-037")]

@@ -44,7 +44,7 @@ public class IdentityApiTests : IDisposable
     }
 
     [Fact]
-    [Trait("JiraIssue", "SCRUM-11")]
+    [Trait("JiraIssue", "SCRUM-57")]
     [Trait("Requirement", "RF-006")]
     public async Task Cajero_en_equipo_no_autorizado_es_rechazado()
     {
@@ -53,7 +53,7 @@ public class IdentityApiTests : IDisposable
     }
 
     [Fact]
-    [Trait("JiraIssue", "SCRUM-14")]
+    [Trait("JiraIssue", "SCRUM-58")]
     [Trait("Requirement", "RNF-004")]
     public async Task Cinco_intentos_fallidos_bloquean_la_cuenta()
     {

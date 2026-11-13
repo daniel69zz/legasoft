@@ -37,7 +37,7 @@ public class BusinessApiTests : IDisposable
     }
 
     [Fact]
-    [Trait("JiraIssue", "SCRUM-31")]
+    [Trait("JiraIssue", "SCRUM-68")]
     [Trait("Requirement", "RF-104")]
     public async Task Los_endpoints_internos_exigen_la_clave_interna()
     {
@@ -47,7 +47,7 @@ public class BusinessApiTests : IDisposable
     }
 
     [Fact]
-    [Trait("JiraIssue", "SCRUM-31")]
+    [Trait("JiraIssue", "SCRUM-68")]
     [Trait("Requirement", "RF-104")]
     public async Task Una_venta_sincronizada_se_consolida_y_descuenta_el_stock_central()
     {
@@ -72,7 +72,7 @@ public class BusinessApiTests : IDisposable
     }
 
     [Fact]
-    [Trait("JiraIssue", "SCRUM-35")]
+    [Trait("JiraIssue", "SCRUM-68")]
     [Trait("Requirement", "RF-102")]
     public async Task Un_evento_desconocido_se_rechaza_de_forma_permanente()
     {
@@ -83,7 +83,7 @@ public class BusinessApiTests : IDisposable
     }
 
     [Fact]
-    [Trait("JiraIssue", "SCRUM-32")]
+    [Trait("JiraIssue", "SCRUM-67")]
     [Trait("Requirement", "RF-073")]
     public async Task El_cajero_no_ve_el_dashboard_gerencial()
     {

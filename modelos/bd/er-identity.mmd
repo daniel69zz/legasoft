@@ -1,0 +1,38 @@
+---
+title: Identity Service · schema identity
+---
+erDiagram
+    USERS {
+        uuid id PK
+        varchar user_name UK "único, máx. 60"
+        text full_name
+        text password_hash "PBKDF2 (PasswordHasher)"
+        text role "uno de los 7 roles del SRS"
+        boolean is_active
+        int failed_attempts
+        timestamptz first_failed_at "nullable"
+        timestamptz locked_until "nullable"
+        timestamptz created_at
+    }
+    DEVICES {
+        text device_id PK
+        text description
+        boolean is_active
+    }
+    ATTENDANCE {
+        uuid id PK
+        text user_name
+        text device_id
+        date day
+        timestamptz first_login_at
+    }
+    USER_CHANGES {
+        uuid id PK
+        timestamptz occurred_at
+        text changed_by
+        text action
+        text detail
+    }
+    USERS ||..o{ ATTENDANCE : "registra asistencia"
+    DEVICES ||..o{ ATTENDANCE : "en el equipo"
+    USERS ||..o{ USER_CHANGES : "cambios auditados"

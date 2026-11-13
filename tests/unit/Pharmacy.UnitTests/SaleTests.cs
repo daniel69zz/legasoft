@@ -12,7 +12,7 @@ public class SaleTests
         Guid.NewGuid(), Now);
 
     [Fact]
-    [Trait("JiraIssue", "SCRUM-22")]
+    [Trait("JiraIssue", "SCRUM-62")]
     [Trait("Requirement", "RF-045")]
     public void Calcula_total_y_cambio()
     {
@@ -28,7 +28,7 @@ public class SaleTests
     }
 
     [Fact]
-    [Trait("JiraIssue", "SCRUM-29")]
+    [Trait("JiraIssue", "SCRUM-63")]
     [Trait("Requirement", "RF-091")]
     public void Exige_receta_para_medicamentos_que_la_requieren()
     {
@@ -42,7 +42,7 @@ public class SaleTests
     }
 
     [Fact]
-    [Trait("JiraIssue", "SCRUM-22")]
+    [Trait("JiraIssue", "SCRUM-62")]
     [Trait("Requirement", "RF-044")]
     public void Rechaza_efectivo_insuficiente()
     {
@@ -68,7 +68,7 @@ public class SaleTests
     }
 
     [Fact]
-    [Trait("JiraIssue", "SCRUM-23")]
+    [Trait("JiraIssue", "SCRUM-64")]
     [Trait("Requirement", "RF-048")]
     public void Anular_exige_motivo()
     {
