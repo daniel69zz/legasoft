@@ -1,5 +1,6 @@
-# Ajustes del VPS sobre docker-compose.yml. Nada queda expuesto a Internet:
-# el Gateway y Mailpit solo escuchan en 127.0.0.1 y PostgreSQL no publica puertos.
+# Ajustes del VPS sobre docker-compose.yml. El Gateway y Mailpit solo escuchan en 127.0.0.1 y
+# PostgreSQL no publica puertos. Con PUBLIC_DOMAIN definido en .env, deploy.sh activa el perfil
+# "tls": Caddy publica el Gateway en 443 con TLS 1.2+ y redirige HTTP a HTTPS (HU-T02.2, RNF-003).
 #   docker compose -p farmacia -f docker-compose.yml -f deploy/vps/docker-compose.vps.yml up -d
 services:
   postgres:
@@ -12,3 +13,19 @@ services:
   mailpit:
     restart: unless-stopped
     ports: !override ["127.0.0.1:${MAILPIT_PORT:-8025}:8025"]
+
+  caddy:
+    image: caddy:2.8-alpine
+    profiles: ["tls"]
+    restart: unless-stopped
+    depends_on: [gateway]
+    ports: ["80:80", "443:443"]
+    environment:
+      PUBLIC_DOMAIN: ${PUBLIC_DOMAIN:-localhost}
+      TLS_EMAIL: ${TLS_EMAIL:-internal}
+    volumes:
+      - ./deploy/vps/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+
+volumes:
+  caddy-data:
