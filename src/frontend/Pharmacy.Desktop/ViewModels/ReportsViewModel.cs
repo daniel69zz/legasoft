@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Pharmacy.Application.Contracts;
 using Pharmacy.Desktop.Services;
 
@@ -10,21 +11,20 @@ public sealed partial class ReportsViewModel(ApiClient api) : ViewModelBase, IAc
 {
     [ObservableProperty] private DashboardSummary? _summary;
 
+    // HU-20.1 (RF-075): filtros de auditoría.
+    [ObservableProperty] private DateTime? _auditFrom = DateTime.Today.AddDays(-6);
+    [ObservableProperty] private DateTime? _auditTo = DateTime.Today;
+    [ObservableProperty] private string _auditUser = "";
+    [ObservableProperty] private string _auditAction = "";
+    [ObservableProperty] private bool _canAudit = true;
+
     public ObservableCollection<SalesByCashierRow> SalesByCashier { get; } = [];
     public ObservableCollection<AuditEntryDto> Audit { get; } = [];
 
     public Task ActivateAsync() => RunAsync(async () =>
     {
         var summary = await api.GetDashboardAsync();
-        List<AuditEntryDto> audit;
-        try
-        {
-            audit = await api.GetAuditAsync();
-        }
-        catch (ApiException e) when (e.Status == 403)
-        {
-            audit = []; // la auditoría es solo para algunos roles
-        }
+        var audit = await SearchAuditAsync();
 
         // Se reemplaza todo junto, después de las llamadas, para que dos cargas seguidas no mezclen filas.
         Summary = summary;
@@ -33,4 +33,30 @@ public sealed partial class ReportsViewModel(ApiClient api) : ViewModelBase, IAc
         Audit.Clear();
         foreach (var a in audit) Audit.Add(a);
     });
+
+    private async Task<List<AuditEntryDto>> SearchAuditAsync()
+    {
+        try
+        {
+            var audit = await api.SearchAuditAsync(ToDate(AuditFrom), ToDate(AuditTo), AuditUser, AuditAction);
+            CanAudit = true;
+            return audit;
+        }
+        catch (ApiException e) when (e.Status == 403)
+        {
+            CanAudit = false; // la auditoría es solo para algunos roles
+            return [];
+        }
+    }
+
+    [RelayCommand]
+    private Task FilterAuditAsync() => RunAsync(async () =>
+    {
+        var audit = await SearchAuditAsync();
+        Audit.Clear();
+        foreach (var a in audit) Audit.Add(a);
+        if (audit.Count == 0) Info = "No hay registros de auditoría con esos filtros.";
+    });
+
+    private static DateOnly? ToDate(DateTime? value) => value is { } d ? DateOnly.FromDateTime(d) : null;
 }

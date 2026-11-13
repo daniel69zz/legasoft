@@ -97,10 +97,6 @@ public static class BusinessEndpoints
             await db.CashSessions.Where(s => s.Status == "Cerrada").OrderByDescending(s => s.ClosedAt).Take(100)
                 .ToListAsync()).RequirePermission(Permission.Reportes);
 
-        api.MapGet("/audit", async (BusinessDb db) =>
-            await db.Audit.OrderByDescending(a => a.OccurredAt).Take(200)
-                .Select(a => new AuditEntryDto(a.OccurredAt, a.UserName, a.Action, a.Detail)).ToListAsync())
-            .RequireAuthorization(p => p.RequireRole(Roles.Administrador, Roles.GerenteGeneral, Roles.Contadora));
     }
 
     /// <summary>Endpoints que solo invoca el Sync Service y el Notification Service; el Gateway no los expone.</summary>

@@ -47,6 +47,27 @@ public static class ReportingEndpoints
             .WithTags("Inventario")
             .WithSummary("Historial general de movimientos por período, tipo y producto (RF-019)");
 
+        api.MapGet("/audit", async (DateOnly? from, DateOnly? to, string? user, string? action, BusinessDb db,
+                TimeProvider time) =>
+            {
+                var query = db.Audit.AsQueryable();
+                if (from is not null || to is not null)
+                {
+                    var (start, end) = Period(from, to, time);
+                    query = query.Where(a => a.OccurredAt >= start && a.OccurredAt < end);
+                }
+                var entries = await query.OrderByDescending(a => a.OccurredAt).Take(MaxRows).ToListAsync();
+                return entries
+                    .Where(a => string.IsNullOrWhiteSpace(user) || a.UserName.Contains(user.Trim(), StringComparison.OrdinalIgnoreCase))
+                    .Where(a => string.IsNullOrWhiteSpace(action) || a.Action.Contains(action.Trim(), StringComparison.OrdinalIgnoreCase))
+                    .Take(200)
+                    .Select(a => new AuditEntryDto(a.OccurredAt, a.UserName, a.Action, a.Detail, a.DeviceId))
+                    .ToList();
+            })
+            .RequireAuthorization(p => p.RequireRole(Roles.Administrador, Roles.GerenteGeneral, Roles.Contadora))
+            .WithTags("Auditoría")
+            .WithSummary("Auditoría de operaciones críticas filtrada por período, usuario y operación (RF-075)");
+
         api.MapGet("/settings", async (BusinessDb db) => await OperationalSettings.GetAsync(db))
             .RequireAuthorization()
             .WithTags("Configuración")

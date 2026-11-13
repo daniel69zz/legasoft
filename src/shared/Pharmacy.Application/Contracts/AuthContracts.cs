@@ -11,4 +11,5 @@ public sealed record CreateUserRequest(string UserName, string FullName, string 
 
 public sealed record UpdateUserRequest(string FullName, string Role);
 
-public sealed record AuditEntryDto(DateTimeOffset OccurredAt, string UserName, string Action, string Detail);
+public sealed record AuditEntryDto(DateTimeOffset OccurredAt, string UserName, string Action, string Detail,
+    string DeviceId = "");
