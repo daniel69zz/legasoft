@@ -13,12 +13,20 @@ git checkout --quiet main
 git merge --ff-only --quiet origin/main
 echo "Desplegando $(git log -1 --format='%h %s')"
 
+# HU-T02.2: con un dominio configurado se levanta Caddy (TLS 1.2+) delante del Gateway.
+if [ -n "${PUBLIC_DOMAIN:-}" ]; then
+  export COMPOSE_PROFILES=tls
+fi
+
 docker compose -p farmacia -f docker-compose.yml -f deploy/vps/docker-compose.vps.yml \
   up -d --build --remove-orphans
 
 for _ in $(seq 1 40); do
   if curl -fsS "http://127.0.0.1:${GATEWAY_PORT:-5100}/health" >/dev/null; then
     echo "Gateway saludable en 127.0.0.1:${GATEWAY_PORT:-5100}"
+    if [ -n "${PUBLIC_DOMAIN:-}" ]; then
+      echo "Publicado con TLS en https://${PUBLIC_DOMAIN}"
+    fi
     docker compose -p farmacia ps --format '{{.Service}}: {{.Status}}'
     exit 0
   fi

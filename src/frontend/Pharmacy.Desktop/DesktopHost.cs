@@ -44,11 +44,12 @@ public static class DesktopHost
         s.AddScoped<CashHandlers>();
         s.AddScoped<InventoryQueries>();
 
+        var gateway = GatewayUrlPolicy.Validate(options.GatewayUrl);
         s.AddHttpClient("gateway", c =>
         {
-            c.BaseAddress = new Uri(options.GatewayUrl);
+            c.BaseAddress = gateway;
             c.Timeout = TimeSpan.FromSeconds(8);
-        });
+        }).ConfigurePrimaryHttpMessageHandler(GatewayUrlPolicy.CreateHandler);
         s.AddSingleton<ApiClient>();
         s.AddSingleton<AuthService>();
         s.AddSingleton<Operations>();
