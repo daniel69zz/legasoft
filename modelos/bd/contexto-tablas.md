@@ -38,7 +38,7 @@ todas las personas (HU-01, HU-02, HU-03, HU-04).
 | Tabla | De qué trata |
 | --- | --- |
 | `users` | Una fila por persona que usa el sistema: usuario, nombre, contraseña guardada como hash (nunca en texto plano), **rol** (uno de los 7 del SRS: Administrador, Gerente General, Contadora, Gerente de Operaciones, Cajero, Farmacéutico, Almacén) y si está activo. También lleva el contador de intentos fallidos y la fecha hasta la que la cuenta queda bloqueada (RNF-004). |
-| `devices` | Las computadoras de caja autorizadas (`PUESTO-01`, `PUESTO-02`). Un cajero solo puede iniciar sesión desde uno de estos equipos (RF-006). |
+| `devices` | Las computadoras de caja autorizadas (`PUESTO-01`, `PUESTO-02`). Un cajero solo puede iniciar sesión desde uno de estos equipos (RF-006), y el administrador solo desde los que tienen `allows_administrator` (RF-007, Sprint 2). |
 | `attendance` | La asistencia de los cajeros: se crea una fila con la hora del **primer** inicio de sesión de cada día en cada equipo (RF-008). |
 | `user_changes` | Bitácora de la administración de usuarios: altas, cambios de rol, activaciones y desactivaciones, con quién lo hizo y cuándo (RF-075). |
 
@@ -58,13 +58,25 @@ porque cada lote tiene su propia fecha de vencimiento.
 | --- | --- |
 | `products` | El **catálogo único** de medicamentos (HU-05): código, nombre comercial, principio activo, concentración, presentación, laboratorio, categoría, si requiere receta, precio, stock mínimo, ubicación en el estante y si está activo. `updated_at` sirve para que los puestos descarguen solo lo que cambió. |
 | `lots` | Cada lote recibido de un producto: número de lote, fecha de vencimiento y unidades que quedan. Un producto tiene varios lotes. |
-| `stock_movements` | El historial de cada entrada o salida de unidades: venta, compra, ajuste o retiro, con lote, cantidad, motivo, usuario y fecha. Sirve para explicar por qué el stock tiene el valor que tiene. |
+| `stock_movements` | El historial de cada entrada o salida de unidades: venta, compra, ajuste, entrada, salida o retiro, con lote, cantidad, motivo, usuario y fecha. Los movimientos manuales (ajuste, entrada, salida y retiro) exigen motivo (RF-016). Sirve para explicar por qué el stock tiene el valor que tiene. |
+| `suppliers` | Los proveedores (HU-08): NIT único, razón social, contacto, teléfono, correo, dirección y si está activo. |
+| `purchases` | Cada compra a un proveedor (HU-09): número (`OC-00001`), proveedor, quién la registró y cuándo, estado (`Pendiente` o `Recibida`) y quién la recibió. |
+| `purchase_lines` | Lo pedido por producto (cantidad y costo unitario) y, tras la recepción, lo que llegó: unidades en buen estado, dañadas, número de lote, vencimiento y el lote creado. Lo que falta es pedido − recibido − dañado. |
+| `supplier_prices` | Precios que ofrece cada proveedor por producto (HU-10). Cada cambio es una fila nueva: la más reciente es el precio vigente y las anteriores forman el historial. |
+| `lot_feed` | Los lotes creados en el servidor al recibir compras, numerados en secuencia para que cada puesto descargue solo los nuevos. |
+| `settings` | Parámetros operativos que configura el administrador (HU-28): umbral de días para «por vencer» y frecuencia de las alertas por correo. |
 
 **Cómo se calculan las cosas que ve el usuario:**
 - **Stock vendible** de un producto = suma de las unidades de sus lotes **no vencidos**.
-- **Alerta de vencimiento:** un lote que vence en 60 días o menos aparece «por vencer»; uno con fecha pasada, «vencido».
+- **Alerta de vencimiento:** un lote que vence dentro del umbral (`settings.ExpiryThresholdDays`, 60 días por defecto) aparece «por vencer»; uno con fecha pasada, «vencido».
 - **Alerta de stock mínimo:** cuando el stock vendible es menor o igual a `products.minimum_stock`.
 - **FEFO** (*First Expired, First Out*): al vender se descuenta primero del lote que vence antes (HU-07).
+
+**Ejemplo de compra (Sprint 2):** la compra `OC-00001` pide 100 tabletas de
+paracetamol. Al recibirla llegan 90 en buen estado y 10 dañadas: la línea guarda
+90 recibidas y 10 dañadas, se crea un lote nuevo con 90 unidades, se registra un
+movimiento `Compra` de +90 y el lote se publica en `lot_feed` para que los puestos
+lo vendan con FEFO.
 
 ---
 
@@ -94,7 +106,7 @@ Controla el efectivo de cada turno de cajero, desde la apertura hasta el cierre
 
 | Tabla | De qué trata |
 | --- | --- |
-| `sessions` | Un turno de caja en un puesto: cajero, hora de apertura, monto inicial y estado (`Abierta` o `Cerrada`). Al cerrar se completan los totales de ventas y egresos, el **monto esperado**, el **monto contado** por denominación, la **diferencia** y la justificación, obligatoria si la diferencia no es cero (RF-106). |
+| `sessions` | Un turno de caja en un puesto: cajero, hora de apertura, monto inicial y estado (`Abierta`, `Cerrada`, `EntregaPendiente` o `Entregada`). Al cerrar se completan los totales de ventas y egresos, el **monto esperado**, el **monto contado** por denominación, la **diferencia** y la justificación, obligatoria si la diferencia no es cero (RF-106). La entrega al cajero entrante guarda a quién se entregó, el monto que declaró y cuándo confirmó (RF-061, RF-062). |
 | `movements` | Cada movimiento de efectivo del turno: ingreso por venta, egreso (con motivo y categoría) o devolución por anulación. |
 
 **Fórmula del cierre:** esperado = monto inicial + ventas − egresos.
@@ -142,5 +154,5 @@ prefijo de dominio en el nombre de la tabla:
 | `sales_sales`, `sales_lines` | Ventas hechas en ese puesto. |
 | `cash_sessions`, `cash_movements` | Caja del turno en ese puesto. |
 | `sync_outbox` | Cola de eventos pendientes de enviar al servidor (patrón *Outbox*). |
-| `sync_state` | Hasta qué versión del catálogo se descargó. |
+| `sync_state` | Hasta qué versión del catálogo y de los lotes se descargó, y el umbral de vencimiento recibido del servidor. |
 | `identity_cached_users` | Credenciales en caché para poder iniciar sesión sin conexión. |

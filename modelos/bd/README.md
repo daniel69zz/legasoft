@@ -1,13 +1,13 @@
 # Modelo de base de datos
 
 Modelo entidad-relación del **Sistema de Gestión para Farmacéutica**, tal como lo
-crean las migraciones EF Core del Sprint 1. Sigue el ADR-005: una sola instancia
+crean las migraciones EF Core de los Sprints 1 y 2. Sigue el ADR-005: una sola instancia
 de PostgreSQL, un *schema* por dominio y un usuario de base de datos por servicio.
 Cada puesto de caja guarda además una copia local en SQLite (ADR-002).
 
 | Código | Contenido | Fuente |
 | --- | --- | --- |
-| `LGS-MOD-BD-1` | Base central PostgreSQL (schemas `identity`, `inventory`, `sales`, `cash`, `audit`, `sync`) | Migraciones `Inicial` de cada servicio |
+| `LGS-MOD-BD-1` | Base central PostgreSQL (schemas `identity`, `inventory`, `sales`, `cash`, `audit`, `sync`) | Migraciones de cada servicio (tabla siguiente) |
 | `LGS-MOD-BD-2` | Base local SQLite del puesto | `src/frontend/Pharmacy.Desktop/Data/LocalDb.cs` |
 
 Para entender de qué trata cada grupo de tablas, con ejemplos del negocio, lee
@@ -17,8 +17,8 @@ Para entender de qué trata cada grupo de tablas, con ejemplos del negocio, lee
 
 | Servicio | Schemas | Migración | Historial |
 | --- | --- | --- | --- |
-| Identity Service | `identity` | `src/backend/Identity.Api/Migrations/*_Inicial.cs` | `identity.__ef_migrations_history` |
-| Business Service | `inventory`, `sales`, `cash`, `audit` | `src/backend/Business.Api/Migrations/*_Inicial.cs` | `inventory.__ef_migrations_history` |
+| Identity Service | `identity` | `Inicial`, `AdministradorEnEquiposAutorizados` (SCRUM-127) | `identity.__ef_migrations_history` |
+| Business Service | `inventory`, `sales`, `cash`, `audit` | `Inicial`, `Proveedores` (SCRUM-18), `ComprasYRecepcion` (SCRUM-19), `ParametrosOperativos` (SCRUM-130), `PreciosDeProveedores` (SCRUM-124), `EntregaDeCaja` (SCRUM-126) | `inventory.__ef_migrations_history` |
 | Sync Service | `sync` | `src/backend/Sync.Api/Migrations/*_Inicial.cs` | `sync.__ef_migrations_history` |
 
 Cada servicio aplica sus migraciones pendientes al arrancar (`MigrateAsync` en
@@ -32,7 +32,12 @@ dotnet ef migrations add <Nombre> -p src/backend/Business.Api -o Migrations
 Los servicios no comparten tablas: se comunican por API. Por eso las relaciones
 entre schemas (por ejemplo, `sales.sale_lines.product_id` → `inventory.products`)
 son **referencias lógicas** sin clave foránea, y en el diagrama se dibujan con
-línea punteada. La única clave foránea física es `sale_lines.sale_id` → `sales.id`.
+línea punteada. Las únicas claves foráneas físicas son `sale_lines.sale_id` →
+`sales.id` y `purchase_lines.purchase_id` → `purchases.id`.
+
+Las tablas de proveedores, compras, precios, parámetros y lotes publicados del
+Sprint 2 van en el schema `inventory`, que ya pertenece a `business_svc`: un
+schema nuevo obligaría a recrear el volumen de PostgreSQL del VPS.
 
 ## Imágenes
 
@@ -77,6 +82,7 @@ erDiagram
         text device_id PK
         text description
         boolean is_active
+        boolean allows_administrator "admite al perfil Administrador (RF-007)"
     }
     ATTENDANCE {
         uuid id PK
@@ -124,7 +130,7 @@ erDiagram
         uuid id PK
         uuid product_id
         uuid lot_id
-        text type "Venta, Compra, Ajuste, Retiro"
+        text type "Venta, Compra, Ajuste, Retiro, Entrada, Salida"
         int quantity
         text reason
         text user_name
@@ -132,6 +138,74 @@ erDiagram
     }
     PRODUCTS ||..o{ LOTS : "tiene"
     LOTS ||..o{ STOCK_MOVEMENTS : "registra"
+    SUPPLIERS ||..o{ PURCHASES : "provee"
+    PURCHASES ||--|{ PURCHASE_LINES : "contiene"
+    PRODUCTS ||..o{ PURCHASE_LINES : "comprado en"
+    PURCHASE_LINES |o..o| LOTS : "crea el lote"
+    LOTS ||..o| LOT_FEED : "se publica a los puestos"
+    SUPPLIERS ||..o{ SUPPLIER_PRICES : "ofrece"
+    PRODUCTS ||..o{ SUPPLIER_PRICES : "precio de"
+
+    %% ---------- inventory: compras, precios y parámetros (Sprint 2) ----------
+    SUPPLIERS {
+        uuid id PK
+        text tax_id UK "NIT"
+        text name "razón social"
+        text contact_name
+        text phone
+        text email
+        text address
+        boolean is_active
+        timestamptz updated_at
+    }
+    PURCHASES {
+        uuid id PK
+        text number UK "OC-00001"
+        uuid supplier_id
+        text supplier_name
+        text created_by
+        timestamptz created_at
+        text status "Pendiente, Recibida"
+        text received_by
+        timestamptz received_at "nullable"
+    }
+    PURCHASE_LINES {
+        uuid id PK
+        uuid purchase_id FK
+        int position "orden de registro"
+        uuid product_id
+        text product_name
+        int quantity "pedida"
+        numeric unit_cost "12,2"
+        int received_quantity "en buen estado"
+        int damaged_quantity
+        text lot_number
+        date expiration_date "nullable"
+        uuid lot_id "nullable, lote creado"
+    }
+    SUPPLIER_PRICES {
+        uuid id PK
+        uuid supplier_id
+        uuid product_id
+        numeric price "12,2"
+        text registered_by
+        timestamptz registered_at "el más reciente es el vigente"
+    }
+    LOT_FEED {
+        bigint sequence PK "versión para la descarga de lotes"
+        uuid lot_id
+        uuid product_id
+        text lot_number
+        date expiration_date
+        int quantity
+        timestamptz created_at
+    }
+    SETTINGS {
+        text key PK "ExpiryThresholdDays, AlertIntervalMinutes"
+        text value
+        timestamptz updated_at
+        text updated_by
+    }
 
     %% ---------- sales (Business Service) ----------
     SALES {
@@ -173,7 +247,7 @@ erDiagram
         text cashier_name
         timestamptz opened_at
         numeric opening_amount
-        text status "Abierta, Cerrada"
+        text status "Abierta, Cerrada, EntregaPendiente, Entregada"
         numeric sales_total "nullable"
         numeric expenses_total "nullable"
         numeric expected_amount "nullable"
@@ -181,6 +255,9 @@ erDiagram
         numeric difference "nullable"
         text justification
         timestamptz closed_at "nullable"
+        text handover_to "cajero entrante"
+        numeric handover_received_amount "nullable"
+        timestamptz handover_confirmed_at "nullable"
     }
     CASH_MOVEMENTS {
         uuid id PK
@@ -231,7 +308,7 @@ erDiagram
 | Schema | Tablas | Requisitos principales |
 | --- | --- | --- |
 | `identity` | `users`, `devices`, `attendance`, `user_changes` | RF-001 a RF-008, RF-075, RNF-004 |
-| `inventory` | `products`, `lots`, `stock_movements` | RF-009 a RF-025, RF-095, RF-109 |
+| `inventory` | `products`, `lots`, `stock_movements`, `suppliers`, `purchases`, `purchase_lines`, `supplier_prices`, `lot_feed`, `settings` | RF-009 a RF-036, RF-095, RF-099, RF-107 a RF-109 |
 | `sales` | `sales`, `sale_lines` | RF-037 a RF-048, RF-091, RF-096 |
 | `cash` | `sessions`, `movements` | RF-052 a RF-062, RF-106 |
 | `audit` | `entries` | RF-075 |
@@ -248,5 +325,5 @@ ventas y caja con prefijo de dominio y agrega la cola de salida (*Outbox*).
 | `sales_sales`, `sales_lines` | Ventas del puesto |
 | `cash_sessions`, `cash_movements` | Caja del turno |
 | `sync_outbox` | Eventos pendientes de enviar al Sync Service (clave `event_id`) |
-| `sync_state` | Versión del catálogo ya descargada |
+| `sync_state` | Versiones descargadas del catálogo (`inventory_version`) y de los lotes (`lots_version`), y el umbral de vencimiento recibido (`expiry_threshold_days`) |
 | `identity_cached_users` | Credenciales en caché para iniciar sesión sin conexión |

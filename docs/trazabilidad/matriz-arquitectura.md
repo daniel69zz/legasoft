@@ -9,6 +9,7 @@
 | --- | --- | --- |
 | Ventas | Aplicación Desktop, SQLite local, Business Service, PostgreSQL (`sales`) | SalesLocalService, Pharmacy.Domain, LocalRepositories, módulo de ventas del Business Service |
 | Inventario | Aplicación Desktop, SQLite local, Business Service, PostgreSQL (`inventory`) | InventoryLocalService, reglas FEFO de Pharmacy.Domain, módulo de inventario del Business Service |
+| Compras y proveedores | Aplicación Desktop, Business Service, Sync Service, PostgreSQL (`inventory`) | Módulo de compras y proveedores del Business Service (proveedores, compras, recepción, precios), publicación de lotes nuevos y descarga en el Sync Worker |
 | Caja | Aplicación Desktop, SQLite local, Business Service, PostgreSQL (`cash`) | CashLocalService, Pharmacy.Domain, módulo de caja del Business Service |
 | Operación sin conexión | Aplicación Desktop, SQLite local | Servicios locales, SQLite DbContext, OutboxRepository |
 | Sincronización | Sync Worker, API Gateway, Sync Service, PostgreSQL (`sync`) | SyncWorker, SyncStateRepository, SyncController, IdempotencyStore, VersionManager, EventDispatcher |
@@ -24,10 +25,10 @@
 | RNF | Atributo | Decisión arquitectónica | ADR |
 | --- | --- | --- | --- |
 | RNF-001, RNF-002 | Rendimiento | Operación local sobre SQLite (Dapper para lecturas intensivas); reportes consolidados en PostgreSQL | ADR-002, ADR-007 |
-| RNF-003, RNF-004 | Seguridad | JWT y refresh tokens, dispositivos autorizados, usuarios PostgreSQL con permisos por schema y TLS en todas las comunicaciones | ADR-005, ADR-006 |
+| RNF-003, RNF-004 | Seguridad | JWT y refresh tokens, dispositivos autorizados, usuarios PostgreSQL con permisos por schema y TLS 1.2 o superior en todas las comunicaciones (Caddy delante del Gateway en el VPS) | ADR-005, ADR-006 |
 | RNF-005 | Usabilidad | Una única aplicación de escritorio Avalonia (MVVM) para todos los roles | — |
 | RNF-006 | Disponibilidad | Ejecución local de ventas, caja e inventario; la caída de Internet o de un servicio cloud no detiene el puesto | ADR-002, ADR-003, ADR-008 |
-| RNF-007 | Mantenibilidad | Servicios con fronteras claras, lógica compartida sin dependencias de infraestructura y pruebas con xUnit | ADR-004, ADR-006 |
+| RNF-007 | Mantenibilidad | Servicios con fronteras claras, lógica compartida sin dependencias de infraestructura, pruebas con xUnit y cobertura medida en la CI con umbral del 70 % | ADR-004, ADR-006 |
 | RNF-008 | Respaldo / recuperación | PostgreSQL administrado con respaldos automáticos; Outbox como resguardo local | ADR-002, ADR-005 |
 
 ## Atributos de calidad transversales
