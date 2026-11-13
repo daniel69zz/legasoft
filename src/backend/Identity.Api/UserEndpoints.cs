@@ -72,7 +72,7 @@ public static class UserEndpoints
 
         admin.MapGet("/users/audit", async (IdentityDb db) =>
             await db.UserChanges.OrderByDescending(c => c.OccurredAt).Take(200)
-                .Select(c => new AuditEntryDto(c.OccurredAt, c.ChangedBy, c.Action, c.Detail)).ToListAsync());
+                .Select(c => new AuditEntryDto(c.OccurredAt, c.ChangedBy, c.Action, c.Detail, "")).ToListAsync());
 
         admin.MapGet("/devices", async (IdentityDb db) => await db.Devices.OrderBy(d => d.DeviceId).ToListAsync());
 

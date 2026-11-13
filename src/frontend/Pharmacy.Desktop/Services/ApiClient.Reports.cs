@@ -10,6 +10,16 @@ public sealed partial class ApiClient
             $"/api/inventory/movements?from={from:yyyy-MM-dd}&to={to:yyyy-MM-dd}" +
             (string.IsNullOrEmpty(type) ? "" : $"&type={Uri.EscapeDataString(type)}"));
 
+    public Task<List<AuditEntryDto>> SearchAuditAsync(DateOnly? from, DateOnly? to, string user, string action) =>
+        SendAsync<List<AuditEntryDto>>(HttpMethod.Get,
+            "/api/audit?" + string.Join("&", new[]
+            {
+                from is { } f ? $"from={f:yyyy-MM-dd}" : null,
+                to is { } t ? $"to={t:yyyy-MM-dd}" : null,
+                string.IsNullOrWhiteSpace(user) ? null : $"user={Uri.EscapeDataString(user)}",
+                string.IsNullOrWhiteSpace(action) ? null : $"action={Uri.EscapeDataString(action)}",
+            }.Where(p => p is not null)));
+
     public Task<OperationalSettingsDto> GetSettingsAsync() =>
         SendAsync<OperationalSettingsDto>(HttpMethod.Get, "/api/settings");
 

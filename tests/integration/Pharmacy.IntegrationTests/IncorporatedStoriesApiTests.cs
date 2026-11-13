@@ -87,6 +87,23 @@ public class IncorporatedStoriesApiTests : IDisposable
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-128")]
+    [Trait("Requirement", "RF-075")]
+    public async Task La_auditoria_filtra_por_usuario_y_operacion_y_el_cajero_recibe_403()
+    {
+        await SendAsync(EventTypes.StockMovementCreated, Guid.NewGuid(), new StockMovementPayload(Guid.NewGuid(),
+            Paracetamol, ParacetamolLot, "PCM-2401", "Ajuste", -1, "Rotura", "almacen", DateTimeOffset.UtcNow));
+        await PriceAsync(DemoPurchasing.DistribuidoraAndina, 0.30m);
+
+        var filtered = await _factory.ClientFor(Roles.GerenteGeneral).GetFromJsonAsync<List<AuditEntryDto>>(
+            "/api/audit?user=almacen&action=movimiento%20de%20inventario");
+
+        var entry = Assert.Single(filtered!);
+        Assert.Equal(("almacen", "PUESTO-01"), (entry.UserName, entry.DeviceId));
+        Assert.Equal(HttpStatusCode.Forbidden, (await _factory.ClientFor(Roles.Cajero).GetAsync("/api/audit")).StatusCode);
+    }
+
+    [Fact]
     [Trait("JiraIssue", "SCRUM-130")]
     [Trait("Requirement", "RF-099")]
     public async Task El_umbral_configurado_llega_a_los_puestos_y_cambia_las_alertas()
