@@ -25,7 +25,7 @@
 | RNF | Atributo | Decisión arquitectónica | ADR |
 | --- | --- | --- | --- |
 | RNF-001, RNF-002 | Rendimiento | Operación local sobre SQLite (Dapper para lecturas intensivas); reportes consolidados en PostgreSQL | ADR-002, ADR-007 |
-| RNF-003, RNF-004 | Seguridad | JWT y refresh tokens, dispositivos autorizados, usuarios PostgreSQL con permisos por schema y TLS 1.2 o superior en todas las comunicaciones (Caddy delante del Gateway en el VPS) | ADR-005, ADR-006 |
+| RNF-003, RNF-004 | Seguridad | JWT y refresh tokens, dispositivos autorizados, usuarios PostgreSQL con permisos por schema y TLS 1.2 o superior en todas las comunicaciones (nginx con Let's Encrypt delante del Gateway en el VPS) | ADR-005, ADR-006 |
 | RNF-005 | Usabilidad | Una única aplicación de escritorio Avalonia (MVVM) para todos los roles | — |
 | RNF-006 | Disponibilidad | Ejecución local de ventas, caja e inventario; la caída de Internet o de un servicio cloud no detiene el puesto | ADR-002, ADR-003, ADR-008 |
 | RNF-007 | Mantenibilidad | Servicios con fronteras claras, lógica compartida sin dependencias de infraestructura, pruebas con xUnit y cobertura medida en la CI con umbral del 70 % | ADR-004, ADR-006 |

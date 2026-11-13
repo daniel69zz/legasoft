@@ -155,7 +155,7 @@ dotnet test Pharmacy.sln --filter "Requirement=RF-001"
 | HU-08 · RF-026 a RF-029 | `Supplier`, `PurchasingEndpoints.cs`, `SuppliersViewModel` | `PurchaseTests`, `PurchasingApiTests` |
 | HU-09 · RF-030 a RF-033, RF-020, RF-107, RF-108 | `Purchase.Receive`, `PurchasingEndpoints.cs`, `PurchasesViewModel`, `/internal/lots` + `SyncWorker.PullLotsAsync` | `PurchaseTests`, `PurchasingApiTests`, `SyncApiTests` |
 | HU-06.3 · RF-014 a RF-016 | `AdjustStockHandler`, evento `StockMovementCreated`, `InventoryViewModel` | `AdjustStockHandlerTests`, `PurchasingApiTests`, `CashierFlowTests` |
-| HU-T02.2 · RNF-003 | `GatewayUrlPolicy`, Kestrel con TLS 1.2+, `deploy/vps/Caddyfile` | `GatewayUrlPolicyTests` |
+| HU-T02.2 · RNF-003 | `GatewayUrlPolicy`, Kestrel con TLS 1.2+, `deploy/vps/nginx-farmacia.conf` | `GatewayUrlPolicyTests` |
 | HU-07.2 · RF-025 | Tipo `Retiro` en `AdjustStockHandler` e Inventario | `IncorporatedStoriesTests` |
 | HU-07.3 · RF-021 | `InventoryQueries.GetLotDetailsAsync`, tarjeta «Stock por lote» | `IncorporatedStoriesTests` |
 | HU-06.4 · RF-019 | `GET /api/inventory/movements`, `MovementsViewModel` | `IncorporatedStoriesApiTests` |
@@ -183,8 +183,9 @@ dotnet test Pharmacy.sln --filter "Requirement=RF-001"
   respaldos (RF-082, RF-083) quedan para los próximos sprints.
 - La restricción de equipos del administrador (RF-007) se aplica al iniciar sesión
   en línea; sin conexión, el puesto valida solo las credenciales guardadas.
-- TLS (RNF-003): en el VPS lo termina Caddy con `PUBLIC_DOMAIN` en `.env`
-  (`deploy/vps/Caddyfile`), y el Desktop solo acepta `http://` contra localhost.
+- TLS (RNF-003): en el VPS lo termina el nginx del servidor con un certificado de
+  Let's Encrypt (`deploy/vps/nginx-farmacia.conf`, https://farmacia.bell7738.com), y
+  el Desktop solo acepta `http://` contra localhost.
   Sin refresh tokens.
 - La contraseña del usuario se conserva **solo en memoria** durante la sesión
   para reconectar tras un inicio sin conexión, y las credenciales de demostración
