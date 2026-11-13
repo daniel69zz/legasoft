@@ -3,9 +3,9 @@ name: Solución .NET
 on:
   push:
     branches: [main]
-    paths: ["src/**", "tests/**", "*.props", "Pharmacy.sln", "global.json", ".github/workflows/dotnet.yml"]
+    paths: ["src/**", "tests/**", "*.props", "Pharmacy.sln", "global.json", ".github/workflows/dotnet.yml", ".github/scripts/**"]
   pull_request:
-    paths: ["src/**", "tests/**", "*.props", "Pharmacy.sln", "global.json", ".github/workflows/dotnet.yml"]
+    paths: ["src/**", "tests/**", "*.props", "Pharmacy.sln", "global.json", ".github/workflows/dotnet.yml", ".github/scripts/**"]
 
 jobs:
   build-test:
@@ -21,6 +21,9 @@ jobs:
         run: dotnet build Pharmacy.sln --no-restore -c Release
       - name: Pruebas xUnit con cobertura
         run: dotnet test Pharmacy.sln --no-build -c Release --collect:"XPlat Code Coverage" --logger "trx;LogFileName=resultados.trx" --results-directory TestResults
+      # HU-T05.1 (RNF-007): resumen de cobertura y umbral del 70 % en los servicios de negocio críticos
+      - name: Cobertura (umbral 70 %)
+        run: python3 .github/scripts/cobertura.py TestResults 70
       - uses: actions/upload-artifact@v4
         if: always()
         with:
