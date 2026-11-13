@@ -83,3 +83,25 @@ docker compose -p farmacia start
 
 La ventana de escritorio se cierra por separado. Después de actualizar el código,
 usa up -d --build como se describe abajo para reconstruir los servicios.
+
+## 7. Actualizar desde GitHub
+
+Cierra primero la aplicación para que no bloquee los archivos de compilación.
+Comprueba la rama y los cambios locales:
+
+```powershell
+git status --short --branch
+git fetch origin
+```
+
+Si deseas ejecutar la versión de main y no tienes cambios pendientes, continúa:
+
+```powershell
+git switch main
+git pull --ff-only origin main
+docker compose -p farmacia up -d --build
+dotnet run --project src/frontend/Pharmacy.Desktop
+```
+
+Si Git informa cambios pendientes o divergencia, revisa el mensaje antes de
+continuar. No es necesario borrar las bases de datos para reconstruir las imágenes.
