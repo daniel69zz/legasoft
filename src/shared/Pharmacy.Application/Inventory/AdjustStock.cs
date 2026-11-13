@@ -25,14 +25,14 @@ public sealed class AdjustStockValidator : AbstractValidator<AdjustStockCommand>
             .WithMessage("Solo se registran a mano entradas, salidas y ajustes.");
         RuleFor(c => c.Quantity).NotEqual(0).WithMessage("Indique la cantidad del movimiento.");
         RuleFor(c => c.Quantity).GreaterThan(0)
-            .When(c => c.Type is StockMovementType.Entrada or StockMovementType.Salida)
-            .WithMessage("En entradas y salidas indique las unidades como un número positivo.");
+            .When(c => c.Type is StockMovementType.Entrada or StockMovementType.Salida or StockMovementType.Retiro)
+            .WithMessage("En entradas, salidas y retiros indique las unidades como un número positivo.");
         RuleFor(c => c.Reason).NotEmpty().WithMessage("Indique el motivo del movimiento (RF-016).");
     }
 }
 
 /// <summary>
-/// HU-06.3 (RF-014 a RF-016): entrada, salida o ajuste manual de un lote en el puesto. El
+/// HU-06.3 (RF-014 a RF-016) y HU-07.2 (RF-025): entrada, salida, ajuste o retiro manual de un lote en el puesto. El
 /// movimiento guarda usuario, fecha, hora y motivo, y viaja al servidor por el Outbox
 /// (StockMovementCreated) en la misma transacción que el cambio de stock (ADR-003).
 /// </summary>
@@ -52,9 +52,10 @@ public sealed class AdjustStockHandler(
         var lot = (await catalog.GetLotsAsync([command.ProductId], ct)).SingleOrDefault(l => l.Id == command.LotId)
             ?? throw new DomainException("El lote no existe para ese producto.");
 
+        // HU-07.2 (RF-025): el retiro, igual que la salida, resta unidades; acepta lotes vencidos.
         var quantity = command.Type switch
         {
-            StockMovementType.Salida => -command.Quantity,
+            StockMovementType.Salida or StockMovementType.Retiro => -command.Quantity,
             _ => command.Quantity,
         };
         if (quantity > 0) lot.Increase(quantity);

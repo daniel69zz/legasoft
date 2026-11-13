@@ -28,7 +28,8 @@ public sealed partial class InventoryViewModel(Operations operations, Session se
     [
         new(StockMovementType.Ajuste, "Ajuste", "Diferencia con signo: −3 resta tres unidades, 5 suma cinco."),
         new(StockMovementType.Entrada, "Entrada", "Unidades que ingresan al lote (por ejemplo, una devolución)."),
-        new(StockMovementType.Salida, "Salida", "Unidades que salen del lote (por ejemplo, una muestra o una baja)."),
+        new(StockMovementType.Salida, "Salida", "Unidades que salen del lote (por ejemplo, una muestra)."),
+        new(StockMovementType.Retiro, "Retiro (vencido o dañado)", "Baja de unidades vencidas o dañadas; acepta lotes vencidos (RF-025)."),
     ];
 
     [ObservableProperty] private string _search = "";
