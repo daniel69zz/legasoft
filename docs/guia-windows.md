@@ -105,3 +105,20 @@ dotnet run --project src/frontend/Pharmacy.Desktop
 
 Si Git informa cambios pendientes o divergencia, revisa el mensaje antes de
 continuar. No es necesario borrar las bases de datos para reconstruir las imágenes.
+
+## 8. Diagnosticar problemas de arranque
+
+```powershell
+docker compose -p farmacia ps
+docker compose -p farmacia logs --tail=100
+```
+
+Para limitar la salida a un servicio, por ejemplo Identity:
+
+```powershell
+docker compose -p farmacia logs --tail=100 identity
+```
+
+Si dotnet informa que Pharmacy.Desktop bloquea una DLL, cierra la aplicación
+y vuelve a ejecutar el comando. Si Docker no conecta con su motor, comprueba
+que Docker Desktop haya terminado de iniciar.
