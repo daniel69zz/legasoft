@@ -17,8 +17,8 @@
           <TextBlock Grid.Column="4" Classes="muted" Text="Próx. venc." HorizontalAlignment="Right" />
         </Grid>
         <ScrollViewer>
-          <ItemsControl ItemsSource="{Binding Rows}">
-            <ItemsControl.ItemTemplate>
+          <ListBox ItemsSource="{Binding Rows}" SelectedItem="{Binding Selected}" Background="Transparent">
+            <ListBox.ItemTemplate>
               <DataTemplate x:DataType="inv:StockRow">
                 <Border Classes="row">
                   <Grid ColumnDefinitions="*,120,80,80,110">
@@ -38,14 +38,69 @@
                   </Grid>
                 </Border>
               </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
+            </ListBox.ItemTemplate>
+          </ListBox>
         </ScrollViewer>
       </DockPanel>
     </Border>
 
     <ScrollViewer Grid.Column="1">
       <StackPanel Spacing="16">
+        <TextBlock Classes="error" Text="{Binding Error}"
+                   IsVisible="{Binding Error, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+        <TextBlock Classes="ok" Text="{Binding Info}"
+                   IsVisible="{Binding Info, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+        <!-- HU-06.3: entrada, salida o ajuste manual con motivo (RF-014 a RF-016) -->
+        <Border Classes="card" IsVisible="{Binding HasSelection}">
+          <StackPanel Spacing="8">
+            <TextBlock Classes="h2" Text="Movimiento manual (RF-014 a RF-016)" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding Selected.Name}" FontWeight="SemiBold" TextWrapping="Wrap" />
+            <StackPanel Spacing="8" IsVisible="{Binding CanAdjust}">
+              <ComboBox ItemsSource="{Binding Lots}" SelectedItem="{Binding Lot}" HorizontalAlignment="Stretch"
+                        PlaceholderText="Lote" />
+              <Grid ColumnDefinitions="*,120" ColumnSpacing="8">
+                <ComboBox ItemsSource="{Binding Types}" SelectedItem="{Binding MovementType}"
+                          HorizontalAlignment="Stretch" />
+                <NumericUpDown Grid.Column="1" Value="{Binding Quantity}" Increment="1" FormatString="0"
+                               ShowButtonSpinner="False" Watermark="Cantidad" />
+              </Grid>
+              <TextBlock Classes="muted" Text="{Binding MovementType.Hint}" TextWrapping="Wrap" />
+              <TextBox Watermark="Motivo (obligatorio)" Text="{Binding Reason}" />
+              <Button Classes="primary" Content="Registrar movimiento" Command="{Binding AdjustCommand}" />
+            </StackPanel>
+            <TextBlock Classes="muted" IsVisible="{Binding !CanAdjust}" TextWrapping="Wrap"
+                       Text="Su rol consulta el inventario, pero no registra movimientos." />
+          </StackPanel>
+        </Border>
+
+        <Border Classes="card" IsVisible="{Binding HasSelection}">
+          <StackPanel>
+            <TextBlock Classes="h2" Text="Historial de movimientos" />
+            <ItemsControl ItemsSource="{Binding Movements}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="inv:StockMovementRow">
+                  <Border Classes="row">
+                    <StackPanel>
+                      <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock FontWeight="SemiBold">
+                          <Run Text="{Binding Type, Mode=OneWay}" /><Run Text=" · lote " /><Run Text="{Binding LotNumber, Mode=OneWay}" />
+                        </TextBlock>
+                        <TextBlock Grid.Column="1" FontWeight="SemiBold"
+                                   Text="{Binding Quantity, StringFormat='{}{0:+0;-0}'}" />
+                      </Grid>
+                      <TextBlock Classes="muted" Text="{Binding Reason}" TextWrapping="Wrap" />
+                      <TextBlock Classes="muted">
+                        <Run Text="{Binding UserName, Mode=OneWay}" /><Run Text=" · " /><Run Text="{Binding OccurredAt, Mode=OneWay, StringFormat='{}{0:dd/MM/yyyy HH:mm}'}" />
+                      </TextBlock>
+                    </StackPanel>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </Border>
+
         <Border Classes="card">
           <StackPanel>
             <TextBlock Classes="h2" Text="Vencimientos (umbral 60 días)" />

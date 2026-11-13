@@ -32,6 +32,9 @@ public interface ICatalogRepository
     Task<List<Lot>> GetLotsAsync(IReadOnlyCollection<Guid> productIds, CancellationToken ct = default);
     Task<List<Lot>> GetAllLotsAsync(CancellationToken ct = default);
     void AddMovement(StockMovement movement);
+
+    /// <summary>Historial de movimientos de un producto, del más reciente al más antiguo.</summary>
+    Task<List<StockMovement>> GetMovementsAsync(Guid productId, int take = 50, CancellationToken ct = default);
 }
 
 public interface ISalesRepository

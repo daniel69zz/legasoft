@@ -43,6 +43,7 @@ public static class DesktopHost
         s.AddScoped<VoidSaleHandler>();
         s.AddScoped<CashHandlers>();
         s.AddScoped<InventoryQueries>();
+        s.AddScoped<AdjustStockHandler>();
 
         var gateway = GatewayUrlPolicy.Validate(options.GatewayUrl);
         s.AddHttpClient("gateway", c =>

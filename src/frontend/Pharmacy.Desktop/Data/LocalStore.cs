@@ -23,6 +23,12 @@ public sealed class LocalStore(LocalDb db) : ICatalogRepository, ISalesRepositor
 
     public void AddMovement(StockMovement movement) => db.StockMovements.Add(movement);
 
+    // SQLite no ordena DateTimeOffset en SQL: se ordena en memoria (el historial de un producto es corto).
+    public async Task<List<StockMovement>> GetMovementsAsync(Guid productId, int take = 50,
+        CancellationToken ct = default) =>
+        (await db.StockMovements.Where(m => m.ProductId == productId).ToListAsync(ct))
+        .OrderByDescending(m => m.OccurredAt).Take(take).ToList();
+
     public void Add(Sale sale) => db.Sales.Add(sale);
 
     public Task<Sale?> GetAsync(Guid id, CancellationToken ct = default) =>
