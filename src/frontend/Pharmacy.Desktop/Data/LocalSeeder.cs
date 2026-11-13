@@ -16,6 +16,18 @@ public static class LocalSeeder
     {
         db.Database.EnsureCreated();
         db.Database.ExecuteSqlRaw("PRAGMA journal_mode=WAL;");
+        // EnsureCreated no altera una base existente si el modelo incorpora tablas nuevas.
+        db.Database.ExecuteSqlRaw("""
+            CREATE TABLE IF NOT EXISTS sync_downloads (
+                Id INTEGER NOT NULL CONSTRAINT PK_sync_downloads PRIMARY KEY AUTOINCREMENT,
+                OccurredAt INTEGER NOT NULL,
+                Module TEXT NOT NULL,
+                ItemCount INTEGER NOT NULL,
+                Summary TEXT NOT NULL,
+                Details TEXT NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS IX_sync_downloads_OccurredAt ON sync_downloads (OccurredAt);
+            """);
 
         if (!db.Products.Any())
         {
