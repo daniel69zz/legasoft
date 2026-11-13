@@ -100,6 +100,7 @@ public sealed class SyncWorker(
         var state = await db.SyncState.FindAsync([CatalogVersionKey], ct);
         var since = long.TryParse(state?.Value, out var v) ? v : 0;
         var changes = await api.PullAsync(since, ct);
+        await SaveThresholdAsync(db, changes.ExpiryThresholdDays, ct);
         if (changes.Products.Count == 0) return;
 
         var ids = changes.Products.Select(p => p.Id).ToList();
@@ -124,6 +125,17 @@ public sealed class SyncWorker(
         state.Value = changes.Version.ToString();
         await db.SaveChangesAsync(ct);
         logger.LogInformation("Catálogo actualizado: {Count} productos", changes.Products.Count);
+    }
+
+    /// <summary>HU-28.1 (RF-099): guarda el umbral de vencimiento configurado en el servidor.</summary>
+    private static async Task SaveThresholdAsync(LocalDb db, int? days, CancellationToken ct)
+    {
+        if (days is null) return;
+        var state = await db.SyncState.FindAsync([LocalStore.ExpiryThresholdKey], ct);
+        if (state?.Value == days.ToString()) return;
+        if (state is null) db.SyncState.Add(state = new SyncState { Key = LocalStore.ExpiryThresholdKey });
+        state.Value = days.Value.ToString();
+        await db.SaveChangesAsync(ct);
     }
 
     /// <summary>

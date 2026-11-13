@@ -13,3 +13,6 @@ public sealed record DashboardSummary(
     IReadOnlyList<SalesByCashierRow> SalesByCashier);
 
 public sealed record AlertDto(string Kind, string Product, string Detail);
+
+/// <summary>HU-28.1 (RF-099): parámetros operativos de inventario.</summary>
+public sealed record OperationalSettingsDto(int ExpiryThresholdDays, int AlertIntervalMinutes);

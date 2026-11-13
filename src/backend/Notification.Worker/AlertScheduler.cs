@@ -29,6 +29,8 @@ public sealed class AlertScheduler(HttpClient http, NotificationOptions options,
             var delay = TimeSpan.FromMinutes(options.IntervalMinutes);
             try
             {
+                // HU-28.1 (RF-099): la frecuencia configurada por el administrador manda sobre la del despliegue.
+                delay = TimeSpan.FromMinutes(await IntervalMinutesAsync(stoppingToken) ?? options.IntervalMinutes);
                 await SendAlertsAsync(stoppingToken);
             }
             catch (Exception e) when (e is HttpRequestException or SmtpException)
@@ -46,6 +48,16 @@ public sealed class AlertScheduler(HttpClient http, NotificationOptions options,
                 return;
             }
         }
+    }
+
+    private async Task<int?> IntervalMinutesAsync(CancellationToken ct)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get, $"{options.BusinessUrl}/internal/settings");
+        request.Headers.Add("X-Internal-Key", options.InternalKey);
+        using var response = await http.SendAsync(request, ct);
+        if (!response.IsSuccessStatusCode) return null;
+        var settings = await response.Content.ReadFromJsonAsync<OperationalSettingsDto>(ct);
+        return settings?.AlertIntervalMinutes is > 0 and var minutes ? minutes : null;
     }
 
     private async Task SendAlertsAsync(CancellationToken ct)

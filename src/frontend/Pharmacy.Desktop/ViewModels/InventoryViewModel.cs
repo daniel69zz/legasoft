@@ -45,6 +45,12 @@ public sealed partial class InventoryViewModel(Operations operations, Session se
     public ObservableCollection<LotOption> Lots { get; } = [];
     public ObservableCollection<StockMovementRow> Movements { get; } = [];
 
+    [ObservableProperty] private int _expiryThresholdDays = InventoryAlerts.DefaultExpiryThresholdDays;
+
+    public string ExpiryTitle => $"Vencimientos (umbral {ExpiryThresholdDays} días)";
+
+    partial void OnExpiryThresholdDaysChanged(int value) => OnPropertyChanged(nameof(ExpiryTitle));
+
     public MovementTypeOption[] Types => MovementTypes;
 
     /// <summary>El Gerente General consulta el inventario, pero no lo modifica.</summary>
@@ -76,6 +82,7 @@ public sealed partial class InventoryViewModel(Operations operations, Session se
         Replace(Rows, overview.Stock);
         Replace(ExpiryAlerts, overview.ExpiryAlerts);
         Replace(LowStockAlerts, overview.LowStockAlerts);
+        ExpiryThresholdDays = overview.ExpiryThresholdDays;
         Selected = Rows.FirstOrDefault(r => r.ProductId == selectedId);
     }
 

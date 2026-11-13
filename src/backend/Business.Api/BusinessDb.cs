@@ -80,6 +80,15 @@ public class AuditEntry
     public Guid? EventId { get; set; }
 }
 
+/// <summary>HU-28.1 (RF-099): parámetro operativo configurable por el administrador.</summary>
+public class SettingEntry
+{
+    public string Key { get; set; } = "";
+    public string Value { get; set; } = "";
+    public DateTimeOffset UpdatedAt { get; set; }
+    public string UpdatedBy { get; set; } = "";
+}
+
 /// <summary>
 /// Lote creado en el servidor (recepción de una compra) pendiente de llegar a los puestos.
 /// La secuencia es la versión que usa la descarga incremental del Sync Worker.
@@ -108,6 +117,7 @@ public class BusinessDb(DbContextOptions<BusinessDb> options) : DbContext(option
     public DbSet<Supplier> Suppliers => Set<Supplier>();
     public DbSet<Purchase> Purchases => Set<Purchase>();
     public DbSet<LotFeedEntry> LotFeed => Set<LotFeedEntry>();
+    public DbSet<SettingEntry> Settings => Set<SettingEntry>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder b)
     {
@@ -192,6 +202,11 @@ public class BusinessDb(DbContextOptions<BusinessDb> options) : DbContext(option
             e.Ignore(x => x.Subtotal);
             e.Ignore(x => x.MissingQuantity);
             e.Ignore(x => x.Difference);
+        });
+        b.Entity<SettingEntry>(e =>
+        {
+            e.ToTable("settings", "inventory");
+            e.HasKey(x => x.Key);
         });
         b.Entity<LotFeedEntry>(e =>
         {

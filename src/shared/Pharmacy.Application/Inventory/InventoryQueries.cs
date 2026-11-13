@@ -7,14 +7,15 @@ public sealed record StockRow(Guid ProductId, string Code, string Name, string C
     decimal SalePrice, int Stock, int MinimumStock, string Location, DateOnly? NextExpiration, bool IsLowStock);
 
 public sealed record InventoryOverview(IReadOnlyList<StockRow> Stock, IReadOnlyList<ExpiryAlert> ExpiryAlerts,
-    IReadOnlyList<LowStockAlert> LowStockAlerts);
+    IReadOnlyList<LowStockAlert> LowStockAlerts, int ExpiryThresholdDays = InventoryAlerts.DefaultExpiryThresholdDays);
 
 /// <summary>Caso de uso InventoryLocalService: stock vendible, lotes y alertas (RF-012, RF-013, RF-018, RF-022).</summary>
-public sealed class InventoryQueries(ICatalogRepository catalog, IClock clock)
+public sealed class InventoryQueries(ICatalogRepository catalog, IClock clock, IOperationalSettings settings)
 {
     public async Task<InventoryOverview> GetOverviewAsync(string? search = null, CancellationToken ct = default)
     {
         var today = clock.Today;
+        var threshold = await settings.GetExpiryThresholdDaysAsync(ct);
         var products = await catalog.GetAllProductsAsync(ct);
         var lots = await catalog.GetAllLotsAsync(ct);
         var lotsByProduct = lots.ToLookup(l => l.ProductId);
@@ -33,8 +34,8 @@ public sealed class InventoryQueries(ICatalogRepository catalog, IClock clock)
             })
             .ToList();
 
-        return new InventoryOverview(rows, InventoryAlerts.Expiry(products, lots, today),
-            InventoryAlerts.LowStock(products, lots, today));
+        return new InventoryOverview(rows, InventoryAlerts.Expiry(products, lots, today, threshold),
+            InventoryAlerts.LowStock(products, lots, today), threshold);
     }
 
     /// <summary>RF-021: lotes con existencia de un producto, el que vence antes primero.</summary>

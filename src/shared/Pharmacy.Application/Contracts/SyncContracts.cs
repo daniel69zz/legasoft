@@ -46,5 +46,9 @@ public sealed record CatalogProductDto(Guid Id, string Code, string Name, string
     string Concentration, string Presentation, string Laboratory, string Category, bool RequiresPrescription,
     decimal SalePrice, int MinimumStock, string Location, bool IsActive, DateTimeOffset UpdatedAt);
 
-/// <summary>Cambios de catálogo y precios desde una versión (descarga incremental).</summary>
-public sealed record PullResponse(long Version, IReadOnlyList<CatalogProductDto> Products);
+/// <summary>
+/// Cambios de catálogo y precios desde una versión (descarga incremental). Incluye el umbral de
+/// vencimiento vigente (HU-28.1); es nulo cuando responde un servidor anterior al Sprint 2.
+/// </summary>
+public sealed record PullResponse(long Version, IReadOnlyList<CatalogProductDto> Products,
+    int? ExpiryThresholdDays = null);

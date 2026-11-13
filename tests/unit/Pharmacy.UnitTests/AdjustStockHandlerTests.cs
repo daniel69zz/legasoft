@@ -101,7 +101,7 @@ public class AdjustStockHandlerTests
     public async Task El_historial_muestra_tipo_lote_cantidad_y_motivo()
     {
         await _handler.HandleAsync(Command(StockMovementType.Ajuste, -3));
-        var queries = new InventoryQueries(_store, new FixedClock());
+        var queries = new InventoryQueries(_store, new FixedClock(), _store);
 
         var row = Assert.Single(await queries.GetMovementsAsync(_lot.ProductId));
 

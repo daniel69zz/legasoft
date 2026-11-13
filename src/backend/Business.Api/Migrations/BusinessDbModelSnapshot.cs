@@ -355,6 +355,32 @@ namespace Business.Api.Migrations
                     b.ToTable("sales", "sales");
                 });
 
+            modelBuilder.Entity("Business.Api.SettingEntry", b =>
+                {
+                    b.Property<string>("Key")
+                        .HasColumnType("text")
+                        .HasColumnName("key");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("value");
+
+                    b.HasKey("Key")
+                        .HasName("pk_settings");
+
+                    b.ToTable("settings", "inventory");
+                });
+
             modelBuilder.Entity("Pharmacy.Domain.Catalog.Product", b =>
                 {
                     b.Property<Guid>("Id")

@@ -17,6 +17,7 @@ public static class BusinessEndpoints
         MapInternal(app);
         app.MapCatalogEndpoints();
         app.MapPurchasingEndpoints();
+        app.MapReportingEndpoints();
 
         var api = app.MapGroup("/api");
 
@@ -79,7 +80,8 @@ public static class BusinessEndpoints
             var last7 = await SalesByCashierAsync(db, today.AddDays(-6), today);
             var products = await db.Products.ToListAsync();
             var lots = await db.Lots.ToListAsync();
-            var expiry = InventoryAlerts.Expiry(products, lots, today);
+            var settings = await OperationalSettings.GetAsync(db);
+            var expiry = InventoryAlerts.Expiry(products, lots, today, settings.ExpiryThresholdDays);
             return new DashboardSummary(
                 SalesToday: last7.Where(r => r.Day == today).Sum(r => r.Total),
                 SalesCountToday: last7.Where(r => r.Day == today).Sum(r => r.Sales),
@@ -124,9 +126,10 @@ public static class BusinessEndpoints
         {
             var products = (await db.Products.ToListAsync()).Where(p => p.UpdatedAt.UtcTicks > since).ToList();
             var version = products.Count == 0 ? since : products.Max(p => p.UpdatedAt.UtcTicks);
+            var settings = await OperationalSettings.GetAsync(db);
             return new PullResponse(version, products.Select(p => new CatalogProductDto(p.Id, p.Code, p.Name,
                 p.ActiveIngredient, p.Concentration, p.Presentation, p.Laboratory, p.Category, p.RequiresPrescription,
-                p.SalePrice, p.MinimumStock, p.Location, p.IsActive, p.UpdatedAt)).ToList());
+                p.SalePrice, p.MinimumStock, p.Location, p.IsActive, p.UpdatedAt)).ToList(), settings.ExpiryThresholdDays);
         });
 
         // Lotes creados en el servidor (recepción de compras) para que los puestos los vendan con FEFO.
@@ -139,12 +142,15 @@ public static class BusinessEndpoints
             return new LotPullResponse(lots.Count == 0 ? since : lots[^1].Sequence, lots);
         });
 
+        internalApi.MapGet("/settings", async (BusinessDb db) => await OperationalSettings.GetForWorkerAsync(db));
+
         internalApi.MapGet("/alerts", async (BusinessDb db, TimeProvider time) =>
         {
             var today = Today(time);
             var products = await db.Products.ToListAsync();
             var lots = await db.Lots.ToListAsync();
-            var expiry = InventoryAlerts.Expiry(products, lots, today).Select(e => new AlertDto(
+            var settings = await OperationalSettings.GetAsync(db);
+            var expiry = InventoryAlerts.Expiry(products, lots, today, settings.ExpiryThresholdDays).Select(e => new AlertDto(
                 e.Status == ExpiryStatus.Vencido ? "Vencido" : "Por vencer", e.ProductName,
                 $"Lote {e.LotNumber}: {e.Quantity} u., vence {e.ExpirationDate:dd/MM/yyyy} ({e.DaysToExpire} días)"));
             var low = InventoryAlerts.LowStock(products, lots, today).Select(a => new AlertDto("Stock mínimo",

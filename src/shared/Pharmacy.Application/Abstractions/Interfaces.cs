@@ -50,6 +50,15 @@ public interface ICashRepository
     Task<CashSession?> GetOpenAsync(string deviceId, CancellationToken ct = default);
 }
 
+/// <summary>
+/// HU-28.1 (RF-099): parámetros operativos que el administrador configura en el servidor y que
+/// los puestos reciben con la sincronización.
+/// </summary>
+public interface IOperationalSettings
+{
+    Task<int> GetExpiryThresholdDaysAsync(CancellationToken ct = default);
+}
+
 public interface IOutbox
 {
     void Add(OutboxMessage message);

@@ -1,0 +1,30 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Pharmacy.Desktop.ViewModels"
+             x:Class="Pharmacy.Desktop.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+  <Border Classes="card" MaxWidth="560" HorizontalAlignment="Left" VerticalAlignment="Top">
+    <StackPanel Spacing="10">
+      <TextBlock Classes="h2" Text="Parámetros operativos de inventario (RF-099)" />
+      <TextBlock Classes="muted" TextWrapping="Wrap"
+                 Text="Se guardan en el servidor. Los puestos aplican el umbral de vencimiento en la siguiente sincronización y el Notification Worker usa la nueva frecuencia en su próximo ciclo." />
+      <Grid ColumnDefinitions="*,140" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="10">
+        <StackPanel VerticalAlignment="Center">
+          <TextBlock Text="Umbral de alerta de vencimiento" FontWeight="SemiBold" />
+          <TextBlock Classes="muted" Text="Días antes del vencimiento en que un lote pasa a «Por vencer» (1 a 365)." TextWrapping="Wrap" />
+        </StackPanel>
+        <NumericUpDown Grid.Column="1" Value="{Binding ExpiryThresholdDays}" Minimum="1" Maximum="365" Increment="5"
+                       FormatString="0" VerticalAlignment="Center" />
+        <StackPanel Grid.Row="1" VerticalAlignment="Center">
+          <TextBlock Text="Frecuencia de las alertas por correo" FontWeight="SemiBold" />
+          <TextBlock Classes="muted" Text="Minutos entre envíos del Notification Worker (5 a 1440)." TextWrapping="Wrap" />
+        </StackPanel>
+        <NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding AlertIntervalMinutes}" Minimum="5" Maximum="1440"
+                       Increment="5" FormatString="0" VerticalAlignment="Center" />
+      </Grid>
+      <Button Classes="primary" Content="Guardar parámetros" Command="{Binding SaveCommand}" HorizontalAlignment="Left" />
+      <TextBlock Classes="error" Text="{Binding Error}" IsVisible="{Binding Error, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+      <TextBlock Classes="ok" Text="{Binding Info}" IsVisible="{Binding Info, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+    </StackPanel>
+  </Border>
+</UserControl>

@@ -14,7 +14,8 @@ using static Pharmacy.UnitTests.TestData;
 namespace Pharmacy.UnitTests;
 
 /// <summary>Repositorios en memoria que registran si se confirmó la transacción.</summary>
-internal sealed class FakeStore : ICatalogRepository, ISalesRepository, ICashRepository, IOutbox, IUnitOfWork
+internal sealed class FakeStore
+    : ICatalogRepository, ISalesRepository, ICashRepository, IOutbox, IUnitOfWork, IOperationalSettings
 {
     public List<Product> Products { get; } = [];
     public List<Lot> Lots { get; } = [];
@@ -40,6 +41,8 @@ internal sealed class FakeStore : ICatalogRepository, ISalesRepository, ICashRep
     public void Add(CashSession session) => Sessions.Add(session);
     public Task<CashSession?> GetOpenAsync(string deviceId, CancellationToken ct = default) =>
         Task.FromResult(Sessions.SingleOrDefault(s => s.DeviceId == deviceId && s.Status == CashSessionStatus.Abierta));
+    public int ExpiryThresholdDays { get; set; } = 60;
+    public Task<int> GetExpiryThresholdDaysAsync(CancellationToken ct = default) => Task.FromResult(ExpiryThresholdDays);
     public void Add(OutboxMessage message) => Outbox.Add(message);
     public Task SaveChangesAsync(CancellationToken ct = default)
     {
