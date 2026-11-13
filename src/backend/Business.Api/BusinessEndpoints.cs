@@ -57,6 +57,11 @@ public static class BusinessEndpoints
             db.StockMovements.Add(new StockMovement(Guid.NewGuid(), r.ProductId, lot.Id, StockMovementType.Compra,
                 r.Quantity, $"Recepción del lote {r.LotNumber}", http.User.FindFirst("name")?.Value ?? "?",
                 time.GetUtcNow()));
+            db.LotFeed.Add(new LotFeedEntry
+            {
+                LotId = lot.Id, ProductId = lot.ProductId, LotNumber = lot.LotNumber,
+                ExpirationDate = lot.ExpirationDate, Quantity = lot.Quantity, CreatedAt = time.GetUtcNow(),
+            });
             await db.SaveChangesAsync();
             return Results.Created($"/api/lots/{lot.Id}", new { lot.Id });
         }).RequirePermission(Permission.Inventario);
@@ -124,6 +129,16 @@ public static class BusinessEndpoints
                 p.SalePrice, p.MinimumStock, p.Location, p.IsActive, p.UpdatedAt)).ToList());
         });
 
+        // Lotes creados en el servidor (recepción de compras) para que los puestos los vendan con FEFO.
+        internalApi.MapGet("/lots", async (long since, BusinessDb db) =>
+        {
+            var lots = await db.LotFeed.Where(l => l.Sequence > since).OrderBy(l => l.Sequence).Take(500)
+                .Select(l => new LotChangeDto(l.Sequence, l.LotId, l.ProductId, l.LotNumber, l.ExpirationDate,
+                    l.Quantity))
+                .ToListAsync();
+            return new LotPullResponse(lots.Count == 0 ? since : lots[^1].Sequence, lots);
+        });
+
         internalApi.MapGet("/alerts", async (BusinessDb db, TimeProvider time) =>
         {
             var today = Today(time);
@@ -154,5 +169,5 @@ public static class BusinessEndpoints
     /// <summary>Bolivia usa UTC−4 todo el año (sin horario de verano).</summary>
     private static readonly TimeSpan LaPaz = TimeSpan.FromHours(-4);
 
-    private static DateOnly Today(TimeProvider time) => DateOnly.FromDateTime(time.GetUtcNow().ToOffset(LaPaz).DateTime);
+    internal static DateOnly Today(TimeProvider time) => DateOnly.FromDateTime(time.GetUtcNow().ToOffset(LaPaz).DateTime);
 }

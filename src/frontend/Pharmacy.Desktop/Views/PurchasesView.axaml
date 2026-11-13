@@ -1,0 +1,181 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Pharmacy.Desktop.ViewModels"
+             xmlns:conv="using:Pharmacy.Desktop.Converters"
+             xmlns:c="using:Pharmacy.Application.Contracts"
+             x:Class="Pharmacy.Desktop.Views.PurchasesView"
+             x:DataType="vm:PurchasesViewModel">
+  <Grid ColumnDefinitions="300,*" ColumnSpacing="20">
+    <!-- Compras registradas -->
+    <Border Classes="card">
+      <DockPanel>
+        <TextBlock DockPanel.Dock="Top" Classes="h2" Text="Compras" />
+        <ListBox ItemsSource="{Binding Purchases}" SelectedItem="{Binding Selected}" Background="Transparent">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="c:PurchaseDto">
+              <StackPanel>
+                <Grid ColumnDefinitions="*,Auto">
+                  <TextBlock Text="{Binding Number}" FontWeight="SemiBold" />
+                  <TextBlock Grid.Column="1" Text="{Binding Total, StringFormat='Bs {0:N2}'}" />
+                </Grid>
+                <TextBlock Classes="muted" Text="{Binding SupplierName}" TextTrimming="CharacterEllipsis" />
+                <TextBlock Classes="muted">
+                  <Run Text="{Binding CreatedAt, Mode=OneWay, Converter={x:Static conv:LocalTime.Instance}, ConverterParameter='dd/MM/yyyy'}" /><Run Text=" · " /><Run Text="{Binding Status, Mode=OneWay}" FontWeight="SemiBold" />
+                </TextBlock>
+              </StackPanel>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </DockPanel>
+    </Border>
+
+    <ScrollViewer Grid.Column="1">
+      <StackPanel Spacing="16">
+        <TextBlock Classes="error" Text="{Binding Error}"
+                   IsVisible="{Binding Error, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+        <TextBlock Classes="ok" Text="{Binding Info}"
+                   IsVisible="{Binding Info, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+
+        <!-- Recepción de la compra elegida (RF-032, RF-107, RF-108) -->
+        <Border Classes="card" IsVisible="{Binding CanReceive}">
+          <StackPanel Spacing="8">
+            <TextBlock Classes="h2">
+              <Run Text="Recepción de " /><Run Text="{Binding Selected.Number, Mode=OneWay}" />
+            </TextBlock>
+            <TextBlock Classes="muted" TextWrapping="Wrap"
+                       Text="Registre el lote y el vencimiento de lo que llegó. Las unidades dañadas y las que faltan no ingresan al stock." />
+            <Grid ColumnDefinitions="*,130,140,90,90,90" ColumnSpacing="8" Margin="0,6,0,0">
+              <TextBlock Classes="muted" Text="Producto" />
+              <TextBlock Grid.Column="1" Classes="muted" Text="Lote" />
+              <TextBlock Grid.Column="2" Classes="muted" Text="Vencimiento" />
+              <TextBlock Grid.Column="3" Classes="muted" Text="Recibidas" />
+              <TextBlock Grid.Column="4" Classes="muted" Text="Dañadas" />
+              <TextBlock Grid.Column="5" Classes="muted" Text="Diferencia" HorizontalAlignment="Right" />
+            </Grid>
+            <ItemsControl ItemsSource="{Binding Reception}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:ReceptionRow">
+                  <Border Classes="row">
+                    <Grid ColumnDefinitions="*,130,140,90,90,90" ColumnSpacing="8">
+                      <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="{Binding Line.ProductName}" TextWrapping="Wrap" />
+                        <TextBlock Classes="muted">
+                          <Run Text="Pedido: " /><Run Text="{Binding Line.Quantity, Mode=OneWay}" /><Run Text=" u." />
+                        </TextBlock>
+                      </StackPanel>
+                      <TextBox Grid.Column="1" Watermark="N.º de lote" Text="{Binding LotNumber}" VerticalAlignment="Center" />
+                      <CalendarDatePicker Grid.Column="2" SelectedDate="{Binding ExpirationDate}"
+                                          SelectedDateFormat="Custom" CustomDateFormatString="dd/MM/yyyy"
+                                          Watermark="dd/mm/aaaa"
+                                          VerticalAlignment="Center" HorizontalAlignment="Stretch" />
+                      <NumericUpDown Grid.Column="3" Value="{Binding Received}" Minimum="0" Increment="1"
+                                     FormatString="0" ShowButtonSpinner="False" VerticalAlignment="Center" />
+                      <NumericUpDown Grid.Column="4" Value="{Binding Damaged}" Minimum="0" Increment="1"
+                                     FormatString="0" ShowButtonSpinner="False" VerticalAlignment="Center" />
+                      <Border Grid.Column="5" Classes="badge warn" HorizontalAlignment="Right" VerticalAlignment="Center"
+                              IsVisible="{Binding HasDifference}">
+                        <TextBlock FontWeight="SemiBold" Foreground="{StaticResource Warn}"
+                                   Text="{Binding Difference, StringFormat='-{0}'}" />
+                      </Border>
+                      <TextBlock Grid.Column="5" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                 Classes="muted" Text="Completa" IsVisible="{Binding !HasDifference}" />
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <Button Classes="primary" Content="Confirmar recepción" Command="{Binding ReceiveCommand}"
+                    HorizontalAlignment="Left" />
+          </StackPanel>
+        </Border>
+
+        <!-- Resultado de una compra ya recibida -->
+        <Border Classes="card" IsVisible="{Binding IsReceived}">
+          <StackPanel Spacing="8">
+            <TextBlock Classes="h2">
+              <Run Text="Compra " /><Run Text="{Binding Selected.Number, Mode=OneWay}" /><Run Text=" recibida" />
+            </TextBlock>
+            <TextBlock Classes="muted" Text="{Binding ReceptionSummary}" TextWrapping="Wrap" />
+            <Grid ColumnDefinitions="*,110,90,80,80,80" ColumnSpacing="8">
+              <TextBlock Classes="muted" Text="Producto" />
+              <TextBlock Grid.Column="1" Classes="muted" Text="Lote" />
+              <TextBlock Grid.Column="2" Classes="muted" Text="Pedido" HorizontalAlignment="Right" />
+              <TextBlock Grid.Column="3" Classes="muted" Text="Ingresó" HorizontalAlignment="Right" />
+              <TextBlock Grid.Column="4" Classes="muted" Text="Dañadas" HorizontalAlignment="Right" />
+              <TextBlock Grid.Column="5" Classes="muted" Text="Faltan" HorizontalAlignment="Right" />
+            </Grid>
+            <ItemsControl ItemsSource="{Binding Selected.Lines}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="c:PurchaseLineDto">
+                  <Border Classes="row">
+                    <Grid ColumnDefinitions="*,110,90,80,80,80" ColumnSpacing="8">
+                      <TextBlock Text="{Binding ProductName}" TextWrapping="Wrap" />
+                      <TextBlock Grid.Column="1" Text="{Binding LotNumber}" />
+                      <TextBlock Grid.Column="2" HorizontalAlignment="Right" Text="{Binding Quantity}" />
+                      <TextBlock Grid.Column="3" HorizontalAlignment="Right" FontWeight="SemiBold" Text="{Binding ReceivedQuantity}" />
+                      <TextBlock Grid.Column="4" HorizontalAlignment="Right" Foreground="{StaticResource Danger}" Text="{Binding DamagedQuantity}" />
+                      <TextBlock Grid.Column="5" HorizontalAlignment="Right" Foreground="{StaticResource Warn}" Text="{Binding MissingQuantity}" />
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </Border>
+
+        <!-- Nueva compra (RF-030, RF-031) -->
+        <Border Classes="card">
+          <StackPanel Spacing="8">
+            <TextBlock Classes="h2" Text="Nueva compra (RF-030)" />
+            <ComboBox ItemsSource="{Binding Suppliers}" SelectedItem="{Binding Supplier}" HorizontalAlignment="Stretch"
+                      PlaceholderText="Proveedor">
+              <ComboBox.ItemTemplate>
+                <DataTemplate x:DataType="c:SupplierDto">
+                  <TextBlock>
+                    <Run Text="{Binding Name, Mode=OneWay}" /><Run Text=" · NIT " /><Run Text="{Binding TaxId, Mode=OneWay}" />
+                  </TextBlock>
+                </DataTemplate>
+              </ComboBox.ItemTemplate>
+            </ComboBox>
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+              <ComboBox ItemsSource="{Binding ProductOptions}" SelectedItem="{Binding ProductToAdd}"
+                        HorizontalAlignment="Stretch" PlaceholderText="Producto del catálogo" />
+              <Button Grid.Column="1" Content="Agregar" Command="{Binding AddProductCommand}" />
+            </Grid>
+            <Grid ColumnDefinitions="*,110,130,100,Auto" ColumnSpacing="8" Margin="0,6,0,0">
+              <TextBlock Classes="muted" Text="Producto" />
+              <TextBlock Grid.Column="1" Classes="muted" Text="Cantidad" />
+              <TextBlock Grid.Column="2" Classes="muted" Text="Costo unit. (Bs)" />
+              <TextBlock Grid.Column="3" Classes="muted" Text="Subtotal" HorizontalAlignment="Right" />
+            </Grid>
+            <ItemsControl ItemsSource="{Binding Draft}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:PurchaseDraftLine">
+                  <Border Classes="row">
+                    <Grid ColumnDefinitions="*,110,130,100,Auto" ColumnSpacing="8">
+                      <TextBlock Text="{Binding Product.Name}" VerticalAlignment="Center" TextWrapping="Wrap" />
+                      <NumericUpDown Grid.Column="1" Value="{Binding Quantity}" Minimum="1" Increment="10" FormatString="0"
+                                     ShowButtonSpinner="False" />
+                      <NumericUpDown Grid.Column="2" Value="{Binding UnitCost}" Minimum="0" Increment="0.1" FormatString="0.00"
+                                     ShowButtonSpinner="False" Watermark="0.00" />
+                      <TextBlock Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Right"
+                                 Text="{Binding Subtotal, StringFormat='Bs {0:N2}'}" />
+                      <Button Grid.Column="4" Classes="small danger" Content="Quitar"
+                              Command="{Binding $parent[UserControl].((vm:PurchasesViewModel)DataContext).RemoveLineCommand}"
+                              CommandParameter="{Binding}" />
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Classes="kpi" Text="{Binding DraftTotal, StringFormat='Total Bs {0:N2}'}" />
+              <Button Grid.Column="1" Classes="primary" Content="Registrar compra" Command="{Binding CreateCommand}"
+                      VerticalAlignment="Center" />
+            </Grid>
+          </StackPanel>
+        </Border>
+      </StackPanel>
+    </ScrollViewer>
+  </Grid>
+</UserControl>

@@ -16,4 +16,22 @@ public sealed partial class ApiClient
 
     public Task SetSupplierActiveAsync(Guid id, bool active) =>
         SendAsync<object>(HttpMethod.Post, $"/api/suppliers/{id}/{(active ? "activate" : "deactivate")}");
+
+    public Task<List<SupplierProductDto>> GetSupplierProductsAsync(Guid id) =>
+        SendAsync<List<SupplierProductDto>>(HttpMethod.Get, $"/api/suppliers/{id}/products");
+
+    public Task<List<PurchaseDto>> GetSupplierPurchasesAsync(Guid id) =>
+        SendAsync<List<PurchaseDto>>(HttpMethod.Get, $"/api/suppliers/{id}/purchases");
+
+    public Task<List<PurchaseDto>> GetPurchasesAsync() =>
+        SendAsync<List<PurchaseDto>>(HttpMethod.Get, "/api/purchases");
+
+    public Task<PurchaseDto> CreatePurchaseAsync(CreatePurchaseRequest request) =>
+        SendAsync<PurchaseDto>(HttpMethod.Post, "/api/purchases", request);
+
+    public Task<PurchaseDto> ReceivePurchaseAsync(Guid id, ReceivePurchaseRequest request) =>
+        SendAsync<PurchaseDto>(HttpMethod.Post, $"/api/purchases/{id}/receive", request);
+
+    public Task<LotPullResponse> PullLotsAsync(long since, CancellationToken ct) =>
+        SendAsync<LotPullResponse>(HttpMethod.Get, $"/sync/pull-lots?since={since}", ct: ct);
 }

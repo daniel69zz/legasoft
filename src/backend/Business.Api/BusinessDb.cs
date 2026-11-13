@@ -80,6 +80,21 @@ public class AuditEntry
     public Guid? EventId { get; set; }
 }
 
+/// <summary>
+/// Lote creado en el servidor (recepción de una compra) pendiente de llegar a los puestos.
+/// La secuencia es la versión que usa la descarga incremental del Sync Worker.
+/// </summary>
+public class LotFeedEntry
+{
+    public long Sequence { get; set; }
+    public Guid LotId { get; set; }
+    public Guid ProductId { get; set; }
+    public string LotNumber { get; set; } = "";
+    public DateOnly ExpirationDate { get; set; }
+    public int Quantity { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+}
+
 /// <summary>Un DbContext para el Business Service con un schema por dominio (ADR-005).</summary>
 public class BusinessDb(DbContextOptions<BusinessDb> options) : DbContext(options)
 {
@@ -91,6 +106,8 @@ public class BusinessDb(DbContextOptions<BusinessDb> options) : DbContext(option
     public DbSet<CashMovementRecord> CashMovements => Set<CashMovementRecord>();
     public DbSet<AuditEntry> Audit => Set<AuditEntry>();
     public DbSet<Supplier> Suppliers => Set<Supplier>();
+    public DbSet<Purchase> Purchases => Set<Purchase>();
+    public DbSet<LotFeedEntry> LotFeed => Set<LotFeedEntry>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder b)
     {
@@ -154,6 +171,33 @@ public class BusinessDb(DbContextOptions<BusinessDb> options) : DbContext(option
             e.ToTable("suppliers", "inventory");
             e.Property(x => x.Id).ValueGeneratedNever();
             e.HasIndex(x => x.TaxId).IsUnique();
+        });
+        b.Entity<Purchase>(e =>
+        {
+            e.ToTable("purchases", "inventory");
+            e.Property(x => x.Id).ValueGeneratedNever();
+            e.Property(x => x.Status).HasConversion<string>();
+            e.HasIndex(x => x.Number).IsUnique();
+            e.HasIndex(x => x.SupplierId);
+            e.HasMany(x => x.Lines).WithOne().HasForeignKey(l => l.PurchaseId);
+            e.Navigation(x => x.Lines).UsePropertyAccessMode(PropertyAccessMode.Field).AutoInclude();
+            e.Ignore(x => x.Total);
+            e.Ignore(x => x.ReceivedTotal);
+        });
+        b.Entity<PurchaseLine>(e =>
+        {
+            e.ToTable("purchase_lines", "inventory");
+            e.Property(x => x.Id).ValueGeneratedNever();
+            e.HasIndex(x => x.ProductId);
+            e.Ignore(x => x.Subtotal);
+            e.Ignore(x => x.MissingQuantity);
+            e.Ignore(x => x.Difference);
+        });
+        b.Entity<LotFeedEntry>(e =>
+        {
+            e.ToTable("lot_feed", "inventory");
+            e.HasKey(x => x.Sequence);
+            e.Property(x => x.Sequence).ValueGeneratedOnAdd();
         });
     }
 }

@@ -15,10 +15,22 @@ app.MapBusinessEndpoints();
 
 await app.Services.MigrateAsync<BusinessDb>(async db =>
 {
-    if (await db.Products.AnyAsync()) return;
-    db.Products.AddRange(DemoCatalog.Products());
-    db.Lots.AddRange(DemoCatalog.Lots(DateOnly.FromDateTime(DateTime.UtcNow.AddHours(-4))));
-    await db.SaveChangesAsync();
+    if (!await db.Products.AnyAsync())
+    {
+        db.Products.AddRange(DemoCatalog.Products());
+        db.Lots.AddRange(DemoCatalog.Lots(DateOnly.FromDateTime(DateTime.UtcNow.AddHours(-4))));
+        await db.SaveChangesAsync();
+    }
+    // Sprint 2: proveedores y una compra pendiente de recibir para la demostración (se agregan
+    // también a bases creadas en el Sprint 1, que ya tienen catálogo).
+    if (!await db.Suppliers.AnyAsync())
+    {
+        var products = await db.Products.ToDictionaryAsync(p => p.Id);
+        var (suppliers, purchase) = DemoPurchasing.Create(products, DateTimeOffset.UtcNow);
+        db.Suppliers.AddRange(suppliers);
+        if (purchase is not null) db.Purchases.Add(purchase);
+        await db.SaveChangesAsync();
+    }
 });
 app.Run();
 
