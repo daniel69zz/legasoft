@@ -17,7 +17,7 @@ dotnet test Pharmacy.sln --filter "Requirement=RF-107"
 
 | Requisito | HU del SRS | Historia Jira | Componente (C4) e implementación | Caso de prueba | Pruebas automatizadas |
 | --- | --- | --- | --- | --- | --- |
-| RNF-003 | HU-T02 | SCRUM-100 · HU-T02.2 | API Gateway (Kestrel TLS 1.2+), Desktop (`GatewayUrlPolicy`), Caddy en el VPS (`deploy/vps/Caddyfile`) | CP-RNF-003 | `GatewayUrlPolicyTests`; inspección con `openssl s_client` |
+| RNF-003 | HU-T02 | SCRUM-100 · HU-T02.2 | API Gateway (Kestrel TLS 1.2+), Desktop (`GatewayUrlPolicy`), nginx en el VPS (`deploy/vps/nginx-farmacia.conf`) | CP-RNF-003 | `GatewayUrlPolicyTests`; inspección con `openssl s_client` |
 | RF-014, RF-015, RF-016 | HU-06 | SCRUM-101 · HU-06.3 | InventoryLocalService (`AdjustStockHandler`), Outbox `StockMovementCreated`, Business Service (`EventApplier`) | CP-RF-014 a CP-RF-016 | `AdjustStockHandlerTests`, `PurchasingApiTests`, `CashierFlowTests` |
 | RF-019 | HU-06 | SCRUM-123 · HU-06.4 | Business Service (`GET /api/inventory/movements`), Desktop (Movimientos) | CP-RF-019 | `IncorporatedStoriesApiTests` |
 | RF-021 | HU-07 | SCRUM-122 · HU-07.3 | InventoryLocalService (`InventoryQueries.GetLotDetailsAsync`) | CP-RF-021 | `IncorporatedStoriesTests` |
