@@ -17,9 +17,9 @@ public static class SyncEndpoints
         var sync = app.MapGroup("/sync").RequireAuthorization();
         sync.MapPost("/push", PushAsync);
         sync.MapGet("/pull", PullAsync);
-        sync.MapGet("/pull-lots", async (long since, EventDispatcher dispatcher, CancellationToken ct) =>
-                Results.Ok(await dispatcher.GetLotChangesAsync(since, ct)))
-            .WithSummary("Descarga incremental de los lotes recibidos en el servidor (HU-09)");
+        sync.MapGet("/pull-lots", async (long since, bool? snapshot, EventDispatcher dispatcher, CancellationToken ct) =>
+                Results.Ok(await dispatcher.GetLotChangesAsync(since, snapshot == true, ct)))
+            .WithSummary("Descarga de lotes: todos en la primera descarga (snapshot) y luego los recibidos en el servidor");
         sync.MapGet("/status/{deviceId}", async (string deviceId, SyncDb db) =>
             await db.ModuleVersions.Where(v => v.DeviceId == deviceId).ToListAsync());
     }

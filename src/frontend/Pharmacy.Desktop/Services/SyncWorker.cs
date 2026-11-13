@@ -27,6 +27,9 @@ public sealed class SyncWorker(
     public const int BatchSize = 100;
     private const string CatalogVersionKey = "inventory_version";
     private const string LotsVersionKey = "lots_version";
+
+    // Marca que el puesto ya alineó sus lotes con los del servidor (SCRUM-112).
+    private const string LotsSnapshotKey = "lots_snapshot_at";
     private static readonly TimeSpan MaxDelay = TimeSpan.FromMinutes(5);
 
     private readonly SemaphoreSlim _gate = new(1, 1);
@@ -139,25 +142,34 @@ public sealed class SyncWorker(
     }
 
     /// <summary>
-    /// HU-09: descarga los lotes que el servidor creó al recibir compras, para venderlos con FEFO
-    /// en el puesto. Solo agrega lotes nuevos; el stock de los existentes lo mueve el propio puesto.
+    /// HU-09 y SCRUM-112: descarga los lotes del servidor para venderlos con FEFO en el puesto. La
+    /// primera vez pide todos (snapshot) y alinea número, vencimiento y, si el puesto no los movió,
+    /// el stock de los que ya tiene; después solo recibe los lotes nuevos de las compras.
     /// </summary>
     private async Task PullLotsAsync(LocalDb db, CancellationToken ct)
     {
         var state = await db.SyncState.FindAsync([LotsVersionKey], ct);
+        var snapshotDone = await db.SyncState.FindAsync([LotsSnapshotKey], ct);
         var since = long.TryParse(state?.Value, out var v) ? v : 0;
-        var changes = await api.PullLotsAsync(since, ct);
-        if (changes.Lots.Count == 0) return;
+        var snapshot = snapshotDone is null;
+        var changes = await api.PullLotsAsync(since, snapshot, ct);
 
-        var ids = changes.Lots.Select(l => l.LotId).ToList();
-        var known = (await db.Lots.Where(l => ids.Contains(l.Id)).Select(l => l.Id).ToListAsync(ct)).ToHashSet();
-        foreach (var l in changes.Lots.Where(l => !known.Contains(l.LotId)))
-            db.Lots.Add(new Lot(l.LotId, l.ProductId, l.LotNumber, l.ExpirationDate, l.Quantity));
+        if (changes.Lots.Count > 0)
+        {
+            var ids = changes.Lots.Select(l => l.LotId).ToList();
+            var local = await db.Lots.Where(l => ids.Contains(l.Id)).ToDictionaryAsync(l => l.Id, ct);
+            var moved = (await db.StockMovements.Where(m => ids.Contains(m.LotId)).Select(m => m.LotId)
+                .Distinct().ToListAsync(ct)).ToHashSet();
+            var result = LotSync.Merge(local, moved, changes.Lots);
+            db.Lots.AddRange(result.Added);
+            logger.LogInformation("Lotes del servidor: {Added} nuevos y {Updated} alineados", result.Added.Count,
+                result.Updated);
+        }
 
         if (state is null) db.SyncState.Add(state = new SyncState { Key = LotsVersionKey });
         state.Value = changes.Version.ToString();
+        if (snapshot) db.SyncState.Add(new SyncState { Key = LotsSnapshotKey, Value = DateTimeOffset.Now.ToString("O") });
         await db.SaveChangesAsync(ct);
-        logger.LogInformation("Lotes recibidos del servidor: {Count}", changes.Lots.Count);
     }
 
     private async Task PushOutboxAsync(LocalDb db, CancellationToken ct)

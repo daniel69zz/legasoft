@@ -25,9 +25,12 @@ public sealed class FakeDispatcher() : EventDispatcher(new HttpClient(), null!)
 
     public List<LotChangeDto> Lots { get; } = [];
 
-    public override Task<LotPullResponse> GetLotChangesAsync(long since, CancellationToken ct)
+    public bool? LastSnapshot { get; private set; }
+
+    public override Task<LotPullResponse> GetLotChangesAsync(long since, bool snapshot, CancellationToken ct)
     {
-        var lots = Lots.Where(l => l.Sequence > since).ToList();
+        LastSnapshot = snapshot;
+        var lots = Lots.Where(l => snapshot || l.Sequence > since).ToList();
         return Task.FromResult(new LotPullResponse(lots.Count == 0 ? since : lots.Max(l => l.Sequence), lots));
     }
 }
@@ -107,6 +110,12 @@ public class SyncApiTests : IDisposable
 
         Assert.Equal((2L, 2), (first.Version, first.Lots.Count));
         Assert.Empty(next!.Lots);
+        Assert.False(_dispatcher.LastSnapshot);
+
+        // La primera descarga de un puesto pide la foto completa (SCRUM-112).
+        var all = await client.GetFromJsonAsync<LotPullResponse>($"/sync/pull-lots?since={first.Version}&snapshot=true");
+        Assert.True(_dispatcher.LastSnapshot);
+        Assert.Equal(2, all!.Lots.Count);
         Assert.Equal(HttpStatusCode.Unauthorized, anonymous.StatusCode);
     }
 

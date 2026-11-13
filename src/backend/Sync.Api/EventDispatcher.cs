@@ -42,10 +42,14 @@ public class EventDispatcher(HttpClient http, IConfiguration configuration)
         return (await response.Content.ReadFromJsonAsync<PullResponse>(ct))!;
     }
 
-    /// <summary>Lotes creados en el servidor por la recepción de compras, desde la versión del puesto.</summary>
-    public virtual async Task<LotPullResponse> GetLotChangesAsync(long since, CancellationToken ct)
+    /// <summary>
+    /// Lotes creados en el servidor por la recepción de compras, desde la versión del puesto. Con
+    /// <paramref name="snapshot"/>, todos los lotes del servidor (primera descarga del puesto).
+    /// </summary>
+    public virtual async Task<LotPullResponse> GetLotChangesAsync(long since, bool snapshot, CancellationToken ct)
     {
-        using var request = new HttpRequestMessage(HttpMethod.Get, $"/internal/lots?since={since}");
+        using var request = new HttpRequestMessage(HttpMethod.Get,
+            $"/internal/lots?since={since}&snapshot={(snapshot ? "true" : "false")}");
         request.Headers.Add(ServiceDefaults.InternalKeyHeader, configuration["Internal:Key"]);
         using var response = await http.SendAsync(request, ct);
         response.EnsureSuccessStatusCode();
