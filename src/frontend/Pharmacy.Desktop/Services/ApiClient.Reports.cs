@@ -24,4 +24,7 @@ public sealed partial class ApiClient
 
     public Task<List<SupplierPriceDto>> GetPriceHistoryAsync(Guid supplierId, Guid productId) =>
         SendAsync<List<SupplierPriceDto>>(HttpMethod.Get, $"/api/suppliers/{supplierId}/prices/history?productId={productId}");
+
+    public Task<List<SupplierPriceDto>> ComparePricesAsync(Guid productId) =>
+        SendAsync<List<SupplierPriceDto>>(HttpMethod.Get, $"/api/products/{productId}/supplier-prices");
 }

@@ -182,7 +182,28 @@
             <TextBlock Classes="h2">
               <Run Text="Precios de " /><Run Text="{Binding ProductToAdd.Name, Mode=OneWay}" />
             </TextBlock>
-            <Grid>
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
+              <StackPanel Spacing="6">
+                <TextBlock FontWeight="SemiBold" Text="Comparación de proveedores (RF-036)" />
+                <ItemsControl ItemsSource="{Binding Comparison}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="c:SupplierPriceDto">
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <StackPanel>
+                            <TextBlock Text="{Binding SupplierName}" />
+                            <TextBlock Classes="muted" Text="{Binding RegisteredAt, Converter={x:Static conv:LocalTime.Instance}, ConverterParameter='\'Desde\' dd/MM/yyyy'}" />
+                          </StackPanel>
+                          <TextBlock Grid.Column="1" VerticalAlignment="Center" FontWeight="SemiBold"
+                                     Text="{Binding Price, StringFormat='Bs {0:N2}'}" />
+                        </Grid>
+                      </Border>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock Classes="muted" Text="Ningún proveedor registró precio para este producto."
+                           IsVisible="{Binding !HasComparison}" />
+              </StackPanel>
               <StackPanel Spacing="6">
                 <TextBlock FontWeight="SemiBold" Text="Precio ofrecido por el proveedor elegido (RF-034)" />
                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">

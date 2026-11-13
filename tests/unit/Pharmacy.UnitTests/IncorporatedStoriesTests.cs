@@ -76,4 +76,23 @@ public class IncorporatedStoriesTests
         Assert.Equal(0.28m, Assert.Single(SupplierPrice.Current(history)).Price);
         Assert.Throws<DomainException>(() => new SupplierPrice(Guid.NewGuid(), supplier, product, 0m, "op", Now));
     }
+
+    [Fact]
+    [Trait("JiraIssue", "SCRUM-125")]
+    [Trait("Requirement", "RF-036")]
+    public void La_comparacion_ordena_de_menor_a_mayor_y_omite_proveedores_desactivados()
+    {
+        Guid andina = Guid.NewGuid(), illimani = Guid.NewGuid(), inactivo = Guid.NewGuid(), product = Guid.NewGuid();
+        var prices = new[]
+        {
+            new SupplierPrice(Guid.NewGuid(), andina, product, 1.60m, "op", Now),
+            new SupplierPrice(Guid.NewGuid(), illimani, product, 1.70m, "op", Now.AddDays(-3)),
+            new SupplierPrice(Guid.NewGuid(), illimani, product, 1.45m, "op", Now),
+            new SupplierPrice(Guid.NewGuid(), inactivo, product, 0.90m, "op", Now),
+        };
+
+        var compared = SupplierPrice.Compare(prices, product, new HashSet<Guid> { andina, illimani });
+
+        Assert.Equal([(illimani, 1.45m), (andina, 1.60m)], compared.Select(p => (p.SupplierId, p.Price)));
+    }
 }

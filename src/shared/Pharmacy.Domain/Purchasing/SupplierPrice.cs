@@ -33,4 +33,13 @@ public class SupplierPrice
     public static IEnumerable<SupplierPrice> Current(IEnumerable<SupplierPrice> prices) =>
         prices.GroupBy(p => (p.SupplierId, p.ProductId))
             .Select(g => g.OrderByDescending(p => p.RegisteredAt).First());
+
+    /// <summary>HU-10.2 (RF-036): precios vigentes de un producto entre los proveedores activos, del menor al mayor.</summary>
+    public static IReadOnlyList<SupplierPrice> Compare(IEnumerable<SupplierPrice> prices, Guid productId,
+        IReadOnlySet<Guid> activeSuppliers) =>
+        Current(prices.Where(p => p.ProductId == productId))
+            .Where(p => activeSuppliers.Contains(p.SupplierId))
+            .OrderBy(p => p.Price)
+            .ThenBy(p => p.RegisteredAt)
+            .ToList();
 }

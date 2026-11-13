@@ -70,7 +70,11 @@ public sealed partial class PurchasesViewModel(ApiClient api, Operations operati
     /// <summary>HU-10.1 (RF-035): historial del producto elegido con el proveedor elegido.</summary>
     public ObservableCollection<SupplierPriceDto> PriceHistory { get; } = [];
 
+    /// <summary>HU-10.2 (RF-036): precios vigentes del producto elegido entre todos los proveedores.</summary>
+    public ObservableCollection<SupplierPriceDto> Comparison { get; } = [];
+
     public bool HasProduct => ProductToAdd is not null;
+    public bool HasComparison => Comparison.Count > 0;
 
     partial void OnSupplierChanged(SupplierDto? value) => _ = RefreshPricesAsync();
 
@@ -89,8 +93,11 @@ public sealed partial class PurchasesViewModel(ApiClient api, Operations operati
             var product = ProductToAdd;
             var prices = supplier is null ? [] : await api.GetSupplierPricesAsync(supplier.Id);
             var history = supplier is null || product is null ? [] : await api.GetPriceHistoryAsync(supplier.Id, product.Id);
+            var comparison = product is null ? [] : await api.ComparePricesAsync(product.Id);
             Replace(SupplierPrices, prices);
             Replace(PriceHistory, history);
+            Replace(Comparison, comparison);
+            OnPropertyChanged(nameof(HasComparison));
         }
         catch (Exception e) when (e is ApiException or HttpRequestException or TaskCanceledException)
         {

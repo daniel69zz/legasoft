@@ -55,6 +55,38 @@ public class IncorporatedStoriesApiTests : IDisposable
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-124")]
+    [Trait("JiraIssue", "SCRUM-125")]
+    [Trait("Requirement", "RF-034")]
+    [Trait("Requirement", "RF-035")]
+    [Trait("Requirement", "RF-036")]
+    public async Task Precios_por_proveedor_con_historial_y_comparacion_ordenada()
+    {
+        await PriceAsync(DemoPurchasing.DistribuidoraAndina, 0.30m);
+        await PriceAsync(DemoPurchasing.DistribuidoraAndina, 0.28m);
+        await PriceAsync(DemoPurchasing.DrogueriaIllimani, 0.25m);
+
+        var current = await _operations.GetFromJsonAsync<List<SupplierPriceDto>>(
+            $"/api/suppliers/{DemoPurchasing.DistribuidoraAndina}/prices");
+        var history = await _operations.GetFromJsonAsync<List<SupplierPriceDto>>(
+            $"/api/suppliers/{DemoPurchasing.DistribuidoraAndina}/prices/history?productId={Paracetamol}");
+        var compared = await _operations.GetFromJsonAsync<List<SupplierPriceDto>>(
+            $"/api/products/{Paracetamol}/supplier-prices");
+
+        Assert.Equal(0.28m, Assert.Single(current!).Price);
+        Assert.Equal([0.28m, 0.30m], history!.Select(h => h.Price));
+        Assert.Equal([(DemoPurchasing.DrogueriaIllimani, 0.25m), (DemoPurchasing.DistribuidoraAndina, 0.28m)],
+            compared!.Select(c => (c.SupplierId, c.Price)));
+
+        // Un proveedor desactivado no aparece en la comparación.
+        (await _admin.PostAsync($"/api/suppliers/{DemoPurchasing.DrogueriaIllimani}/deactivate", null))
+            .EnsureSuccessStatusCode();
+        compared = await _operations.GetFromJsonAsync<List<SupplierPriceDto>>(
+            $"/api/products/{Paracetamol}/supplier-prices");
+        Assert.Equal(DemoPurchasing.DistribuidoraAndina, Assert.Single(compared!).SupplierId);
+    }
+
+    [Fact]
     [Trait("JiraIssue", "SCRUM-130")]
     [Trait("Requirement", "RF-099")]
     public async Task El_umbral_configurado_llega_a_los_puestos_y_cambia_las_alertas()
