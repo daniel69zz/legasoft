@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Pharmacy.Domain.Catalog;
 using Pharmacy.Domain.Inventory;
+using Pharmacy.Domain.Purchasing;
 using Pharmacy.ServiceDefaults;
 
 namespace Business.Api;
@@ -89,6 +90,7 @@ public class BusinessDb(DbContextOptions<BusinessDb> options) : DbContext(option
     public DbSet<CashSessionRecord> CashSessions => Set<CashSessionRecord>();
     public DbSet<CashMovementRecord> CashMovements => Set<CashMovementRecord>();
     public DbSet<AuditEntry> Audit => Set<AuditEntry>();
+    public DbSet<Supplier> Suppliers => Set<Supplier>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder b)
     {
@@ -143,6 +145,15 @@ public class BusinessDb(DbContextOptions<BusinessDb> options) : DbContext(option
         {
             e.ToTable("entries", "audit");
             e.HasIndex(a => a.OccurredAt);
+        });
+
+        // Proveedores y compras (HU-08, HU-09). Van en el schema inventory, que ya pertenece a
+        // business_svc: un schema nuevo exigiría recrear el volumen de PostgreSQL (deploy/postgres).
+        b.Entity<Supplier>(e =>
+        {
+            e.ToTable("suppliers", "inventory");
+            e.Property(x => x.Id).ValueGeneratedNever();
+            e.HasIndex(x => x.TaxId).IsUnique();
         });
     }
 }

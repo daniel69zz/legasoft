@@ -10,6 +10,12 @@ public enum Permission
     Reportes,
     Usuarios,
     Sincronizacion,
+
+    /// <summary>Registro y modificación de proveedores (HU-08).</summary>
+    Proveedores,
+
+    /// <summary>Registro de compras y su recepción (HU-09).</summary>
+    Compras,
 }
 
 /// <summary>
@@ -23,7 +29,7 @@ public static class RolePermissions
         [Roles.Administrador] = Enum.GetValues<Permission>(),
         [Roles.GerenteGeneral] = [Permission.Reportes, Permission.Inventario],
         [Roles.Contadora] = [Permission.Reportes, Permission.Caja],
-        [Roles.GerenteOperaciones] = [Permission.Inventario, Permission.Catalogo, Permission.Reportes],
+        [Roles.GerenteOperaciones] = [Permission.Inventario, Permission.Catalogo, Permission.Reportes, Permission.Compras],
         [Roles.Cajero] = [Permission.Ventas, Permission.Caja, Permission.Sincronizacion],
         [Roles.Farmaceutico] = [Permission.Ventas, Permission.Inventario, Permission.Catalogo],
         [Roles.Almacen] = [Permission.Inventario],

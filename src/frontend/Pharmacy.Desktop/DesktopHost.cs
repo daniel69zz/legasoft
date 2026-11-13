@@ -67,6 +67,7 @@ public static class DesktopHost
         s.AddTransient<ReportsViewModel>();
         s.AddTransient<UsersViewModel>();
         s.AddTransient<CatalogViewModel>();
+        s.AddTransient<SuppliersViewModel>();
 
         var host = builder.Build();
         using var scope = host.Services.CreateScope();
