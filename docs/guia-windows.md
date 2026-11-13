@@ -44,3 +44,13 @@ Se levantan PostgreSQL, Identity, Business, Sync, Notification, Gateway y Mailpi
 Los servicios aplican sus migraciones de la base central al arrancar.
 Mantén el nombre de proyecto farmacia en los comandos siguientes para trabajar
 con los mismos contenedores y volumen.
+
+## 4. Abrir la aplicación
+
+```powershell
+dotnet run --project src/frontend/Pharmacy.Desktop
+```
+
+Se abre una ventana de escritorio. Para la demo, usa admin o cajero1 con
+la contraseña Farmacia2026! si no has cambiado las credenciales. El puesto
+predeterminado es PUESTO-01. Consulta los demás roles en [la guía del prototipo](../src/README.md).
