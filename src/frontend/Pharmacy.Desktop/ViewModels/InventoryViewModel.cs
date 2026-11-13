@@ -45,6 +45,9 @@ public sealed partial class InventoryViewModel(Operations operations, Session se
     public ObservableCollection<LotOption> Lots { get; } = [];
     public ObservableCollection<StockMovementRow> Movements { get; } = [];
 
+    /// <summary>HU-07.3 (RF-021): lotes del producto con existencia, vencimiento y estado.</summary>
+    public ObservableCollection<LotStockRow> LotDetails { get; } = [];
+
     [ObservableProperty] private int _expiryThresholdDays = InventoryAlerts.DefaultExpiryThresholdDays;
 
     public string ExpiryTitle => $"Vencimientos (umbral {ExpiryThresholdDays} días)";
@@ -101,11 +104,13 @@ public sealed partial class InventoryViewModel(Operations operations, Session se
 
     private async Task LoadDetailAsync(Guid productId)
     {
-        var lots = await operations.RunAsync<InventoryQueries, IReadOnlyList<Lot>>(q => q.GetLotsAsync(productId));
+        var lots = await operations.RunAsync<InventoryQueries, IReadOnlyList<LotStockRow>>(
+            q => q.GetLotDetailsAsync(productId));
         var movements = await operations.RunAsync<InventoryQueries, IReadOnlyList<StockMovementRow>>(
             q => q.GetMovementsAsync(productId));
         var lotId = Lot?.Id;
-        Replace(Lots, lots.Select(l => new LotOption(l.Id, l.LotNumber, l.ExpirationDate, l.Quantity)));
+        Replace(LotDetails, lots);
+        Replace(Lots, lots.Select(l => new LotOption(l.LotId, l.LotNumber, l.ExpirationDate, l.Quantity)));
         Lot = Lots.FirstOrDefault(l => l.Id == lotId) ?? Lots.FirstOrDefault();
         Replace(Movements, movements);
     }

@@ -35,4 +35,27 @@ public class IncorporatedStoriesTests
         await Assert.ThrowsAsync<ValidationException>(() => handler.HandleAsync(
             new AdjustStockCommand(product.Id, expired.Id, StockMovementType.Retiro, 1, "")));
     }
+
+    [Fact]
+    [Trait("JiraIssue", "SCRUM-122")]
+    [Trait("JiraIssue", "SCRUM-130")]
+    [Trait("Requirement", "RF-021")]
+    [Trait("Requirement", "RF-099")]
+    public async Task El_detalle_por_lote_usa_el_umbral_de_vencimiento_configurado()
+    {
+        var product = Product();
+        _store.Products.Add(product);
+        _store.Lots.AddRange([Lot(product, "PCM-2409", 400, 500), Lot(product, "PCM-2401", 75, 120),
+            Lot(product, "PCM-2312", -1, 3), Lot(product, "PCM-VACIO", 30, 0)]);
+        var queries = new InventoryQueries(_store, new FixedClock(), _store);
+
+        var with60 = await queries.GetLotDetailsAsync(product.Id);
+        _store.ExpiryThresholdDays = 90;
+        var with90 = await queries.GetLotDetailsAsync(product.Id);
+
+        Assert.Equal(["PCM-2312", "PCM-2401", "PCM-2409"], with60.Select(l => l.LotNumber));
+        Assert.Equal(["Vencido", "Vigente", "Vigente"], with60.Select(l => l.StatusLabel));
+        Assert.Equal("Por vencer", with90.Single(l => l.LotNumber == "PCM-2401").StatusLabel);
+        Assert.Equal(90, (await queries.GetOverviewAsync()).ExpiryThresholdDays);
+    }
 }
