@@ -86,6 +86,10 @@ public class IncorporatedStoriesApiTests : IDisposable
         Assert.Equal((60, 0), (worker!.ExpiryThresholdDays, worker.AlertIntervalMinutes));
     }
 
+    private async Task PriceAsync(Guid supplier, decimal price) =>
+        (await _operations.PostAsJsonAsync($"/api/suppliers/{supplier}/prices",
+            new RegisterSupplierPriceRequest(Paracetamol, price))).EnsureSuccessStatusCode();
+
     private async Task SendAsync<T>(string eventType, Guid entityId, T payload)
     {
         var module = eventType.StartsWith("Cash") ? SyncModules.Cash

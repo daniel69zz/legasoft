@@ -708,6 +708,46 @@ namespace Business.Api.Migrations
                     b.ToTable("suppliers", "inventory");
                 });
 
+            modelBuilder.Entity("Pharmacy.Domain.Purchasing.SupplierPrice", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal>("Price")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("price");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("product_id");
+
+                    b.Property<DateTimeOffset>("RegisteredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("registered_at");
+
+                    b.Property<string>("RegisteredBy")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("registered_by");
+
+                    b.Property<Guid>("SupplierId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("supplier_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_supplier_prices");
+
+                    b.HasIndex("ProductId")
+                        .HasDatabaseName("ix_supplier_prices_product_id");
+
+                    b.HasIndex("SupplierId", "ProductId")
+                        .HasDatabaseName("ix_supplier_prices_supplier_id_product_id");
+
+                    b.ToTable("supplier_prices", "inventory");
+                });
+
             modelBuilder.Entity("Business.Api.SaleLineRecord", b =>
                 {
                     b.HasOne("Business.Api.SaleRecord", null)

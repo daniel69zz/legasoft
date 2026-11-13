@@ -19,7 +19,63 @@ public static class PurchasingEndpoints
     {
         MapSuppliers(app);
         MapPurchases(app);
+        MapPrices(app);
     }
+
+    /// <summary>HU-10.1 (RF-034, RF-035) y HU-10.2 (RF-036): precios de compra por proveedor.</summary>
+    private static void MapPrices(WebApplication app)
+    {
+        var prices = app.MapGroup("/api").RequireAnyPermission(Permission.Compras, Permission.Proveedores)
+            .WithTags("Precios de proveedores");
+
+        prices.MapPost("/suppliers/{id:guid}/prices", async (Guid id, RegisterSupplierPriceRequest r, BusinessDb db,
+                HttpContext http, TimeProvider time) =>
+            {
+                var supplier = await db.Suppliers.FindAsync(id);
+                if (supplier is null) return Results.NotFound();
+                var product = await db.Products.FindAsync(r.ProductId)
+                    ?? throw new DomainException("El producto no existe en el catálogo.");
+
+                var price = new SupplierPrice(Guid.NewGuid(), id, product.Id, r.Price, UserName(http), time.GetUtcNow());
+                db.SupplierPrices.Add(price);
+                Audit(db, http, time, "Precio de proveedor", $"{supplier.Name} · {product.Code}: Bs {price.Price:0.00}");
+                await db.SaveChangesAsync();
+                return Results.Created($"/api/suppliers/{id}/prices", ToDto(price, supplier.Name, product.DisplayName));
+            })
+            .WithSummary("Registra el precio que el proveedor ofrece por un producto (RF-034)");
+
+        prices.MapGet("/suppliers/{id:guid}/prices", async (Guid id, BusinessDb db) =>
+            {
+                var supplier = await db.Suppliers.FindAsync(id);
+                if (supplier is null) return Results.NotFound();
+                var names = await ProductNamesAsync(db);
+                var current = SupplierPrice.Current(await db.SupplierPrices.Where(p => p.SupplierId == id).ToListAsync());
+                return Results.Ok(current
+                    .Select(p => ToDto(p, supplier.Name, names.GetValueOrDefault(p.ProductId, "?")))
+                    .OrderBy(p => p.ProductName)
+                    .ToList());
+            })
+            .WithSummary("Precios vigentes del proveedor por producto (RF-034)");
+
+        prices.MapGet("/suppliers/{id:guid}/prices/history", async (Guid id, Guid productId, BusinessDb db) =>
+            {
+                var supplier = await db.Suppliers.FindAsync(id);
+                if (supplier is null) return Results.NotFound();
+                var names = await ProductNamesAsync(db);
+                var history = await db.SupplierPrices.Where(p => p.SupplierId == id && p.ProductId == productId)
+                    .ToListAsync();
+                return Results.Ok(history.OrderByDescending(p => p.RegisteredAt)
+                    .Select(p => ToDto(p, supplier.Name, names.GetValueOrDefault(p.ProductId, "?")))
+                    .ToList());
+            })
+            .WithSummary("Historial de precios de un producto con el proveedor (RF-035)");
+    }
+
+    private static async Task<Dictionary<Guid, string>> ProductNamesAsync(BusinessDb db) =>
+        (await db.Products.ToListAsync()).ToDictionary(p => p.Id, p => p.DisplayName);
+
+    private static SupplierPriceDto ToDto(SupplierPrice p, string supplierName, string productName) =>
+        new(p.SupplierId, supplierName, p.ProductId, productName, p.Price, p.RegisteredAt, p.RegisteredBy);
 
     private static void MapSuppliers(WebApplication app)
     {

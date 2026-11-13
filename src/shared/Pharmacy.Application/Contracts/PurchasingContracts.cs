@@ -38,3 +38,9 @@ public sealed record LotChangeDto(long Sequence, Guid LotId, Guid ProductId, str
 
 /// <summary>Lotes nuevos desde una versión (descarga incremental, pendiente de HU-22.1).</summary>
 public sealed record LotPullResponse(long Version, IReadOnlyList<LotChangeDto> Lots);
+
+/// <summary>HU-10.1 (RF-034, RF-035): precio ofrecido por un proveedor para un producto.</summary>
+public sealed record SupplierPriceDto(Guid SupplierId, string SupplierName, Guid ProductId, string ProductName,
+    decimal Price, DateTimeOffset RegisteredAt, string RegisteredBy);
+
+public sealed record RegisterSupplierPriceRequest(Guid ProductId, decimal Price);
