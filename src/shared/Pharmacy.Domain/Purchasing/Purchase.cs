@@ -18,7 +18,7 @@ public sealed record ReceptionItem(Guid LineId, string LotNumber, DateOnly? Expi
 public sealed record ReceivedLot(PurchaseLine Line, Lot Lot);
 
 /// <summary>
-/// Compra a un proveedor y su recepción (HU-09, RF-030 a RF-033, RF-020, RF-107 y RF-108).
+/// Compra a un proveedor y su recepción (SCRUM-19 · HU-09, RF-030 a RF-033, RF-020, RF-107 y RF-108).
 /// Una compra se recibe una sola vez: lo que no llegó queda registrado como faltante.
 /// </summary>
 public class Purchase

@@ -9,10 +9,10 @@ public enum StockMovementType
     Ajuste,
     Retiro,
 
-    /// <summary>Entrada manual a un lote existente (RF-014).</summary>
+    /// <summary>SCRUM-101 · HU-06.3: entrada manual a un lote existente (RF-014).</summary>
     Entrada,
 
-    /// <summary>Salida manual de un lote (RF-015).</summary>
+    /// <summary>SCRUM-101 · HU-06.3: salida manual de un lote (RF-015).</summary>
     Salida,
 }
 
@@ -29,6 +29,7 @@ public class StockMovement
             throw new DomainException("Los movimientos manuales requieren un motivo (RF-016).");
         if (type == StockMovementType.Entrada && quantity < 0)
             throw new DomainException("Una entrada debe sumar unidades.");
+        // SCRUM-121 · HU-07.2: el retiro, como la salida, resta unidades.
         if (type is StockMovementType.Salida or StockMovementType.Retiro && quantity > 0)
             throw new DomainException("Una salida o un retiro debe restar unidades.");
 
@@ -54,7 +55,7 @@ public class StockMovement
     public string UserName { get; private set; } = "";
     public DateTimeOffset OccurredAt { get; private set; }
 
-    /// <summary>Movimientos que registra una persona y no una venta o compra: exigen motivo.</summary>
+    /// <summary>SCRUM-101 · HU-06.3: movimientos que registra una persona y no una venta o compra: exigen motivo.</summary>
     public static bool IsManual(StockMovementType type) =>
         type is StockMovementType.Ajuste or StockMovementType.Retiro or StockMovementType.Entrada
             or StockMovementType.Salida;

@@ -54,7 +54,7 @@ public interface ICashRepository
 }
 
 /// <summary>
-/// HU-28.1 (RF-099): parámetros operativos que el administrador configura en el servidor y que
+/// SCRUM-130 · HU-28.1 (RF-099): parámetros operativos que el administrador configura en el servidor y que
 /// los puestos reciben con la sincronización.
 /// </summary>
 public interface IOperationalSettings

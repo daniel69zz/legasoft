@@ -11,14 +11,14 @@ public sealed partial class ReportsViewModel(ApiClient api) : ViewModelBase, IAc
 {
     [ObservableProperty] private DashboardSummary? _summary;
 
-    // HU-20.1 (RF-075): filtros de auditoría.
+    // SCRUM-128 · HU-20.1 (RF-075): filtros de auditoría.
     [ObservableProperty] private DateTime? _auditFrom = DateTime.Today.AddDays(-6);
     [ObservableProperty] private DateTime? _auditTo = DateTime.Today;
     [ObservableProperty] private string _auditUser = "";
     [ObservableProperty] private string _auditAction = "";
     [ObservableProperty] private bool _canAudit = true;
 
-    // HU-18.1 (RF-105): período a exportar.
+    // SCRUM-129 · HU-18.1 (RF-105): período a exportar.
     [ObservableProperty] private DateTime? _exportFrom = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
     [ObservableProperty] private DateTime? _exportTo = DateTime.Today;
     [ObservableProperty] private string _exportedPath = "";
@@ -67,7 +67,7 @@ public sealed partial class ReportsViewModel(ApiClient api) : ViewModelBase, IAc
         if (audit.Count == 0) Info = "No hay registros de auditoría con esos filtros.";
     });
 
-    /// <summary>HU-18.1 (RF-105): guarda el .xlsx del período en la carpeta de descargas.</summary>
+    /// <summary>SCRUM-129 · HU-18.1 (RF-105): guarda el .xlsx del período en la carpeta de descargas.</summary>
     [RelayCommand]
     private Task ExportAsync() => RunAsync(async () =>
     {

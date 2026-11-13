@@ -21,7 +21,7 @@ await app.Services.MigrateAsync<BusinessDb>(async db =>
         db.Lots.AddRange(DemoCatalog.Lots(DateOnly.FromDateTime(DateTime.UtcNow.AddHours(-4))));
         await db.SaveChangesAsync();
     }
-    // Sprint 2: proveedores y una compra pendiente de recibir para la demostración (se agregan
+    // SCRUM-18 y SCRUM-19 (Sprint 2): proveedores y una compra pendiente de recibir para la demostración (se agregan
     // también a bases creadas en el Sprint 1, que ya tienen catálogo).
     if (!await db.Suppliers.AnyAsync())
     {

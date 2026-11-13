@@ -23,7 +23,7 @@ public class AuthorizedDevice
     public string Description { get; set; } = "";
     public bool IsActive { get; set; } = true;
 
-    /// <summary>HU-03.2 (RF-007): el perfil Administrador solo inicia sesión en equipos con esta marca.</summary>
+    /// <summary>SCRUM-127 · HU-03.2 (RF-007): el perfil Administrador solo inicia sesión en equipos con esta marca.</summary>
     public bool AllowsAdministrator { get; set; }
 }
 

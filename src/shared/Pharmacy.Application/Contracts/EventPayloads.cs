@@ -22,12 +22,12 @@ public sealed record CashSessionClosedPayload(Guid CashSessionId, string DeviceI
     IReadOnlyDictionary<decimal, int> Denominations);
 
 /// <summary>
-/// HU-16.2 (RF-061, RF-062): entrega del cajero saliente y respuesta del entrante. Si el entrante
+/// SCRUM-126 · HU-16.2 (RF-061, RF-062): entrega del cajero saliente y respuesta del entrante. Si el entrante
 /// no está conforme o el monto no coincide, la entrega sigue pendiente (Confirmed = false).
 /// </summary>
 public sealed record CashHandoverPayload(Guid CashSessionId, string DeviceId, string FromCashier, string ToCashier,
     decimal CountedAmount, decimal? ReceivedAmount, bool Confirmed, DateTimeOffset OccurredAt);
 
-/// <summary>HU-06.3: entrada, salida o ajuste manual registrado en un puesto (RF-014 a RF-016).</summary>
+/// <summary>SCRUM-101 · HU-06.3: entrada, salida o ajuste manual registrado en un puesto (RF-014 a RF-016).</summary>
 public sealed record StockMovementPayload(Guid MovementId, Guid ProductId, Guid LotId, string LotNumber, string Type,
     int Quantity, string Reason, string UserName, DateTimeOffset OccurredAt);

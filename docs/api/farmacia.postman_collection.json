@@ -34,6 +34,18 @@
     {
       "key": "productId",
       "value": "00000000-0000-0000-0001-000000000001"
+    },
+    {
+      "key": "supplierId",
+      "value": ""
+    },
+    {
+      "key": "purchaseId",
+      "value": ""
+    },
+    {
+      "key": "lineId",
+      "value": ""
     }
   ],
   "item": [
@@ -599,6 +611,624 @@
       ]
     },
     {
+      "name": "HU-08 · Proveedores (SCRUM-18)",
+      "description": "Sprint 2. Ejecute antes *Login como admin*: registrar y modificar proveedores es solo del Administrador.",
+      "item": [
+        {
+          "name": "Listar proveedores",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/suppliers?search=",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "suppliers"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "RF-026. Lista y busca por razón social, NIT o contacto."
+          }
+        },
+        {
+          "name": "Registrar proveedor",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/suppliers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "suppliers"
+              ]
+            },
+            "description": "RF-026. Guarda el id en `supplierId`. Un NIT repetido devuelve 409; sin teléfono, 422 indicando el dato.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"taxId\": \"4455667788\",\n  \"name\": \"Laboratorios del Sur\",\n  \"contactName\": \"Ana Choque\",\n  \"phone\": \"2-2223344\",\n  \"email\": \"ventas@sur.example\",\n  \"address\": \"El Alto\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Proveedor registrado', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('supplierId', pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Modificar proveedor",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/suppliers/{{supplierId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "suppliers",
+                "{{supplierId}}"
+              ]
+            },
+            "description": "RF-027. El NIT no cambia.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"taxId\": \"4455667788\",\n  \"name\": \"Laboratorios del Sur S.A.\",\n  \"contactName\": \"Ana Choque\",\n  \"phone\": \"2-2223344\",\n  \"email\": \"ventas@sur.example\",\n  \"address\": \"El Alto\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Desactivar proveedor",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/suppliers/{{supplierId}}/deactivate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "suppliers",
+                "{{supplierId}}",
+                "deactivate"
+              ]
+            },
+            "description": "Deja de ofrecerse en compras nuevas."
+          }
+        },
+        {
+          "name": "Activar proveedor",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/suppliers/{{supplierId}}/activate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "suppliers",
+                "{{supplierId}}",
+                "activate"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Productos suministrados",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/suppliers/{{supplierId}}/products",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "suppliers",
+                "{{supplierId}}",
+                "products"
+              ]
+            },
+            "description": "RF-028. Según las compras recibidas."
+          }
+        },
+        {
+          "name": "Historial de compras del proveedor",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/suppliers/{{supplierId}}/purchases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "suppliers",
+                "{{supplierId}}",
+                "purchases"
+              ]
+            },
+            "description": "RF-029."
+          }
+        }
+      ]
+    },
+    {
+      "name": "HU-09 · Compras y recepción (SCRUM-19)",
+      "description": "Sprint 2. Administrador o Gerente de Operaciones. Usa `supplierId` y `productId`.",
+      "item": [
+        {
+          "name": "Registrar compra",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/purchases",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "purchases"
+              ]
+            },
+            "description": "RF-030, RF-031. Guarda `purchaseId` y `lineId`; el total se calcula solo.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"supplierId\": \"{{supplierId}}\",\n  \"items\": [\n    {\n      \"productId\": \"{{productId}}\",\n      \"quantity\": 100,\n      \"unitCost\": 0.3\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Compra registrada', () => pm.response.to.have.status(201));",
+                  "const c = pm.response.json();",
+                  "pm.collectionVariables.set('purchaseId', c.id);",
+                  "pm.collectionVariables.set('lineId', c.lines[0].id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar compras",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/purchases?status=Pendiente",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "purchases"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "Pendiente"
+                }
+              ]
+            },
+            "description": "Filtra por estado: Pendiente o Recibida."
+          }
+        },
+        {
+          "name": "Detalle de la compra",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/purchases/{{purchaseId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "purchases",
+                "{{purchaseId}}"
+              ]
+            },
+            "description": ""
+          }
+        },
+        {
+          "name": "Recibir compra (90 buenas y 10 dañadas)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/purchases/{{purchaseId}}/receive",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "purchases",
+                "{{purchaseId}}",
+                "receive"
+              ]
+            },
+            "description": "RF-032, RF-033, RF-107, RF-108. Crea el lote con las 90 unidades en buen estado; una compra se recibe una sola vez.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lines\": [\n    {\n      \"lineId\": \"{{lineId}}\",\n      \"lotNumber\": \"PCM-2601\",\n      \"expirationDate\": \"2028-06-30\",\n      \"receivedQuantity\": 90,\n      \"damagedQuantity\": 10\n    }\n  ]\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Recibida', () => pm.expect(pm.response.json().status).to.eql('Recibida'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "HU-10.1 y HU-10.2 · Precios de proveedores (SCRUM-124, SCRUM-125)",
+      "description": "Sprint 2. Usa `supplierId` y `productId`.",
+      "item": [
+        {
+          "name": "Registrar precio ofrecido",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/suppliers/{{supplierId}}/prices",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "suppliers",
+                "{{supplierId}}",
+                "prices"
+              ]
+            },
+            "description": "RF-034. Cada registro nuevo pasa a ser el precio vigente.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"{{productId}}\",\n  \"price\": 0.28\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Precio registrado', () => pm.response.to.have.status(201));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Precios vigentes del proveedor",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/suppliers/{{supplierId}}/prices",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "suppliers",
+                "{{supplierId}}",
+                "prices"
+              ]
+            },
+            "description": "RF-034."
+          }
+        },
+        {
+          "name": "Historial de precios del producto",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/suppliers/{{supplierId}}/prices/history?productId={{productId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "suppliers",
+                "{{supplierId}}",
+                "prices",
+                "history"
+              ],
+              "query": [
+                {
+                  "key": "productId",
+                  "value": "{{productId}}"
+                }
+              ]
+            },
+            "description": "RF-035. El más reciente primero."
+          }
+        },
+        {
+          "name": "Comparar proveedores para el producto",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/products/{{productId}}/supplier-prices",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "products",
+                "{{productId}}",
+                "supplier-prices"
+              ]
+            },
+            "description": "RF-036. Vigentes de proveedores activos, del menor al mayor."
+          }
+        }
+      ]
+    },
+    {
+      "name": "HU-06.4 · Historial de movimientos (SCRUM-123)",
+      "description": "Sprint 2. Roles con permiso Inventario. Sin fechas, los últimos 7 días.",
+      "item": [
+        {
+          "name": "Movimientos de inventario",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/inventory/movements?type=Compra",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "inventory",
+                "movements"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "Compra"
+                }
+              ]
+            },
+            "description": "RF-019. Filtros: from, to (yyyy-MM-dd), type (Compra, Venta, Ajuste, Entrada, Salida, Retiro) y productId."
+          }
+        }
+      ]
+    },
+    {
+      "name": "HU-20.1 · Auditoría con filtros (SCRUM-128)",
+      "description": "Sprint 2. Administrador, Gerente General o Contadora.",
+      "item": [
+        {
+          "name": "Auditoría filtrada",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/audit?user=admin&action=proveedor",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "audit"
+              ],
+              "query": [
+                {
+                  "key": "user",
+                  "value": "admin"
+                },
+                {
+                  "key": "action",
+                  "value": "proveedor"
+                }
+              ]
+            },
+            "description": "RF-075. Filtros: from, to, user y action (texto parcial). Incluye el puesto."
+          }
+        }
+      ]
+    },
+    {
+      "name": "HU-18.1 · Exportación a Excel (SCRUM-129)",
+      "description": "Sprint 2. Roles con permiso Reportes. Use *Send and Download* para guardar el archivo.",
+      "item": [
+        {
+          "name": "Exportar ventas, egresos y cierres",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/export?from=2026-11-01&to=2026-11-30",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reports",
+                "export"
+              ],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "2026-11-01"
+                },
+                {
+                  "key": "to",
+                  "value": "2026-11-30"
+                }
+              ]
+            },
+            "description": "RF-105. Devuelve un .xlsx; la cabecera X-Export-Empty indica un período sin operaciones."
+          }
+        }
+      ]
+    },
+    {
+      "name": "HU-28.1 · Parámetros operativos (SCRUM-130)",
+      "description": "Sprint 2. Leer: cualquier usuario autenticado; modificar: Administrador.",
+      "item": [
+        {
+          "name": "Ver parámetros",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/settings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "settings"
+              ]
+            },
+            "description": "RF-099."
+          }
+        },
+        {
+          "name": "Modificar parámetros",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/settings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "settings"
+              ]
+            },
+            "description": "RF-099. Umbral de 1 a 365 días y frecuencia de 5 a 1440 minutos; fuera de rango devuelve 422.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"expiryThresholdDays\": 60,\n  \"alertIntervalMinutes\": 60\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "HU-03.2 · Administrador en equipos autorizados (SCRUM-127)",
+      "description": "Sprint 2.",
+      "item": [
+        {
+          "name": "Login de admin desde PUESTO-02 (403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "RF-007. PUESTO-02 no admite al perfil Administrador.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userName\": \"admin\",\n  \"password\": \"{{password}}\",\n  \"deviceId\": \"PUESTO-02\"\n}"
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Equipo no autorizado', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "Sincronización (Sync Service)",
       "item": [
         {
@@ -642,6 +1272,34 @@
               ]
             },
             "description": "RF-080. Lo usa el Sync Worker del Desktop."
+          }
+        },
+        {
+          "name": "Descargar lotes (primera descarga)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sync/pull-lots?since=0&snapshot=true",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sync",
+                "pull-lots"
+              ],
+              "query": [
+                {
+                  "key": "since",
+                  "value": "0"
+                },
+                {
+                  "key": "snapshot",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": "SCRUM-19 y SCRUM-112. Con snapshot=true trae todos los lotes; luego, solo los recibidos desde `since`."
           }
         }
       ]

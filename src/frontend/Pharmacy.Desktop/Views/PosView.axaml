@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Pharmacy.Desktop.ViewModels"
+             xmlns:conv="using:Pharmacy.Desktop.Converters"
              xmlns:inv="using:Pharmacy.Application.Inventory"
              x:Class="Pharmacy.Desktop.Views.PosView"
              x:DataType="vm:PosViewModel">
@@ -88,7 +89,7 @@
             <TextBox Grid.Column="1" Watermark="NIT / CI" Text="{Binding CustomerTaxId}" />
           </Grid>
           <TextBlock Classes="muted" Text="Efectivo recibido (único medio de pago)" />
-          <NumericUpDown Value="{Binding CashReceived}" Minimum="0" Increment="10" FormatString="N2" />
+          <NumericUpDown TextConverter="{x:Static conv:DecimalText.Money}" Value="{Binding CashReceived}" Minimum="0" Increment="10" />
           <Grid ColumnDefinitions="*,Auto">
             <TextBlock Text="Cambio" VerticalAlignment="Center" />
             <TextBlock Grid.Column="1" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource Navy}"

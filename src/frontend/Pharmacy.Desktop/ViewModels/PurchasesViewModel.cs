@@ -52,7 +52,7 @@ public sealed partial class ReceptionRow(PurchaseLineDto line) : ObservableObjec
 }
 
 /// <summary>
-/// HU-09: registro de compras y su recepción (RF-030 a RF-033, RF-107, RF-108). Se trabaja en
+/// SCRUM-19 · HU-09: registro de compras y su recepción (RF-030 a RF-033, RF-107, RF-108). Se trabaja en
 /// línea; los lotes recibidos llegan al stock del puesto con la siguiente sincronización.
 /// </summary>
 public sealed partial class PurchasesViewModel(ApiClient api, Operations operations, SyncWorker sync)
@@ -64,13 +64,13 @@ public sealed partial class PurchasesViewModel(ApiClient api, Operations operati
     [ObservableProperty] private string _receptionSummary = "";
     [ObservableProperty] private decimal? _newPrice;
 
-    /// <summary>HU-10.1 (RF-034): precios vigentes del proveedor elegido.</summary>
+    /// <summary>SCRUM-124 · HU-10.1 (RF-034): precios vigentes del proveedor elegido.</summary>
     public ObservableCollection<SupplierPriceDto> SupplierPrices { get; } = [];
 
-    /// <summary>HU-10.1 (RF-035): historial del producto elegido con el proveedor elegido.</summary>
+    /// <summary>SCRUM-124 · HU-10.1 (RF-035): historial del producto elegido con el proveedor elegido.</summary>
     public ObservableCollection<SupplierPriceDto> PriceHistory { get; } = [];
 
-    /// <summary>HU-10.2 (RF-036): precios vigentes del producto elegido entre todos los proveedores.</summary>
+    /// <summary>SCRUM-125 · HU-10.2 (RF-036): precios vigentes del producto elegido entre todos los proveedores.</summary>
     public ObservableCollection<SupplierPriceDto> Comparison { get; } = [];
 
     public bool HasProduct => ProductToAdd is not null;
@@ -184,7 +184,7 @@ public sealed partial class PurchasesViewModel(ApiClient api, Operations operati
             Error = $"{product.Name} ya está en la compra.";
             return;
         }
-        // HU-10.1: el costo se propone con el precio vigente del proveedor elegido.
+        // SCRUM-124 · HU-10.1: el costo se propone con el precio vigente del proveedor elegido.
         var line = new PurchaseDraftLine(product, () => OnPropertyChanged(nameof(DraftTotal)))
         {
             UnitCost = SupplierPrices.FirstOrDefault(p => p.ProductId == product.Id)?.Price,

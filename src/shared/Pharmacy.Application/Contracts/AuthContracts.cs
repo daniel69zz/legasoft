@@ -11,5 +11,6 @@ public sealed record CreateUserRequest(string UserName, string FullName, string 
 
 public sealed record UpdateUserRequest(string FullName, string Role);
 
+/// <summary>Registro de auditoría; DeviceId agregado en SCRUM-128 · HU-20.1.</summary>
 public sealed record AuditEntryDto(DateTimeOffset OccurredAt, string UserName, string Action, string Detail,
     string DeviceId = "");

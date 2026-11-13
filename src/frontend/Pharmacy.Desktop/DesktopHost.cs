@@ -44,8 +44,9 @@ public static class DesktopHost
         s.AddScoped<VoidSaleHandler>();
         s.AddScoped<CashHandlers>();
         s.AddScoped<InventoryQueries>();
-        s.AddScoped<AdjustStockHandler>();
+        s.AddScoped<AdjustStockHandler>();   // SCRUM-101 y SCRUM-121
 
+        // SCRUM-100 · HU-T02.2: HTTPS con TLS 1.2+ fuera de localhost.
         var gateway = GatewayUrlPolicy.Validate(options.GatewayUrl);
         s.AddHttpClient("gateway", c =>
         {
@@ -68,10 +69,10 @@ public static class DesktopHost
         s.AddTransient<ReportsViewModel>();
         s.AddTransient<UsersViewModel>();
         s.AddTransient<CatalogViewModel>();
-        s.AddTransient<SuppliersViewModel>();
-        s.AddTransient<PurchasesViewModel>();
-        s.AddTransient<MovementsViewModel>();
-        s.AddTransient<SettingsViewModel>();
+        s.AddTransient<SuppliersViewModel>();   // SCRUM-18
+        s.AddTransient<PurchasesViewModel>();   // SCRUM-19, SCRUM-124 y SCRUM-125
+        s.AddTransient<MovementsViewModel>();   // SCRUM-123
+        s.AddTransient<SettingsViewModel>();    // SCRUM-130
 
         var host = builder.Build();
         using var scope = host.Services.CreateScope();

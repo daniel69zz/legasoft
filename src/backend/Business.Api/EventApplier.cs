@@ -125,7 +125,7 @@ public class EventApplier(BusinessDb db, ILogger<EventApplier> logger)
             $"Esperado Bs {p.ExpectedAmount:0.00}, contado Bs {p.CountedAmount:0.00}, diferencia Bs {p.Difference:0.00}");
     }
 
-    /// <summary>HU-16.2 (RF-061, RF-062): entrega de caja entre cajeros y su confirmación.</summary>
+    /// <summary>SCRUM-126 · HU-16.2 (RF-061, RF-062): entrega de caja entre cajeros y su confirmación.</summary>
     private async Task HandoverAsync(CashHandoverPayload p, SyncEnvelope message, CancellationToken ct)
     {
         var session = await db.CashSessions.FindAsync([p.CashSessionId], ct)
@@ -153,7 +153,7 @@ public class EventApplier(BusinessDb db, ILogger<EventApplier> logger)
         }
     }
 
-    /// <summary>HU-06.3: entrada, salida o ajuste manual hecho en un puesto (RF-014 a RF-016).</summary>
+    /// <summary>SCRUM-101 · HU-06.3: entrada, salida o ajuste manual hecho en un puesto (RF-014 a RF-016).</summary>
     private async Task StockMovementAsync(StockMovementPayload p, SyncEnvelope message, CancellationToken ct)
     {
         if (await db.StockMovements.AnyAsync(m => m.Id == p.MovementId, ct)) return;

@@ -20,7 +20,7 @@ public sealed record LotOption(Guid Id, string LotNumber, DateOnly ExpirationDat
 
 /// <summary>
 /// Consulta de stock vendible, ubicación, lotes por vencer y stock mínimo (RF-012, RF-013, RF-018, RF-022)
-/// y, para el producto elegido, entradas, salidas y ajustes manuales con su historial (HU-06.3).
+/// y, para el producto elegido, entradas, salidas y ajustes manuales con su historial (SCRUM-101 · HU-06.3).
 /// </summary>
 public sealed partial class InventoryViewModel(Operations operations, Session session) : ViewModelBase, IActivatable
 {
@@ -45,7 +45,7 @@ public sealed partial class InventoryViewModel(Operations operations, Session se
     public ObservableCollection<LotOption> Lots { get; } = [];
     public ObservableCollection<StockMovementRow> Movements { get; } = [];
 
-    /// <summary>HU-07.3 (RF-021): lotes del producto con existencia, vencimiento y estado.</summary>
+    /// <summary>SCRUM-122 · HU-07.3 (RF-021): lotes del producto con existencia, vencimiento y estado.</summary>
     public ObservableCollection<LotStockRow> LotDetails { get; } = [];
 
     [ObservableProperty] private int _expiryThresholdDays = InventoryAlerts.DefaultExpiryThresholdDays;

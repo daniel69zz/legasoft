@@ -6,7 +6,7 @@ using Pharmacy.Desktop.Services;
 namespace Pharmacy.Desktop.ViewModels;
 
 /// <summary>
-/// HU-28.1 (RF-099): parámetros operativos de inventario. Se guardan en el servidor; los puestos
+/// SCRUM-130 · HU-28.1 (RF-099): parámetros operativos de inventario. Se guardan en el servidor; los puestos
 /// reciben el umbral de vencimiento con la siguiente sincronización.
 /// </summary>
 public sealed partial class SettingsViewModel(ApiClient api, SyncWorker sync) : ViewModelBase, IActivatable

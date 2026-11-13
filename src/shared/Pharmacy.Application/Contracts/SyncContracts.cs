@@ -50,7 +50,7 @@ public sealed record CatalogProductDto(Guid Id, string Code, string Name, string
 
 /// <summary>
 /// Cambios de catálogo y precios desde una versión (descarga incremental). Incluye el umbral de
-/// vencimiento vigente (HU-28.1); es nulo cuando responde un servidor anterior al Sprint 2.
+/// vencimiento vigente (SCRUM-130 · HU-28.1); es nulo cuando responde un servidor anterior al Sprint 2.
 /// </summary>
 public sealed record PullResponse(long Version, IReadOnlyList<CatalogProductDto> Products,
     int? ExpiryThresholdDays = null);

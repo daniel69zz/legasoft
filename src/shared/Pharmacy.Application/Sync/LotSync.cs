@@ -7,7 +7,7 @@ namespace Pharmacy.Application.Sync;
 public sealed record LotMergeResult(IReadOnlyList<Lot> Added, int Updated);
 
 /// <summary>
-/// Mezcla en el puesto los lotes que envía el servidor (HU-09 y SCRUM-112). Los lotes nuevos se
+/// Mezcla en el puesto los lotes que envía el servidor (SCRUM-19 · HU-09 y SCRUM-112). Los lotes nuevos se
 /// agregan. En los que el puesto ya tiene, el número y el vencimiento se toman del servidor (las
 /// semillas de cada base calculan las fechas desde el día en que se crearon, y la regla RF-024 de
 /// no vender vencidos debe usar la fecha oficial). La cantidad solo se toma del servidor si el

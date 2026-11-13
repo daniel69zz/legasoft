@@ -6,7 +6,7 @@ using Pharmacy.Domain.Inventory;
 namespace Business.Api;
 
 /// <summary>
-/// HU-28.1 (RF-099): parámetros operativos guardados en inventory.settings. Si un parámetro no
+/// SCRUM-130 · HU-28.1 (RF-099): parámetros operativos guardados en inventory.settings. Si un parámetro no
 /// se configuró, rige el valor por defecto del Sprint 1.
 /// </summary>
 public static class OperationalSettings

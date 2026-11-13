@@ -21,7 +21,12 @@ public static class AuthEndpoints
 
     public static void MapAuthEndpoints(this WebApplication app)
     {
-        app.MapPost("/auth/login", LoginAsync).AllowAnonymous();
+        app.MapPost("/auth/login", LoginAsync).AllowAnonymous().WithTags("Autenticación")
+            .WithSummary("Inicia sesión y devuelve el JWT con el rol (RF-001, RF-006, RF-007, RNF-004)")
+            .Produces<LoginResponse>()
+            .ProducesProblem(StatusCodes.Status401Unauthorized)   // credenciales inválidas o usuario inactivo
+            .ProducesProblem(StatusCodes.Status403Forbidden)      // equipo no autorizado para el perfil
+            .ProducesProblem(StatusCodes.Status423Locked);        // bloqueo por intentos fallidos
     }
 
     private static async Task<IResult> LoginAsync(LoginRequest request, IdentityDb db, JwtOptions jwt,
@@ -56,7 +61,7 @@ public static class AuthEndpoints
             return Results.Problem("Este equipo no está autorizado para el inicio de sesión de cajeros.",
                 statusCode: StatusCodes.Status403Forbidden);
 
-        // HU-03.2 (RF-007): el administrador solo entra desde equipos autorizados para su perfil.
+        // SCRUM-127 · HU-03.2 (RF-007): el administrador solo entra desde equipos autorizados para su perfil.
         if (user.Role == Roles.Administrador && !await db.Devices.AnyAsync(d =>
                 d.DeviceId == request.DeviceId && d.IsActive && d.AllowsAdministrator))
         {

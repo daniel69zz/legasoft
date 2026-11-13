@@ -1,6 +1,6 @@
 namespace Pharmacy.Application.Contracts;
 
-/// <summary>Proveedor tal como lo administra el Business Service (HU-08).</summary>
+/// <summary>Proveedor tal como lo administra el Business Service (SCRUM-18 · HU-08).</summary>
 public sealed record SupplierDto(Guid Id, string TaxId, string Name, string ContactName, string Phone, string Email,
     string Address, bool IsActive);
 
@@ -39,7 +39,7 @@ public sealed record LotChangeDto(long Sequence, Guid LotId, Guid ProductId, str
 /// <summary>Lotes nuevos desde una versión (descarga incremental, pendiente de HU-22.1).</summary>
 public sealed record LotPullResponse(long Version, IReadOnlyList<LotChangeDto> Lots);
 
-/// <summary>HU-10.1 (RF-034, RF-035): precio ofrecido por un proveedor para un producto.</summary>
+/// <summary>SCRUM-124 · HU-10.1 (RF-034, RF-035): precio ofrecido por un proveedor para un producto.</summary>
 public sealed record SupplierPriceDto(Guid SupplierId, string SupplierName, Guid ProductId, string ProductName,
     decimal Price, DateTimeOffset RegisteredAt, string RegisteredBy);
 

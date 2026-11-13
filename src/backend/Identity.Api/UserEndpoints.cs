@@ -10,11 +10,12 @@ public static class UserEndpoints
 {
     public static void MapUserEndpoints(this WebApplication app)
     {
-        var admin = app.MapGroup("/api").RequireAuthorization(p => p.RequireRole(Roles.Administrador));
+        var admin = app.MapGroup("/api").RequireAuthorization(p => p.RequireRole(Roles.Administrador)).WithTags("Usuarios");
 
         admin.MapGet("/users", async (IdentityDb db) =>
             await db.Users.OrderBy(u => u.UserName)
-                .Select(u => new UserDto(u.Id, u.UserName, u.FullName, u.Role, u.IsActive)).ToListAsync());
+                .Select(u => new UserDto(u.Id, u.UserName, u.FullName, u.Role, u.IsActive)).ToListAsync())
+            .WithSummary("Lista los usuarios con su rol (RF-002)");
 
         admin.MapPost("/users", async (CreateUserRequest request, IdentityDb db, HttpContext http, TimeProvider time) =>
         {
@@ -39,7 +40,10 @@ public static class UserEndpoints
             await db.SaveChangesAsync();
             return Results.Created($"/api/users/{user.Id}",
                 new UserDto(user.Id, user.UserName, user.FullName, user.Role, user.IsActive));
-        });
+        })
+            .WithSummary("Registra un usuario con su rol (RF-003)")
+            .Produces<UserDto>(StatusCodes.Status201Created).ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status409Conflict);
 
         admin.MapPut("/users/{id:guid}", async (Guid id, UpdateUserRequest request, IdentityDb db, HttpContext http,
             TimeProvider time) =>
@@ -55,7 +59,10 @@ public static class UserEndpoints
             user.Role = request.Role;
             await db.SaveChangesAsync();
             return Results.NoContent();
-        });
+        })
+            .WithSummary("Modifica el nombre y el rol de un usuario (RF-004)")
+            .Produces(StatusCodes.Status204NoContent).ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status404NotFound);
 
         admin.MapPost("/users/{id:guid}/{action:regex(^(activate|deactivate)$)}", async (Guid id, string action,
             IdentityDb db, HttpContext http, TimeProvider time) =>
@@ -68,20 +75,26 @@ public static class UserEndpoints
             Audit(db, http, time, user.IsActive ? "Activación de usuario" : "Desactivación de usuario", user.UserName);
             await db.SaveChangesAsync();
             return Results.NoContent();
-        });
+        })
+            .WithSummary("Activa o desactiva un usuario (RF-005)")
+            .Produces(StatusCodes.Status204NoContent).ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status404NotFound);
 
         admin.MapGet("/users/audit", async (IdentityDb db) =>
             await db.UserChanges.OrderByDescending(c => c.OccurredAt).Take(200)
-                .Select(c => new AuditEntryDto(c.OccurredAt, c.ChangedBy, c.Action, c.Detail, "")).ToListAsync());
+                .Select(c => new AuditEntryDto(c.OccurredAt, c.ChangedBy, c.Action, c.Detail, "")).ToListAsync())
+            .WithSummary("Auditoría de altas, cambios de usuarios y accesos rechazados (RF-075)");
 
-        admin.MapGet("/devices", async (IdentityDb db) => await db.Devices.OrderBy(d => d.DeviceId).ToListAsync());
+        admin.MapGet("/devices", async (IdentityDb db) => await db.Devices.OrderBy(d => d.DeviceId).ToListAsync())
+            .WithSummary("Equipos autorizados y si admiten al Administrador (RF-006, RF-007)");
 
         app.MapGet("/api/attendance", async (DateOnly? day, IdentityDb db, TimeProvider time) =>
             {
                 var date = day ?? DateOnly.FromDateTime(time.GetUtcNow().UtcDateTime);
                 return await db.Attendance.Where(a => a.Day == date).OrderBy(a => a.FirstLoginAt).ToListAsync();
             })
-            .RequireAuthorization(p => p.RequireRole(Roles.Administrador, Roles.GerenteGeneral));
+            .RequireAuthorization(p => p.RequireRole(Roles.Administrador, Roles.GerenteGeneral))
+            .WithTags("Usuarios").WithSummary("Asistencia de los cajeros en un día (RF-008)");
     }
 
     private static void Audit(IdentityDb db, HttpContext http, TimeProvider time, string action, string detail) =>

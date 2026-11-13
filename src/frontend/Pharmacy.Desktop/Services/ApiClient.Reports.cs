@@ -8,11 +8,13 @@ public sealed record ExportFile(byte[] Content, string FileName, bool IsEmpty);
 /// <summary>Consultas incorporadas al Sprint 2: movimientos, auditoría filtrada, exportación, parámetros y precios.</summary>
 public sealed partial class ApiClient
 {
+    // SCRUM-123 · HU-06.4
     public Task<List<InventoryMovementDto>> GetMovementsAsync(DateOnly from, DateOnly to, string? type) =>
         SendAsync<List<InventoryMovementDto>>(HttpMethod.Get,
             $"/api/inventory/movements?from={from:yyyy-MM-dd}&to={to:yyyy-MM-dd}" +
             (string.IsNullOrEmpty(type) ? "" : $"&type={Uri.EscapeDataString(type)}"));
 
+    // SCRUM-128 · HU-20.1
     public Task<List<AuditEntryDto>> SearchAuditAsync(DateOnly? from, DateOnly? to, string user, string action) =>
         SendAsync<List<AuditEntryDto>>(HttpMethod.Get,
             "/api/audit?" + string.Join("&", new[]
@@ -23,12 +25,14 @@ public sealed partial class ApiClient
                 string.IsNullOrWhiteSpace(action) ? null : $"action={Uri.EscapeDataString(action)}",
             }.Where(p => p is not null)));
 
+    // SCRUM-130 · HU-28.1
     public Task<OperationalSettingsDto> GetSettingsAsync() =>
         SendAsync<OperationalSettingsDto>(HttpMethod.Get, "/api/settings");
 
     public Task<OperationalSettingsDto> SaveSettingsAsync(OperationalSettingsDto settings) =>
         SendAsync<OperationalSettingsDto>(HttpMethod.Put, "/api/settings", settings);
 
+    // SCRUM-124 · HU-10.1
     public Task<SupplierPriceDto> RegisterSupplierPriceAsync(Guid supplierId, RegisterSupplierPriceRequest request) =>
         SendAsync<SupplierPriceDto>(HttpMethod.Post, $"/api/suppliers/{supplierId}/prices", request);
 
@@ -38,10 +42,11 @@ public sealed partial class ApiClient
     public Task<List<SupplierPriceDto>> GetPriceHistoryAsync(Guid supplierId, Guid productId) =>
         SendAsync<List<SupplierPriceDto>>(HttpMethod.Get, $"/api/suppliers/{supplierId}/prices/history?productId={productId}");
 
+    // SCRUM-125 · HU-10.2
     public Task<List<SupplierPriceDto>> ComparePricesAsync(Guid productId) =>
         SendAsync<List<SupplierPriceDto>>(HttpMethod.Get, $"/api/products/{productId}/supplier-prices");
 
-    /// <summary>HU-18.1 (RF-105): descarga el .xlsx del período.</summary>
+    /// <summary>SCRUM-129 · HU-18.1 (RF-105): descarga el .xlsx del período.</summary>
     public async Task<ExportFile> ExportAsync(DateOnly from, DateOnly to)
     {
         using var client = factory.CreateClient("gateway");

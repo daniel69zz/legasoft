@@ -54,7 +54,7 @@ public class Lot
     }
 
     /// <summary>
-    /// Aplica en el puesto los datos del lote según el servidor, que es la fuente oficial del número
+    /// SCRUM-112: aplica en el puesto los datos del lote según el servidor, que es la fuente oficial del número
     /// y del vencimiento. La cantidad solo se toma si se indica (el puesto no movió ese lote).
     /// </summary>
     public void ApplyServerData(string lotNumber, DateOnly expirationDate, int? quantity)

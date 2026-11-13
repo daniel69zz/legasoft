@@ -9,7 +9,7 @@ using Pharmacy.ServiceDefaults;
 namespace Business.Api;
 
 /// <summary>
-/// HU-08 (proveedores, RF-026 a RF-029) y HU-09 (compras y recepción, RF-030 a RF-033, RF-020,
+/// SCRUM-18 · HU-08 (proveedores, RF-026 a RF-029) y SCRUM-19 · HU-09 (compras y recepción, RF-030 a RF-033, RF-020,
 /// RF-107 y RF-108). Se administran en línea; los lotes recibidos llegan a los puestos con la
 /// descarga incremental de lotes (/internal/lots).
 /// </summary>
@@ -22,7 +22,7 @@ public static class PurchasingEndpoints
         MapPrices(app);
     }
 
-    /// <summary>HU-10.1 (RF-034, RF-035) y HU-10.2 (RF-036): precios de compra por proveedor.</summary>
+    /// <summary>SCRUM-124 · HU-10.1 (RF-034, RF-035) y SCRUM-125 · HU-10.2 (RF-036): precios de compra por proveedor.</summary>
     private static void MapPrices(WebApplication app)
     {
         var prices = app.MapGroup("/api").RequireAnyPermission(Permission.Compras, Permission.Proveedores)
@@ -42,7 +42,8 @@ public static class PurchasingEndpoints
                 await db.SaveChangesAsync();
                 return Results.Created($"/api/suppliers/{id}/prices", ToDto(price, supplier.Name, product.DisplayName));
             })
-            .WithSummary("Registra el precio que el proveedor ofrece por un producto (RF-034)");
+            .WithSummary("[SCRUM-124 · HU-10.1] Registra el precio que el proveedor ofrece por un producto (RF-034)")
+            .Produces<SupplierPriceDto>(StatusCodes.Status201Created).ProducesProblem(StatusCodes.Status404NotFound).ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 
         prices.MapGet("/suppliers/{id:guid}/prices", async (Guid id, BusinessDb db) =>
             {
@@ -55,7 +56,8 @@ public static class PurchasingEndpoints
                     .OrderBy(p => p.ProductName)
                     .ToList());
             })
-            .WithSummary("Precios vigentes del proveedor por producto (RF-034)");
+            .WithSummary("[SCRUM-124 · HU-10.1] Precios vigentes del proveedor por producto (RF-034)")
+            .Produces<List<SupplierPriceDto>>().ProducesProblem(StatusCodes.Status404NotFound);
 
         prices.MapGet("/suppliers/{id:guid}/prices/history", async (Guid id, Guid productId, BusinessDb db) =>
             {
@@ -68,7 +70,8 @@ public static class PurchasingEndpoints
                     .Select(p => ToDto(p, supplier.Name, names.GetValueOrDefault(p.ProductId, "?")))
                     .ToList());
             })
-            .WithSummary("Historial de precios de un producto con el proveedor (RF-035)");
+            .WithSummary("[SCRUM-124 · HU-10.1] Historial de precios de un producto con el proveedor (RF-035)")
+            .Produces<List<SupplierPriceDto>>().ProducesProblem(StatusCodes.Status404NotFound);
 
         prices.MapGet("/products/{id:guid}/supplier-prices", async (Guid id, BusinessDb db) =>
             {
@@ -78,7 +81,7 @@ public static class PurchasingEndpoints
                     id, suppliers.Keys.ToHashSet());
                 return compared.Select(p => ToDto(p, suppliers[p.SupplierId], names.GetValueOrDefault(id, "?"))).ToList();
             })
-            .WithSummary("Precios vigentes de todos los proveedores activos, del menor al mayor (RF-036)");
+            .WithSummary("[SCRUM-125 · HU-10.2] Precios vigentes de todos los proveedores activos, del menor al mayor (RF-036)");
     }
 
     private static async Task<Dictionary<Guid, string>> ProductNamesAsync(BusinessDb db) =>
@@ -98,7 +101,7 @@ public static class PurchasingEndpoints
                 .Select(ToDto)
                 .ToList())
             .RequireAnyPermission(Permission.Proveedores, Permission.Compras)
-            .WithSummary("Lista y busca proveedores por razón social, NIT o contacto");
+            .WithSummary("[SCRUM-18 · HU-08] Lista y busca proveedores por razón social, NIT o contacto");
 
         suppliers.MapPost("/", async (SaveSupplierRequest r, BusinessDb db, HttpContext http, TimeProvider time) =>
             {
@@ -114,7 +117,8 @@ public static class PurchasingEndpoints
                 return Results.Created($"/api/suppliers/{supplier.Id}", ToDto(supplier));
             })
             .RequirePermission(Permission.Proveedores)
-            .WithSummary("Registra un proveedor (RF-026)");
+            .WithSummary("[SCRUM-18 · HU-08] Registra un proveedor (RF-026)")
+            .Produces<SupplierDto>(StatusCodes.Status201Created).ProducesProblem(StatusCodes.Status409Conflict).ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 
         suppliers.MapPut("/{id:guid}", async (Guid id, SaveSupplierRequest r, BusinessDb db, HttpContext http,
                 TimeProvider time) =>
@@ -127,7 +131,8 @@ public static class PurchasingEndpoints
                 return Results.Ok(ToDto(supplier));
             })
             .RequirePermission(Permission.Proveedores)
-            .WithSummary("Modifica los datos de un proveedor (RF-027)");
+            .WithSummary("[SCRUM-18 · HU-08] Modifica los datos de un proveedor (RF-027)")
+            .Produces<SupplierDto>().ProducesProblem(StatusCodes.Status404NotFound).ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 
         suppliers.MapPost("/{id:guid}/{action:regex(^(activate|deactivate)$)}", async (Guid id, string action,
                 BusinessDb db, HttpContext http, TimeProvider time) =>
@@ -141,7 +146,8 @@ public static class PurchasingEndpoints
                 return Results.NoContent();
             })
             .RequirePermission(Permission.Proveedores)
-            .WithSummary("Activa o desactiva un proveedor");
+            .WithSummary("[SCRUM-18 · HU-08] Activa o desactiva un proveedor")
+            .Produces(StatusCodes.Status204NoContent).ProducesProblem(StatusCodes.Status404NotFound);
 
         suppliers.MapGet("/{id:guid}/products", async (Guid id, BusinessDb db) =>
             {
@@ -163,7 +169,8 @@ public static class PurchasingEndpoints
                 return Results.Ok(products);
             })
             .RequireAnyPermission(Permission.Proveedores, Permission.Compras)
-            .WithSummary("Productos que suministró el proveedor según las compras recibidas (RF-028)");
+            .WithSummary("[SCRUM-18 · HU-08] Productos que suministró el proveedor según las compras recibidas (RF-028)")
+            .Produces<List<SupplierProductDto>>().ProducesProblem(StatusCodes.Status404NotFound);
 
         suppliers.MapGet("/{id:guid}/purchases", async (Guid id, BusinessDb db) =>
             {
@@ -172,7 +179,8 @@ public static class PurchasingEndpoints
                 return Results.Ok(purchases.OrderByDescending(p => p.CreatedAt).Select(ToDto).ToList());
             })
             .RequireAnyPermission(Permission.Proveedores, Permission.Compras)
-            .WithSummary("Historial de compras del proveedor con fecha, productos y monto (RF-029)");
+            .WithSummary("[SCRUM-18 · HU-08] Historial de compras del proveedor con fecha, productos y monto (RF-029)")
+            .Produces<List<PurchaseDto>>().ProducesProblem(StatusCodes.Status404NotFound);
     }
 
     private static void MapPurchases(WebApplication app)
@@ -189,13 +197,14 @@ public static class PurchasingEndpoints
                     .Select(ToDto)
                     .ToList();
             })
-            .WithSummary("Lista las compras, opcionalmente por estado (Pendiente o Recibida)");
+            .WithSummary("[SCRUM-19 · HU-09] Lista las compras, opcionalmente por estado (Pendiente o Recibida)");
 
         purchases.MapGet("/{id:guid}", async (Guid id, BusinessDb db) =>
                 await db.Purchases.SingleOrDefaultAsync(p => p.Id == id) is { } purchase
                     ? Results.Ok(ToDto(purchase))
                     : Results.NotFound())
-            .WithSummary("Detalle de una compra");
+            .WithSummary("[SCRUM-19 · HU-09] Detalle de una compra")
+            .Produces<PurchaseDto>().ProducesProblem(StatusCodes.Status404NotFound);
 
         purchases.MapPost("/", async (CreatePurchaseRequest r, BusinessDb db, HttpContext http, TimeProvider time) =>
             {
@@ -221,7 +230,8 @@ public static class PurchasingEndpoints
                 await db.SaveChangesAsync();
                 return Results.Created($"/api/purchases/{purchase.Id}", ToDto(purchase));
             })
-            .WithSummary("Registra una compra y calcula su total (RF-030, RF-031)");
+            .WithSummary("[SCRUM-19 · HU-09] Registra una compra y calcula su total (RF-030, RF-031)")
+            .Produces<PurchaseDto>(StatusCodes.Status201Created).ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 
         purchases.MapPost("/{id:guid}/receive", async (Guid id, ReceivePurchaseRequest r, BusinessDb db,
                 HttpContext http, TimeProvider time) =>
@@ -258,7 +268,8 @@ public static class PurchasingEndpoints
                 await db.SaveChangesAsync();
                 return Results.Ok(ToDto(purchase));
             })
-            .WithSummary("Registra la recepción con lotes y diferencias; actualiza el stock (RF-032, RF-033, RF-107, RF-108)");
+            .WithSummary("[SCRUM-19 · HU-09] Registra la recepción con lotes y diferencias; actualiza el stock (RF-032, RF-033, RF-107, RF-108)")
+            .Produces<PurchaseDto>().ProducesProblem(StatusCodes.Status404NotFound).ProducesProblem(StatusCodes.Status422UnprocessableEntity);
     }
 
     public static SupplierDto ToDto(Supplier s) =>

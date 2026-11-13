@@ -36,7 +36,8 @@ public static class CatalogEndpoints
             Audit(db, http, time, "Alta de medicamento", $"{product.Code} · {product.DisplayName}");
             await db.SaveChangesAsync();
             return Results.Created($"/api/catalog/{product.Id}", ToDto(product));
-        }).WithSummary("Registra un medicamento (RF-009)");
+        }).WithSummary("Registra un medicamento (RF-009)")
+        .Produces<ProductDto>(StatusCodes.Status201Created).ProducesProblem(StatusCodes.Status409Conflict).ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 
         catalog.MapPut("/{id:guid}", async (Guid id, SaveProductRequest r, BusinessDb db, HttpContext http,
             TimeProvider time) =>
@@ -48,7 +49,8 @@ public static class CatalogEndpoints
             Audit(db, http, time, "Modificación de medicamento", $"{product.Code} · {product.DisplayName}");
             await db.SaveChangesAsync();
             return Results.Ok(ToDto(product));
-        }).WithSummary("Modifica los datos de un medicamento (RF-010)");
+        }).WithSummary("Modifica los datos de un medicamento (RF-010)")
+        .Produces<ProductDto>().ProducesProblem(StatusCodes.Status404NotFound).ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 
         catalog.MapPost("/{id:guid}/{action:regex(^(activate|deactivate)$)}", async (Guid id, string action,
             BusinessDb db, HttpContext http, TimeProvider time) =>
@@ -60,7 +62,8 @@ public static class CatalogEndpoints
                 product.Code);
             await db.SaveChangesAsync();
             return Results.NoContent();
-        }).WithSummary("Activa o desactiva un medicamento (RF-011)");
+        }).WithSummary("Activa o desactiva un medicamento (RF-011)")
+        .Produces(StatusCodes.Status204NoContent).ProducesProblem(StatusCodes.Status404NotFound);
     }
 
     private static ProductDto ToDto(Product p) => new(p.Id, p.Code, p.Name, p.ActiveIngredient, p.Concentration,

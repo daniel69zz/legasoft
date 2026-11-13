@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Pharmacy.Desktop.ViewModels"
+             xmlns:conv="using:Pharmacy.Desktop.Converters"
              x:Class="Pharmacy.Desktop.Views.CashView"
              x:DataType="vm:CashViewModel">
   <ScrollViewer>
@@ -8,7 +9,7 @@
       <TextBlock Classes="error" Text="{Binding Error}" IsVisible="{Binding Error, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
       <TextBlock Classes="ok" Text="{Binding Info}" IsVisible="{Binding Info, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
 
-      <!-- HU-16.2: entrega de caja entre cajeros (RF-061, RF-062) -->
+      <!-- SCRUM-126 · HU-16.2: entrega de caja entre cajeros (RF-061, RF-062) -->
       <Border Classes="card" MaxWidth="520" HorizontalAlignment="Left" IsVisible="{Binding CanHandover}">
         <StackPanel Spacing="8">
           <TextBlock Classes="h2" Text="Entregar caja al cajero entrante (RF-061)" />
@@ -27,7 +28,7 @@
           <TextBlock Classes="h2" Text="Entrega de caja (RF-062)" />
           <TextBlock Text="{Binding HandoverStatus}" TextWrapping="Wrap" />
           <StackPanel Spacing="8" IsVisible="{Binding CanConfirmHandover}">
-            <NumericUpDown Value="{Binding ReceivedAmount}" Minimum="0" Increment="10" FormatString="N2"
+            <NumericUpDown TextConverter="{x:Static conv:DecimalText.Money}" Value="{Binding ReceivedAmount}" Minimum="0" Increment="10"
                            Watermark="Monto recibido (Bs)" />
             <CheckBox Content="Estoy conforme con el efectivo recibido" IsChecked="{Binding Agrees}" />
             <Button Classes="primary" Content="Confirmar entrega" Command="{Binding ConfirmHandoverCommand}" />
@@ -40,7 +41,7 @@
         <StackPanel Spacing="10">
           <TextBlock Classes="h2" Text="Apertura de caja (RF-052)" />
           <TextBlock Classes="muted" Text="Monto inicial en efectivo" />
-          <NumericUpDown Value="{Binding OpeningAmount}" Minimum="0" Increment="50" FormatString="N2" />
+          <NumericUpDown TextConverter="{x:Static conv:DecimalText.Money}" Value="{Binding OpeningAmount}" Minimum="0" Increment="50" />
           <Button Classes="primary" Content="Abrir caja" Command="{Binding OpenCommand}" />
         </StackPanel>
       </Border>
@@ -59,7 +60,7 @@
             <StackPanel Spacing="8">
               <TextBlock Classes="h2" Text="Registrar egreso (RF-055)" />
               <Grid ColumnDefinitions="140,*" ColumnSpacing="8">
-                <NumericUpDown Value="{Binding ExpenseAmount}" Minimum="0" Increment="5" FormatString="N2" Watermark="Monto" />
+                <NumericUpDown TextConverter="{x:Static conv:DecimalText.Money}" Value="{Binding ExpenseAmount}" Minimum="0" Increment="5" Watermark="Monto" />
                 <ComboBox Grid.Column="1" ItemsSource="{Binding Categories}" SelectedItem="{Binding ExpenseCategory}" HorizontalAlignment="Stretch" />
               </Grid>
               <TextBox Watermark="Motivo" Text="{Binding ExpenseReason}" />

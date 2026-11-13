@@ -7,7 +7,7 @@
              x:DataType="vm:MovementsViewModel">
   <Border Classes="card">
     <DockPanel>
-      <!-- Filtros (HU-06.4, RF-019) -->
+      <!-- Filtros (SCRUM-123 · HU-06.4, RF-019) -->
       <Grid DockPanel.Dock="Top" ColumnDefinitions="160,160,170,*,Auto" ColumnSpacing="10" Margin="0,0,0,10">
         <CalendarDatePicker SelectedDate="{Binding From}" SelectedDateFormat="Custom" CustomDateFormatString="dd/MM/yyyy"
                             Watermark="Desde" HorizontalAlignment="Stretch" />

@@ -55,7 +55,7 @@ public class CashSessionRecord
     public string Justification { get; set; } = "";
     public DateTimeOffset? ClosedAt { get; set; }
 
-    // HU-16.2 (RF-061, RF-062): entrega al cajero entrante.
+    // SCRUM-126 · HU-16.2 (RF-061, RF-062): entrega al cajero entrante.
     public string HandoverTo { get; set; } = "";
     public decimal? HandoverReceivedAmount { get; set; }
     public DateTimeOffset? HandoverConfirmedAt { get; set; }
@@ -85,7 +85,7 @@ public class AuditEntry
     public Guid? EventId { get; set; }
 }
 
-/// <summary>HU-28.1 (RF-099): parámetro operativo configurable por el administrador.</summary>
+/// <summary>SCRUM-130 · HU-28.1 (RF-099): parámetro operativo configurable por el administrador.</summary>
 public class SettingEntry
 {
     public string Key { get; set; } = "";
@@ -180,7 +180,7 @@ public class BusinessDb(DbContextOptions<BusinessDb> options) : DbContext(option
             e.HasIndex(a => a.OccurredAt);
         });
 
-        // Proveedores y compras (HU-08, HU-09). Van en el schema inventory, que ya pertenece a
+        // Proveedores y compras (SCRUM-18 · HU-08, SCRUM-19 · HU-09). Van en el schema inventory, que ya pertenece a
         // business_svc: un schema nuevo exigiría recrear el volumen de PostgreSQL (deploy/postgres).
         b.Entity<Supplier>(e =>
         {

@@ -51,7 +51,7 @@
         <TextBlock Classes="ok" Text="{Binding Info}"
                    IsVisible="{Binding Info, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
 
-        <!-- HU-06.3: entrada, salida o ajuste manual con motivo (RF-014 a RF-016) -->
+        <!-- SCRUM-101 · HU-06.3: entrada, salida o ajuste manual con motivo (RF-014 a RF-016) -->
         <Border Classes="card" IsVisible="{Binding HasSelection}">
           <StackPanel Spacing="8">
             <TextBlock Classes="h2" Text="Movimiento manual (RF-014 a RF-016)" TextWrapping="Wrap" />
@@ -74,7 +74,7 @@
           </StackPanel>
         </Border>
 
-        <!-- HU-07.3 (RF-021): stock por lote -->
+        <!-- SCRUM-122 · HU-07.3 (RF-021): stock por lote -->
         <Border Classes="card" IsVisible="{Binding HasSelection}">
           <StackPanel>
             <TextBlock Classes="h2" Text="Stock por lote (RF-021)" />
