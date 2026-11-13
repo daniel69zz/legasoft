@@ -29,8 +29,8 @@ public class StockMovement
             throw new DomainException("Los movimientos manuales requieren un motivo (RF-016).");
         if (type == StockMovementType.Entrada && quantity < 0)
             throw new DomainException("Una entrada debe sumar unidades.");
-        if (type == StockMovementType.Salida && quantity > 0)
-            throw new DomainException("Una salida debe restar unidades.");
+        if (type is StockMovementType.Salida or StockMovementType.Retiro && quantity > 0)
+            throw new DomainException("Una salida o un retiro debe restar unidades.");
 
         Id = id;
         ProductId = productId;
