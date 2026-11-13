@@ -108,6 +108,8 @@ public sealed class SyncWorker(
 
         var ids = changes.Products.Select(p => p.Id).ToList();
         var local = await db.Products.Where(p => ids.Contains(p.Id)).ToDictionaryAsync(p => p.Id, ct);
+        var addedCount = 0;
+        var details = new List<string>(changes.Products.Count);
         foreach (var p in changes.Products)
         {
             if (local.TryGetValue(p.Id, out var product))
@@ -115,15 +117,26 @@ public sealed class SyncWorker(
                 product.ApplyCatalogChange(p.Name, p.ActiveIngredient, p.Concentration, p.Presentation, p.Laboratory,
                     p.Category, p.RequiresPrescription, p.SalePrice, p.MinimumStock, p.Location, p.IsActive,
                     p.UpdatedAt);
+                details.Add($"Actualizado: {p.Code} · {p.Name}");
             }
             else
             {
-                var added = new Product(p.Id, p.Code, p.Name, p.ActiveIngredient, p.Concentration, p.Presentation,
+                var newProduct = new Product(p.Id, p.Code, p.Name, p.ActiveIngredient, p.Concentration, p.Presentation,
                     p.Laboratory, p.Category, p.RequiresPrescription, p.SalePrice, p.MinimumStock, p.Location);
-                added.SetActive(p.IsActive, p.UpdatedAt);
-                db.Products.Add(added);
+                newProduct.SetActive(p.IsActive, p.UpdatedAt);
+                db.Products.Add(newProduct);
+                details.Add($"Nuevo: {p.Code} · {p.Name}");
+                addedCount++;
             }
         }
+        db.SyncDownloads.Add(new SyncDownload
+        {
+            OccurredAt = DateTimeOffset.Now,
+            Module = "Productos",
+            ItemCount = changes.Products.Count,
+            Summary = $"{changes.Products.Count} productos recibidos ({addedCount} nuevos, {changes.Products.Count - addedCount} actualizados)",
+            Details = string.Join(Environment.NewLine, details),
+        });
         if (state is null) db.SyncState.Add(state = new SyncState { Key = CatalogVersionKey });
         state.Value = changes.Version.ToString();
         await db.SaveChangesAsync(ct);
@@ -162,6 +175,15 @@ public sealed class SyncWorker(
                 .Distinct().ToListAsync(ct)).ToHashSet();
             var result = LotSync.Merge(local, moved, changes.Lots);
             db.Lots.AddRange(result.Added);
+            db.SyncDownloads.Add(new SyncDownload
+            {
+                OccurredAt = DateTimeOffset.Now,
+                Module = "Lotes",
+                ItemCount = changes.Lots.Count,
+                Summary = $"{changes.Lots.Count} lotes recibidos ({result.Added.Count} nuevos, {result.Updated} alineados)",
+                Details = string.Join(Environment.NewLine, changes.Lots.Select(l =>
+                    $"{l.LotNumber} · vence {l.ExpirationDate:dd/MM/yyyy} · {l.Quantity} u.")),
+            });
             logger.LogInformation("Lotes del servidor: {Added} nuevos y {Updated} alineados", result.Added.Count,
                 result.Updated);
         }

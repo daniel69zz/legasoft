@@ -25,6 +25,17 @@ public class SyncState
     public string Value { get; set; } = "";
 }
 
+/// <summary>Una descarga recibida del VPS, agrupada para mostrarla como una transacción entrante.</summary>
+public class SyncDownload
+{
+    public long Id { get; set; }
+    public DateTimeOffset OccurredAt { get; set; }
+    public string Module { get; set; } = "";
+    public int ItemCount { get; set; }
+    public string Summary { get; set; } = "";
+    public string Details { get; set; } = "";
+}
+
 /// <summary>
 /// Única base SQLite del puesto con tablas separadas por módulo (ADR-007). Una
 /// llamada a SaveChanges es una transacción: venta, stock, caja y Outbox juntos.
@@ -38,6 +49,7 @@ public class LocalDb(DbContextOptions<LocalDb> options) : DbContext(options)
     public DbSet<CashSession> CashSessions => Set<CashSession>();
     public DbSet<OutboxMessage> Outbox => Set<OutboxMessage>();
     public DbSet<SyncState> SyncState => Set<SyncState>();
+    public DbSet<SyncDownload> SyncDownloads => Set<SyncDownload>();
     public DbSet<LocalUser> Users => Set<LocalUser>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder b)
@@ -100,6 +112,13 @@ public class LocalDb(DbContextOptions<LocalDb> options) : DbContext(options)
         {
             e.ToTable("sync_state");
             e.HasKey(s => s.Key);
+        });
+        b.Entity<SyncDownload>(e =>
+        {
+            e.ToTable("sync_downloads");
+            e.HasKey(d => d.Id);
+            e.Property(d => d.Id).ValueGeneratedOnAdd();
+            e.HasIndex(d => d.OccurredAt);
         });
         b.Entity<LocalUser>(e =>
         {
