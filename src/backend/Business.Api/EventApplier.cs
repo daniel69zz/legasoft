@@ -44,6 +44,9 @@ public class EventApplier(BusinessDb db, ILogger<EventApplier> logger)
             case EventTypes.CashSessionClosed:
                 await CashClosedAsync(Read<CashSessionClosedPayload>(message), message, ct);
                 break;
+            case EventTypes.CashHandoverRequested or EventTypes.CashHandoverConfirmed:
+                await HandoverAsync(Read<CashHandoverPayload>(message), message, ct);
+                break;
             case EventTypes.StockMovementCreated:
                 await StockMovementAsync(Read<StockMovementPayload>(message), message, ct);
                 break;
@@ -120,6 +123,34 @@ public class EventApplier(BusinessDb db, ILogger<EventApplier> logger)
         session.ClosedAt = p.ClosedAt;
         Audit(message, p.CashierName, "Cierre de caja",
             $"Esperado Bs {p.ExpectedAmount:0.00}, contado Bs {p.CountedAmount:0.00}, diferencia Bs {p.Difference:0.00}");
+    }
+
+    /// <summary>HU-16.2 (RF-061, RF-062): entrega de caja entre cajeros y su confirmación.</summary>
+    private async Task HandoverAsync(CashHandoverPayload p, SyncEnvelope message, CancellationToken ct)
+    {
+        var session = await db.CashSessions.FindAsync([p.CashSessionId], ct)
+            ?? throw new ArgumentException("El turno entregado no existe en el servidor.");
+        session.HandoverTo = p.ToCashier;
+        if (message.EventType == EventTypes.CashHandoverRequested)
+        {
+            session.Status = "EntregaPendiente";
+            Audit(message, p.FromCashier, "Entrega de caja", $"{p.FromCashier} → {p.ToCashier}: Bs {p.CountedAmount:0.00}");
+            return;
+        }
+
+        session.HandoverReceivedAmount = p.ReceivedAmount;
+        if (p.Confirmed)
+        {
+            session.Status = "Entregada";
+            session.HandoverConfirmedAt = p.OccurredAt;
+            Audit(message, p.ToCashier, "Confirmación de entrega de caja",
+                $"{p.ToCashier} recibió Bs {p.ReceivedAmount:0.00} de {p.FromCashier}");
+        }
+        else
+        {
+            Audit(message, p.ToCashier, "Entrega de caja observada",
+                $"{p.ToCashier} declaró Bs {p.ReceivedAmount:0.00}; {p.FromCashier} contó Bs {p.CountedAmount:0.00}");
+        }
     }
 
     /// <summary>HU-06.3: entrada, salida o ajuste manual hecho en un puesto (RF-014 a RF-016).</summary>

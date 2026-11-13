@@ -41,6 +41,8 @@ internal sealed class FakeStore
     public void Add(CashSession session) => Sessions.Add(session);
     public Task<CashSession?> GetOpenAsync(string deviceId, CancellationToken ct = default) =>
         Task.FromResult(Sessions.SingleOrDefault(s => s.DeviceId == deviceId && s.Status == CashSessionStatus.Abierta));
+    public Task<CashSession?> GetLatestAsync(string deviceId, CancellationToken ct = default) =>
+        Task.FromResult(Sessions.Where(s => s.DeviceId == deviceId).MaxBy(s => s.OpenedAt));
     public int ExpiryThresholdDays { get; set; } = 60;
     public Task<int> GetExpiryThresholdDaysAsync(CancellationToken ct = default) => Task.FromResult(ExpiryThresholdDays);
     public void Add(OutboxMessage message) => Outbox.Add(message);

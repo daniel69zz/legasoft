@@ -15,6 +15,8 @@ public static class EventTypes
     public const string CashSessionOpened = "CashSessionOpened";
     public const string CashMovementRegistered = "CashMovementRegistered";
     public const string CashSessionClosed = "CashSessionClosed";
+    public const string CashHandoverRequested = "CashHandoverRequested";
+    public const string CashHandoverConfirmed = "CashHandoverConfirmed";
 }
 
 /// <summary>Mensaje Outbox tal como viaja al Sync Service (Documento 3, sección 7.2).</summary>

@@ -11,6 +11,14 @@ using static Pharmacy.UnitTests.TestData;
 
 namespace Pharmacy.UnitTests;
 
+/// <summary>Usuario del puesto que cambia entre turnos (cajero saliente y entrante).</summary>
+internal sealed class SwitchableUser : ICurrentUser
+{
+    public string UserName { get; set; } = "cajero1";
+    public string Role => "Cajero";
+    public string DeviceId => "PUESTO-01";
+}
+
 /// <summary>Historias incorporadas al Sprint 2 (SCRUM-121 a 131) en Pharmacy.Domain y Pharmacy.Application.</summary>
 public class IncorporatedStoriesTests
 {
@@ -94,5 +102,55 @@ public class IncorporatedStoriesTests
         var compared = SupplierPrice.Compare(prices, product, new HashSet<Guid> { andina, illimani });
 
         Assert.Equal([(illimani, 1.45m), (andina, 1.60m)], compared.Select(p => (p.SupplierId, p.Price)));
+    }
+
+    [Fact]
+    [Trait("JiraIssue", "SCRUM-126")]
+    [Trait("Requirement", "RF-061")]
+    [Trait("Requirement", "RF-062")]
+    public async Task La_entrega_queda_pendiente_hasta_que_el_entrante_confirma_y_abre_su_turno()
+    {
+        var user = new SwitchableUser();
+        var cash = new CashHandlers(_store, _store, _store, new FixedClock(), user);
+        await cash.OpenAsync(450m);
+        await cash.CloseAsync(new Dictionary<decimal, int> { [200m] = 2, [50m] = 1 }, null);
+
+        await cash.RequestHandoverAsync("cajero2");
+
+        // Mientras cajero2 no confirme, nadie abre caja en el puesto.
+        user.UserName = "cajero2";
+        var blocked = await Assert.ThrowsAsync<DomainException>(() => cash.OpenAsync(100m));
+        Assert.Contains("RF-062", blocked.Message);
+
+        Assert.False(await cash.ConfirmHandoverAsync(400m, agrees: true)); // monto distinto: sigue pendiente
+        Assert.Equal(CashSessionStatus.EntregaPendiente, _store.Sessions[0].Status);
+
+        Assert.True(await cash.ConfirmHandoverAsync(450m, agrees: true));
+        Assert.Equal(CashSessionStatus.Entregada, _store.Sessions[0].Status);
+        var turn = Assert.Single(_store.Sessions, s => s.Status == CashSessionStatus.Abierta);
+        Assert.Equal(("cajero2", 450m), (turn.CashierName, turn.OpeningAmount));
+        Assert.Equal(
+            [EventTypes.CashHandoverRequested, EventTypes.CashHandoverConfirmed, EventTypes.CashHandoverConfirmed,
+                EventTypes.CashSessionOpened],
+            _store.Outbox.Skip(2).Select(m => m.EventType));
+    }
+
+    [Fact]
+    [Trait("JiraIssue", "SCRUM-126")]
+    [Trait("Requirement", "RF-061")]
+    public async Task Solo_el_cajero_que_cerro_entrega_y_solo_el_entrante_confirma()
+    {
+        var user = new SwitchableUser();
+        var cash = new CashHandlers(_store, _store, _store, new FixedClock(), user);
+        await cash.OpenAsync(100m);
+        await cash.CloseAsync(new Dictionary<decimal, int> { [100m] = 1 }, null);
+
+        user.UserName = "cajero2";
+        await Assert.ThrowsAsync<DomainException>(() => cash.RequestHandoverAsync("cajero3"));
+
+        user.UserName = "cajero1";
+        await cash.RequestHandoverAsync("cajero2");
+        user.UserName = "cajero3";
+        await Assert.ThrowsAsync<DomainException>(() => cash.ConfirmHandoverAsync(100m, agrees: true));
     }
 }

@@ -87,6 +87,30 @@ public class IncorporatedStoriesApiTests : IDisposable
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-126")]
+    [Trait("Requirement", "RF-061")]
+    [Trait("Requirement", "RF-062")]
+    public async Task La_entrega_de_caja_se_consolida_con_su_confirmacion_y_auditoria()
+    {
+        var session = Guid.NewGuid();
+        var at = DateTimeOffset.UtcNow;
+        await SendAsync(EventTypes.CashSessionOpened, session,
+            new CashSessionOpenedPayload(session, "PUESTO-01", "cajero1", 450m, at.AddHours(-8)));
+        await SendAsync(EventTypes.CashSessionClosed, session, new CashSessionClosedPayload(session, "PUESTO-01",
+            "cajero1", 450m, 0m, 0m, 450m, 450m, 0m, "", at.AddHours(-8), at.AddMinutes(-5),
+            new Dictionary<decimal, int> { [200m] = 2, [50m] = 1 }));
+        await SendAsync(EventTypes.CashHandoverRequested, session,
+            new CashHandoverPayload(session, "PUESTO-01", "cajero1", "cajero2", 450m, null, false, at.AddMinutes(-4)));
+        await SendAsync(EventTypes.CashHandoverConfirmed, session,
+            new CashHandoverPayload(session, "PUESTO-01", "cajero1", "cajero2", 450m, 450m, true, at));
+
+        var audit = await _admin.GetFromJsonAsync<List<AuditEntryDto>>("/api/audit?action=entrega");
+        Assert.Contains(audit!, a => a.Action == "Entrega de caja" && a.UserName == "cajero1");
+        Assert.Contains(audit!, a => a.Action == "Confirmación de entrega de caja" && a.UserName == "cajero2"
+                                     && a.DeviceId == "PUESTO-01");
+    }
+
+    [Fact]
     [Trait("JiraIssue", "SCRUM-128")]
     [Trait("Requirement", "RF-075")]
     public async Task La_auditoria_filtra_por_usuario_y_operacion_y_el_cajero_recibe_403()

@@ -8,8 +8,35 @@
       <TextBlock Classes="error" Text="{Binding Error}" IsVisible="{Binding Error, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
       <TextBlock Classes="ok" Text="{Binding Info}" IsVisible="{Binding Info, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
 
+      <!-- HU-16.2: entrega de caja entre cajeros (RF-061, RF-062) -->
+      <Border Classes="card" MaxWidth="520" HorizontalAlignment="Left" IsVisible="{Binding CanHandover}">
+        <StackPanel Spacing="8">
+          <TextBlock Classes="h2" Text="Entregar caja al cajero entrante (RF-061)" />
+          <TextBlock Classes="muted" TextWrapping="Wrap"
+                     Text="La entrega queda pendiente hasta que el cajero entrante confirme el monto contado." />
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+            <ComboBox ItemsSource="{Binding Cashiers}" SelectedItem="{Binding IncomingCashier}"
+                      HorizontalAlignment="Stretch" PlaceholderText="Cajero entrante" />
+            <Button Grid.Column="1" Classes="primary" Content="Entregar" Command="{Binding RequestHandoverCommand}" />
+          </Grid>
+        </StackPanel>
+      </Border>
+      <Border Classes="card" MaxWidth="520" HorizontalAlignment="Left"
+              IsVisible="{Binding HandoverStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+        <StackPanel Spacing="8">
+          <TextBlock Classes="h2" Text="Entrega de caja (RF-062)" />
+          <TextBlock Text="{Binding HandoverStatus}" TextWrapping="Wrap" />
+          <StackPanel Spacing="8" IsVisible="{Binding CanConfirmHandover}">
+            <NumericUpDown Value="{Binding ReceivedAmount}" Minimum="0" Increment="10" FormatString="N2"
+                           Watermark="Monto recibido (Bs)" />
+            <CheckBox Content="Estoy conforme con el efectivo recibido" IsChecked="{Binding Agrees}" />
+            <Button Classes="primary" Content="Confirmar entrega" Command="{Binding ConfirmHandoverCommand}" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+
       <!-- Apertura -->
-      <Border Classes="card" IsVisible="{Binding !IsOpen}" MaxWidth="520" HorizontalAlignment="Left">
+      <Border Classes="card" IsVisible="{Binding CanOpen}" MaxWidth="520" HorizontalAlignment="Left">
         <StackPanel Spacing="10">
           <TextBlock Classes="h2" Text="Apertura de caja (RF-052)" />
           <TextBlock Classes="muted" Text="Monto inicial en efectivo" />
