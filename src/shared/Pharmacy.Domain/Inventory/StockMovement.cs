@@ -8,6 +8,12 @@ public enum StockMovementType
     Compra,
     Ajuste,
     Retiro,
+
+    /// <summary>Entrada manual a un lote existente (RF-014).</summary>
+    Entrada,
+
+    /// <summary>Salida manual de un lote (RF-015).</summary>
+    Salida,
 }
 
 /// <summary>Movimiento de inventario con usuario, fecha y motivo (RF-014 a RF-016, RF-019).</summary>
@@ -19,8 +25,12 @@ public class StockMovement
         string reason, string userName, DateTimeOffset occurredAt)
     {
         if (quantity == 0) throw new DomainException("El movimiento debe tener una cantidad distinta de cero.");
-        if (type is StockMovementType.Ajuste or StockMovementType.Retiro && string.IsNullOrWhiteSpace(reason))
-            throw new DomainException("Los ajustes y retiros requieren un motivo (RF-016).");
+        if (IsManual(type) && string.IsNullOrWhiteSpace(reason))
+            throw new DomainException("Los movimientos manuales requieren un motivo (RF-016).");
+        if (type == StockMovementType.Entrada && quantity < 0)
+            throw new DomainException("Una entrada debe sumar unidades.");
+        if (type == StockMovementType.Salida && quantity > 0)
+            throw new DomainException("Una salida debe restar unidades.");
 
         Id = id;
         ProductId = productId;
@@ -43,4 +53,9 @@ public class StockMovement
     public string Reason { get; private set; } = "";
     public string UserName { get; private set; } = "";
     public DateTimeOffset OccurredAt { get; private set; }
+
+    /// <summary>Movimientos que registra una persona y no una venta o compra: exigen motivo.</summary>
+    public static bool IsManual(StockMovementType type) =>
+        type is StockMovementType.Ajuste or StockMovementType.Retiro or StockMovementType.Entrada
+            or StockMovementType.Salida;
 }

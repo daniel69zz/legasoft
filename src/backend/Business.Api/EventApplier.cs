@@ -44,6 +44,9 @@ public class EventApplier(BusinessDb db, ILogger<EventApplier> logger)
             case EventTypes.CashSessionClosed:
                 await CashClosedAsync(Read<CashSessionClosedPayload>(message), message, ct);
                 break;
+            case EventTypes.StockMovementCreated:
+                await StockMovementAsync(Read<StockMovementPayload>(message), message, ct);
+                break;
             default:
                 throw new ArgumentException($"Tipo de evento desconocido: {message.EventType}");
         }
@@ -117,6 +120,32 @@ public class EventApplier(BusinessDb db, ILogger<EventApplier> logger)
         session.ClosedAt = p.ClosedAt;
         Audit(message, p.CashierName, "Cierre de caja",
             $"Esperado Bs {p.ExpectedAmount:0.00}, contado Bs {p.CountedAmount:0.00}, diferencia Bs {p.Difference:0.00}");
+    }
+
+    /// <summary>HU-06.3: entrada, salida o ajuste manual hecho en un puesto (RF-014 a RF-016).</summary>
+    private async Task StockMovementAsync(StockMovementPayload p, SyncEnvelope message, CancellationToken ct)
+    {
+        if (await db.StockMovements.AnyAsync(m => m.Id == p.MovementId, ct)) return;
+        if (!Enum.TryParse<StockMovementType>(p.Type, out var type) || !StockMovement.IsManual(type))
+            throw new ArgumentException($"Tipo de movimiento manual no válido: {p.Type}");
+
+        var lot = await db.Lots.FindAsync([p.LotId], ct);
+        if (lot is null)
+            logger.LogWarning("Lote {LotId} desconocido en el servidor; se registra solo el movimiento", p.LotId);
+        else if (p.Quantity > 0)
+            lot.Increase(p.Quantity);
+        else
+        {
+            var take = Math.Min(lot.Quantity, -p.Quantity);
+            if (take > 0) lot.Decrease(take);
+            if (take < -p.Quantity)
+                logger.LogWarning("Stock central insuficiente en el lote {Lot}: faltan {Missing} unidades",
+                    lot.LotNumber, -p.Quantity - take);
+        }
+        db.StockMovements.Add(new StockMovement(p.MovementId, p.ProductId, p.LotId, type, p.Quantity, p.Reason,
+            p.UserName, p.OccurredAt));
+        Audit(message, p.UserName, "Movimiento de inventario",
+            $"{type} {p.Quantity:+0;-0} u. · lote {p.LotNumber} · {p.Reason}");
     }
 
     private async Task MoveStockAsync(IEnumerable<(Guid ProductId, Guid LotId, int Quantity)> moves,

@@ -20,3 +20,7 @@ public sealed record CashSessionClosedPayload(Guid CashSessionId, string DeviceI
     decimal OpeningAmount, decimal SalesTotal, decimal ExpensesTotal, decimal ExpectedAmount, decimal CountedAmount,
     decimal Difference, string Justification, DateTimeOffset OpenedAt, DateTimeOffset ClosedAt,
     IReadOnlyDictionary<decimal, int> Denominations);
+
+/// <summary>HU-06.3: entrada, salida o ajuste manual registrado en un puesto (RF-014 a RF-016).</summary>
+public sealed record StockMovementPayload(Guid MovementId, Guid ProductId, Guid LotId, string LotNumber, string Type,
+    int Quantity, string Reason, string UserName, DateTimeOffset OccurredAt);

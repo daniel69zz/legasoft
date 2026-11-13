@@ -31,6 +31,9 @@ internal sealed class FakeStore : ICatalogRepository, ISalesRepository, ICashRep
         Task.FromResult(Lots.Where(l => ids.Contains(l.ProductId)).ToList());
     public Task<List<Lot>> GetAllLotsAsync(CancellationToken ct = default) => Task.FromResult(Lots.ToList());
     public void AddMovement(StockMovement movement) => Movements.Add(movement);
+    public Task<List<StockMovement>> GetMovementsAsync(Guid productId, int take = 50, CancellationToken ct = default) =>
+        Task.FromResult(Movements.Where(m => m.ProductId == productId).OrderByDescending(m => m.OccurredAt)
+            .Take(take).ToList());
     public void Add(Sale sale) => Sales.Add(sale);
     public Task<Sale?> GetAsync(Guid id, CancellationToken ct = default) => Task.FromResult(Sales.SingleOrDefault(s => s.Id == id));
     public Task<int> CountByDeviceAsync(string deviceId, CancellationToken ct = default) => Task.FromResult(Sales.Count);

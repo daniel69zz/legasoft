@@ -36,4 +36,21 @@ public sealed class InventoryQueries(ICatalogRepository catalog, IClock clock)
         return new InventoryOverview(rows, InventoryAlerts.Expiry(products, lots, today),
             InventoryAlerts.LowStock(products, lots, today));
     }
+
+    /// <summary>RF-021: lotes con existencia de un producto, el que vence antes primero.</summary>
+    public async Task<IReadOnlyList<Lot>> GetLotsAsync(Guid productId, CancellationToken ct = default) =>
+        (await catalog.GetLotsAsync([productId], ct))
+        .Where(l => l.Quantity > 0)
+        .OrderBy(l => l.ExpirationDate)
+        .ToList();
+
+    /// <summary>HU-06.3: historial de movimientos con tipo, lote, cantidad, motivo, usuario, fecha y hora.</summary>
+    public async Task<IReadOnlyList<StockMovementRow>> GetMovementsAsync(Guid productId, CancellationToken ct = default)
+    {
+        var lots = (await catalog.GetLotsAsync([productId], ct)).ToDictionary(l => l.Id, l => l.LotNumber);
+        return (await catalog.GetMovementsAsync(productId, ct: ct))
+            .Select(m => new StockMovementRow(m.OccurredAt, m.Type.ToString(), lots.GetValueOrDefault(m.LotId, "?"),
+                m.Quantity, m.Reason, m.UserName))
+            .ToList();
+    }
 }
