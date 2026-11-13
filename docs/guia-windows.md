@@ -136,3 +136,18 @@ dotnet run --project src/frontend/Pharmacy.Desktop -- --Desktop:GatewayUrl=http:
 Los datos centrales están en el volumen PostgreSQL. Por defecto, los datos
 locales del primer puesto están en %LOCALAPPDATA%\LegasoftFarmacia\puesto-01.db.
 Son almacenamientos distintos; reconstruir Docker no reinicia la base SQLite.
+
+## 10. Ejecutar pruebas y probar sin conexión
+
+Con la aplicación cerrada, ejecuta las pruebas unitarias, de integración y de
+interfaz de la solución:
+
+```powershell
+dotnet test Pharmacy.sln -c Release
+```
+
+También puedes iniciar el escritorio sin el servidor para explorar la demo
+local. El puesto precarga admin, cajero1, cajero2 y farmaceutico; las operaciones
+de proveedores, compras y administración del catálogo requieren conexión.
+Consulta [los límites del prototipo](../src/README.md#límites-conocidos-del-prototipo)
+antes de usar la demo para validar un flujo completo.
