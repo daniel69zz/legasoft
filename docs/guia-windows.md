@@ -122,3 +122,17 @@ docker compose -p farmacia logs --tail=100 identity
 Si dotnet informa que Pharmacy.Desktop bloquea una DLL, cierra la aplicación
 y vuelve a ejecutar el comando. Si Docker no conecta con su motor, comprueba
 que Docker Desktop haya terminado de iniciar.
+
+## 9. Cambiar puertos y distinguir los datos
+
+Si hay un puerto ocupado, ajusta GATEWAY_PORT, POSTGRES_PORT o MAILPIT_PORT
+en .env y vuelve a ejecutar up -d --build. Por ejemplo, si configuras
+GATEWAY_PORT=5200, inicia el escritorio con:
+
+```powershell
+dotnet run --project src/frontend/Pharmacy.Desktop -- --Desktop:GatewayUrl=http://localhost:5200
+```
+
+Los datos centrales están en el volumen PostgreSQL. Por defecto, los datos
+locales del primer puesto están en %LOCALAPPDATA%\LegasoftFarmacia\puesto-01.db.
+Son almacenamientos distintos; reconstruir Docker no reinicia la base SQLite.
