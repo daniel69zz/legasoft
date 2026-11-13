@@ -70,6 +70,7 @@ public static class DesktopHost
         s.AddTransient<CatalogViewModel>();
         s.AddTransient<SuppliersViewModel>();
         s.AddTransient<PurchasesViewModel>();
+        s.AddTransient<MovementsViewModel>();
         s.AddTransient<SettingsViewModel>();
 
         var host = builder.Build();

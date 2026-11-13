@@ -17,6 +17,7 @@ public sealed partial class ShellViewModel : ViewModelBase
         new("Caja", "Apertura, egresos y cierre", Permission.Caja, typeof(CashViewModel)),
         new("Inventario", "Stock, lotes y alertas", Permission.Inventario, typeof(InventoryViewModel)),
         new("Catálogo", "Registro de medicamentos", Permission.Catalogo, typeof(CatalogViewModel)),
+        new("Movimientos", "Historial general de inventario", Permission.Inventario, typeof(MovementsViewModel)),
         new("Compras", "Compras, recepción y precios", Permission.Compras, typeof(PurchasesViewModel)),
         new("Proveedores", "Registro e historial de compras", Permission.Proveedores, typeof(SuppliersViewModel)),
         new("Reportes", "Dashboard gerencial", Permission.Reportes, typeof(ReportsViewModel)),
