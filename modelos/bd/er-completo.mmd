@@ -18,6 +18,7 @@ erDiagram
         text device_id PK
         text description
         boolean is_active
+        boolean allows_administrator "admite al perfil Administrador (RF-007)"
     }
     ATTENDANCE {
         uuid id PK
@@ -60,11 +61,70 @@ erDiagram
         uuid id PK
         uuid product_id
         uuid lot_id
-        text type "Venta, Compra, Ajuste, Retiro"
+        text type "Venta, Compra, Ajuste, Retiro, Entrada, Salida"
         int quantity
         text reason
         text user_name
         timestamptz occurred_at
+    }
+    SUPPLIERS {
+        uuid id PK
+        text tax_id UK "NIT"
+        text name "razón social"
+        text contact_name
+        text phone
+        text email
+        text address
+        boolean is_active
+        timestamptz updated_at
+    }
+    PURCHASES {
+        uuid id PK
+        text number UK "OC-00001"
+        uuid supplier_id
+        text supplier_name
+        text created_by
+        timestamptz created_at
+        text status "Pendiente, Recibida"
+        text received_by
+        timestamptz received_at "nullable"
+    }
+    PURCHASE_LINES {
+        uuid id PK
+        uuid purchase_id FK
+        int position "orden de registro"
+        uuid product_id
+        text product_name
+        int quantity "pedida"
+        numeric unit_cost "12,2"
+        int received_quantity "en buen estado"
+        int damaged_quantity
+        text lot_number
+        date expiration_date "nullable"
+        uuid lot_id "nullable, lote creado"
+    }
+    SUPPLIER_PRICES {
+        uuid id PK
+        uuid supplier_id
+        uuid product_id
+        numeric price "12,2"
+        text registered_by
+        timestamptz registered_at "el más reciente es el vigente"
+    }
+    LOT_FEED {
+        bigint sequence PK "versión para la descarga de lotes"
+        uuid lot_id
+        uuid product_id
+        text lot_number
+        date expiration_date
+        int quantity
+        timestamptz created_at
+    }
+    SETTINGS {
+        text key PK "ExpiryThresholdDays, AlertIntervalMinutes"
+        text value
+        timestamptz updated_at
+        text updated_by
     }
     SALES {
         uuid id PK
@@ -100,7 +160,7 @@ erDiagram
         text cashier_name
         timestamptz opened_at
         numeric opening_amount
-        text status "Abierta, Cerrada"
+        text status "Abierta, Cerrada, EntregaPendiente, Entregada"
         numeric sales_total "nullable"
         numeric expenses_total "nullable"
         numeric expected_amount "nullable"
@@ -108,6 +168,9 @@ erDiagram
         numeric difference "nullable"
         text justification
         timestamptz closed_at "nullable"
+        text handover_to "cajero entrante"
+        numeric handover_received_amount "nullable"
+        timestamptz handover_confirmed_at "nullable"
     }
     CASH_MOVEMENTS {
         uuid id PK
@@ -150,6 +213,13 @@ erDiagram
     USERS ||..o{ USER_CHANGES : "cambios auditados"
     PRODUCTS ||..o{ LOTS : "tiene"
     LOTS ||..o{ STOCK_MOVEMENTS : "registra"
+    SUPPLIERS ||..o{ PURCHASES : "provee"
+    PURCHASES ||--|{ PURCHASE_LINES : "contiene"
+    PRODUCTS ||..o{ PURCHASE_LINES : "comprado en"
+    PURCHASE_LINES |o..o| LOTS : "crea el lote"
+    LOTS ||..o| LOT_FEED : "se publica a los puestos"
+    SUPPLIERS ||..o{ SUPPLIER_PRICES : "ofrece"
+    PRODUCTS ||..o{ SUPPLIER_PRICES : "precio de"
     SALES ||--|{ SALE_LINES : "contiene"
     PRODUCTS ||..o{ SALE_LINES : "vendido en"
     LOTS ||..o{ SALE_LINES : "sale del lote (FEFO)"

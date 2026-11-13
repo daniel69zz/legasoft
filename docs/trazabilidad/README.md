@@ -16,6 +16,7 @@ componente hasta la necesidad que lo justifica.
 | [`matriz-requisitos.md`](matriz-requisitos.md) | Requisito → artefactos | 109 requisitos (101 RF + 8 RNF) con fuente, historia Jira, componente C4 y caso de prueba |
 | [`matriz-inversa.md`](matriz-inversa.md) | Artefacto → requisitos | 33 historias de usuario con los requisitos que cubren, y cobertura de las 38 necesidades `NEC` |
 | [`matriz-arquitectura.md`](matriz-arquitectura.md) | Requisito ↔ arquitectura | Áreas funcionales y RNF relacionados con contenedores, componentes C4 y ADR |
+| [`matriz-implementacion.md`](matriz-implementacion.md) | Requisito → implementación | Lo entregado en el Sprint 2: historia Jira, componente, caso de prueba, pruebas automatizadas y migración |
 
 ## Cobertura
 
