@@ -16,6 +16,7 @@ public static class BusinessEndpoints
     {
         MapInternal(app);
         app.MapCatalogEndpoints();
+        app.MapPurchasingEndpoints();
 
         var api = app.MapGroup("/api");
 
