@@ -15,4 +15,13 @@ public sealed partial class ApiClient
 
     public Task<OperationalSettingsDto> SaveSettingsAsync(OperationalSettingsDto settings) =>
         SendAsync<OperationalSettingsDto>(HttpMethod.Put, "/api/settings", settings);
+
+    public Task<SupplierPriceDto> RegisterSupplierPriceAsync(Guid supplierId, RegisterSupplierPriceRequest request) =>
+        SendAsync<SupplierPriceDto>(HttpMethod.Post, $"/api/suppliers/{supplierId}/prices", request);
+
+    public Task<List<SupplierPriceDto>> GetSupplierPricesAsync(Guid supplierId) =>
+        SendAsync<List<SupplierPriceDto>>(HttpMethod.Get, $"/api/suppliers/{supplierId}/prices");
+
+    public Task<List<SupplierPriceDto>> GetPriceHistoryAsync(Guid supplierId, Guid productId) =>
+        SendAsync<List<SupplierPriceDto>>(HttpMethod.Get, $"/api/suppliers/{supplierId}/prices/history?productId={productId}");
 }

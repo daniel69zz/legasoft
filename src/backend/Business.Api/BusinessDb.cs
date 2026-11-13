@@ -117,6 +117,7 @@ public class BusinessDb(DbContextOptions<BusinessDb> options) : DbContext(option
     public DbSet<Supplier> Suppliers => Set<Supplier>();
     public DbSet<Purchase> Purchases => Set<Purchase>();
     public DbSet<LotFeedEntry> LotFeed => Set<LotFeedEntry>();
+    public DbSet<SupplierPrice> SupplierPrices => Set<SupplierPrice>();
     public DbSet<SettingEntry> Settings => Set<SettingEntry>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder b)
@@ -202,6 +203,13 @@ public class BusinessDb(DbContextOptions<BusinessDb> options) : DbContext(option
             e.Ignore(x => x.Subtotal);
             e.Ignore(x => x.MissingQuantity);
             e.Ignore(x => x.Difference);
+        });
+        b.Entity<SupplierPrice>(e =>
+        {
+            e.ToTable("supplier_prices", "inventory");
+            e.Property(x => x.Id).ValueGeneratedNever();
+            e.HasIndex(x => new { x.SupplierId, x.ProductId });
+            e.HasIndex(x => x.ProductId);
         });
         b.Entity<SettingEntry>(e =>
         {

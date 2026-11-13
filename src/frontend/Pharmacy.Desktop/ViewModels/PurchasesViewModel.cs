@@ -62,6 +62,65 @@ public sealed partial class PurchasesViewModel(ApiClient api, Operations operati
     [ObservableProperty] private ProductOption? _productToAdd;
     [ObservableProperty] private PurchaseDto? _selected;
     [ObservableProperty] private string _receptionSummary = "";
+    [ObservableProperty] private decimal? _newPrice;
+
+    /// <summary>HU-10.1 (RF-034): precios vigentes del proveedor elegido.</summary>
+    public ObservableCollection<SupplierPriceDto> SupplierPrices { get; } = [];
+
+    /// <summary>HU-10.1 (RF-035): historial del producto elegido con el proveedor elegido.</summary>
+    public ObservableCollection<SupplierPriceDto> PriceHistory { get; } = [];
+
+    public bool HasProduct => ProductToAdd is not null;
+
+    partial void OnSupplierChanged(SupplierDto? value) => _ = RefreshPricesAsync();
+
+    partial void OnProductToAddChanged(ProductOption? value)
+    {
+        OnPropertyChanged(nameof(HasProduct));
+        _ = RefreshPricesAsync();
+    }
+
+    // Sin RunAsync: refrescar precios no debe borrar el mensaje de la última operación.
+    private async Task RefreshPricesAsync()
+    {
+        try
+        {
+            var supplier = Supplier;
+            var product = ProductToAdd;
+            var prices = supplier is null ? [] : await api.GetSupplierPricesAsync(supplier.Id);
+            var history = supplier is null || product is null ? [] : await api.GetPriceHistoryAsync(supplier.Id, product.Id);
+            Replace(SupplierPrices, prices);
+            Replace(PriceHistory, history);
+        }
+        catch (Exception e) when (e is ApiException or HttpRequestException or TaskCanceledException)
+        {
+            Error = e.Message;
+        }
+    }
+
+    [RelayCommand]
+    private Task RegisterPriceAsync()
+    {
+        var supplier = Supplier;
+        var product = ProductToAdd;
+        return RunAsync(async () =>
+        {
+            if (supplier is null) throw new Domain.Common.DomainException("Elija el proveedor.");
+            if (product is null) throw new Domain.Common.DomainException("Elija el producto.");
+            var saved = await api.RegisterSupplierPriceAsync(supplier.Id,
+                new RegisterSupplierPriceRequest(product.Id, NewPrice ?? 0));
+            NewPrice = null;
+            await RefreshPricesAsync();
+            Info = $"Precio vigente de {saved.SupplierName} para {saved.ProductName}: Bs {saved.Price:N2}.";
+        });
+    }
+
+    private static void Replace<T>(ObservableCollection<T> target, IEnumerable<T> items)
+    {
+        target.Clear();
+        foreach (var item in items) target.Add(item);
+    }
+
     public ObservableCollection<SupplierDto> Suppliers { get; } = [];
     public ObservableCollection<ProductOption> ProductOptions { get; } = [];
     public ObservableCollection<PurchaseDraftLine> Draft { get; } = [];
@@ -118,7 +177,12 @@ public sealed partial class PurchasesViewModel(ApiClient api, Operations operati
             Error = $"{product.Name} ya está en la compra.";
             return;
         }
-        Draft.Add(new PurchaseDraftLine(product, () => OnPropertyChanged(nameof(DraftTotal))));
+        // HU-10.1: el costo se propone con el precio vigente del proveedor elegido.
+        var line = new PurchaseDraftLine(product, () => OnPropertyChanged(nameof(DraftTotal)))
+        {
+            UnitCost = SupplierPrices.FirstOrDefault(p => p.ProductId == product.Id)?.Price,
+        };
+        Draft.Add(line);
         ProductToAdd = null;
         OnPropertyChanged(nameof(DraftTotal));
     }

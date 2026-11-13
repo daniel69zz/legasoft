@@ -58,4 +58,22 @@ public class IncorporatedStoriesTests
         Assert.Equal("Por vencer", with90.Single(l => l.LotNumber == "PCM-2401").StatusLabel);
         Assert.Equal(90, (await queries.GetOverviewAsync()).ExpiryThresholdDays);
     }
+
+    [Fact]
+    [Trait("JiraIssue", "SCRUM-124")]
+    [Trait("Requirement", "RF-034")]
+    [Trait("Requirement", "RF-035")]
+    public void El_precio_vigente_es_el_ultimo_registrado_y_los_anteriores_quedan_en_el_historial()
+    {
+        var supplier = Guid.NewGuid();
+        var product = Guid.NewGuid();
+        var history = new[]
+        {
+            new SupplierPrice(Guid.NewGuid(), supplier, product, 0.30m, "operaciones", Now.AddDays(-5)),
+            new SupplierPrice(Guid.NewGuid(), supplier, product, 0.28m, "operaciones", Now),
+        };
+
+        Assert.Equal(0.28m, Assert.Single(SupplierPrice.Current(history)).Price);
+        Assert.Throws<DomainException>(() => new SupplierPrice(Guid.NewGuid(), supplier, product, 0m, "op", Now));
+    }
 }
