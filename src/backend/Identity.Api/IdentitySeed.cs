@@ -35,8 +35,8 @@ public static class IdentitySeed
             db.Users.Add(user);
         }
         db.Devices.AddRange(
-            new AuthorizedDevice { DeviceId = "PUESTO-01", Description = "Caja principal" },
-            new AuthorizedDevice { DeviceId = "PUESTO-02", Description = "Caja secundaria" });
+            new AuthorizedDevice { DeviceId = "PUESTO-01", Description = "Caja principal", AllowsAdministrator = true },
+            new AuthorizedDevice { DeviceId = "PUESTO-02", Description = "Caja secundaria", AllowsAdministrator = false });
         await db.SaveChangesAsync();
     }
 }

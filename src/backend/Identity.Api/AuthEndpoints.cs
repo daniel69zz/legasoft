@@ -9,7 +9,7 @@ using Pharmacy.ServiceDefaults;
 
 namespace Identity.Api;
 
-/// <summary>AuthController del Documento 3: inicio de sesión (RF-001, RF-006, RF-008, RNF-004).</summary>
+/// <summary>AuthController del Documento 3: inicio de sesión (RF-001, RF-006, RF-007, RF-008, RNF-004).</summary>
 public static class AuthEndpoints
 {
     public const int MaxFailedAttempts = 5;
@@ -55,6 +55,21 @@ public static class AuthEndpoints
         if (user.Role == Roles.Cajero && !deviceAuthorized)
             return Results.Problem("Este equipo no está autorizado para el inicio de sesión de cajeros.",
                 statusCode: StatusCodes.Status403Forbidden);
+
+        // HU-03.2 (RF-007): el administrador solo entra desde equipos autorizados para su perfil.
+        if (user.Role == Roles.Administrador && !await db.Devices.AnyAsync(d =>
+                d.DeviceId == request.DeviceId && d.IsActive && d.AllowsAdministrator))
+        {
+            db.UserChanges.Add(new UserChange
+            {
+                Id = Guid.NewGuid(), OccurredAt = now, ChangedBy = user.UserName, Action = "Acceso rechazado",
+                Detail = $"Inicio de sesión de administrador desde el equipo no autorizado {request.DeviceId}",
+            });
+            await db.SaveChangesAsync();
+            logger.LogWarning("Administrador {UserName} rechazado en el equipo {DeviceId}", userName, request.DeviceId);
+            return Results.Problem("Este equipo no está autorizado para el perfil Administrador.",
+                statusCode: StatusCodes.Status403Forbidden);
+        }
 
         user.FailedAttempts = 0;
         user.FirstFailedAt = null;

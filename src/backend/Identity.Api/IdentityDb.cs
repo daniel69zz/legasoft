@@ -16,12 +16,15 @@ public class User
     public DateTimeOffset CreatedAt { get; set; }
 }
 
-/// <summary>Computadora autorizada para que inicien sesión los cajeros (RF-006).</summary>
+/// <summary>Computadora autorizada para que inicien sesión los cajeros (RF-006) y, si se indica, el administrador (RF-007).</summary>
 public class AuthorizedDevice
 {
     public string DeviceId { get; set; } = "";
     public string Description { get; set; } = "";
     public bool IsActive { get; set; } = true;
+
+    /// <summary>HU-03.2 (RF-007): el perfil Administrador solo inicia sesión en equipos con esta marca.</summary>
+    public bool AllowsAdministrator { get; set; }
 }
 
 /// <summary>Asistencia registrada al iniciar sesión en un equipo autorizado (RF-008).</summary>
@@ -59,7 +62,12 @@ public class IdentityDb(DbContextOptions<IdentityDb> options) : DbContext(option
             e.HasIndex(u => u.UserName).IsUnique();
             e.Property(u => u.UserName).HasMaxLength(60);
         });
-        b.Entity<AuthorizedDevice>().HasKey(d => d.DeviceId);
+        b.Entity<AuthorizedDevice>(e =>
+        {
+            e.HasKey(d => d.DeviceId);
+            // Los equipos registrados antes del Sprint 2 siguen admitiendo al administrador.
+            e.Property(d => d.AllowsAdministrator).HasDefaultValue(true).ValueGeneratedNever();
+        });
         b.Entity<Attendance>().HasIndex(a => new { a.UserName, a.Day, a.DeviceId }).IsUnique();
     }
 }
