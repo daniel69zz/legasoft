@@ -52,4 +52,17 @@ public class Lot
         if (quantity <= 0) throw new DomainException("La cantidad debe ser mayor a cero.");
         Quantity += quantity;
     }
+
+    /// <summary>
+    /// Aplica en el puesto los datos del lote según el servidor, que es la fuente oficial del número
+    /// y del vencimiento. La cantidad solo se toma si se indica (el puesto no movió ese lote).
+    /// </summary>
+    public void ApplyServerData(string lotNumber, DateOnly expirationDate, int? quantity)
+    {
+        if (string.IsNullOrWhiteSpace(lotNumber)) throw new DomainException("El número de lote es obligatorio.");
+        if (quantity < 0) throw new DomainException("La cantidad del lote no puede ser negativa.");
+        LotNumber = lotNumber.Trim();
+        ExpirationDate = expirationDate;
+        if (quantity is { } q) Quantity = q;
+    }
 }

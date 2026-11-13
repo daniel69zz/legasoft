@@ -32,6 +32,7 @@ public sealed partial class ApiClient
     public Task<PurchaseDto> ReceivePurchaseAsync(Guid id, ReceivePurchaseRequest request) =>
         SendAsync<PurchaseDto>(HttpMethod.Post, $"/api/purchases/{id}/receive", request);
 
-    public Task<LotPullResponse> PullLotsAsync(long since, CancellationToken ct) =>
-        SendAsync<LotPullResponse>(HttpMethod.Get, $"/sync/pull-lots?since={since}", ct: ct);
+    public Task<LotPullResponse> PullLotsAsync(long since, bool snapshot, CancellationToken ct) =>
+        SendAsync<LotPullResponse>(HttpMethod.Get,
+            $"/sync/pull-lots?since={since}&snapshot={(snapshot ? "true" : "false")}", ct: ct);
 }

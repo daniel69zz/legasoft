@@ -129,8 +129,18 @@ public static class BusinessEndpoints
         });
 
         // Lotes creados en el servidor (recepción de compras) para que los puestos los vendan con FEFO.
-        internalApi.MapGet("/lots", async (long since, BusinessDb db) =>
+        // Con snapshot=true (primera descarga del puesto) envía todos los lotes con su vencimiento y
+        // stock oficiales, y la versión actual de la publicación para seguir desde ahí (SCRUM-112).
+        internalApi.MapGet("/lots", async (long since, bool? snapshot, BusinessDb db) =>
         {
+            if (snapshot == true)
+            {
+                var version = await db.LotFeed.MaxAsync(l => (long?)l.Sequence) ?? 0;
+                var all = await db.Lots.OrderBy(l => l.LotNumber)
+                    .Select(l => new LotChangeDto(version, l.Id, l.ProductId, l.LotNumber, l.ExpirationDate, l.Quantity))
+                    .ToListAsync();
+                return new LotPullResponse(version, all);
+            }
             var lots = await db.LotFeed.Where(l => l.Sequence > since).OrderBy(l => l.Sequence).Take(500)
                 .Select(l => new LotChangeDto(l.Sequence, l.LotId, l.ProductId, l.LotNumber, l.ExpirationDate,
                     l.Quantity))

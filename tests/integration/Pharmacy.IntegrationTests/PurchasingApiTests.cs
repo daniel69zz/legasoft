@@ -101,6 +101,25 @@ public class PurchasingApiTests : IDisposable
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-112")]
+    [Trait("Requirement", "RF-024")]
+    public async Task La_primera_descarga_de_un_puesto_trae_todos_los_lotes_con_su_vencimiento_oficial()
+    {
+        var snapshot = await Internal().GetFromJsonAsync<LotPullResponse>("/internal/lots?since=0&snapshot=true");
+        Assert.Equal(0, snapshot!.Version);
+        Assert.Equal(13, snapshot.Lots.Count);   // los lotes de la semilla del servidor
+        Assert.Contains(snapshot.Lots, l => l.LotId == ParacetamolLot && l.LotNumber == "PCM-2401" && l.Quantity == 120);
+
+        var purchase = await CreatePurchaseAsync(100, 0.30m);
+        await ReceiveAsync(purchase, "PCM-2599", 100, 0);
+
+        var after = await Internal().GetFromJsonAsync<LotPullResponse>("/internal/lots?since=0&snapshot=true");
+        var incremental = await Internal().GetFromJsonAsync<LotPullResponse>($"/internal/lots?since={after!.Version}");
+        Assert.Equal((1L, 14), (after.Version, after.Lots.Count));
+        Assert.Empty(incremental!.Lots);   // después de la foto, solo llegan los lotes nuevos
+    }
+
+    [Fact]
     [Trait("JiraIssue", "SCRUM-19")]
     [Trait("Requirement", "RF-107")]
     [Trait("Requirement", "RF-108")]
