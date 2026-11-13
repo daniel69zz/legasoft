@@ -7,7 +7,7 @@ using Pharmacy.Desktop.Services;
 namespace Pharmacy.Desktop.ViewModels;
 
 /// <summary>
-/// HU-06.4 (RF-019): historial general de movimientos consolidado en el servidor, con filtros por
+/// SCRUM-123 · HU-06.4 (RF-019): historial general de movimientos consolidado en el servidor, con filtros por
 /// período, tipo y producto. Requiere conexión; el historial de un producto en el puesto está en Inventario.
 /// </summary>
 public sealed partial class MovementsViewModel(ApiClient api) : ViewModelBase, IActivatable

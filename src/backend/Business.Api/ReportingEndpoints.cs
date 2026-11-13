@@ -7,8 +7,8 @@ using Pharmacy.ServiceDefaults;
 namespace Business.Api;
 
 /// <summary>
-/// Consultas y configuración incorporadas al Sprint 2: historial general de movimientos (HU-06.4),
-/// auditoría con filtros (HU-20.1), exportación a Excel (HU-18.1) y parámetros operativos (HU-28.1).
+/// Consultas y configuración incorporadas al Sprint 2: historial general de movimientos (SCRUM-123 · HU-06.4),
+/// auditoría con filtros (SCRUM-128 · HU-20.1), exportación a Excel (SCRUM-129 · HU-18.1) y parámetros operativos (SCRUM-130 · HU-28.1).
 /// </summary>
 public static class ReportingEndpoints
 {
@@ -45,7 +45,8 @@ public static class ReportingEndpoints
             })
             .RequirePermission(Permission.Inventario)
             .WithTags("Inventario")
-            .WithSummary("Historial general de movimientos por período, tipo y producto (RF-019)");
+            .WithSummary("[SCRUM-123 · HU-06.4] Historial general de movimientos por período, tipo y producto (RF-019)")
+            .Produces<List<InventoryMovementDto>>().ProducesProblem(StatusCodes.Status400BadRequest);
 
         api.MapGet("/audit", async (DateOnly? from, DateOnly? to, string? user, string? action, BusinessDb db,
                 TimeProvider time) =>
@@ -66,7 +67,7 @@ public static class ReportingEndpoints
             })
             .RequireAuthorization(p => p.RequireRole(Roles.Administrador, Roles.GerenteGeneral, Roles.Contadora))
             .WithTags("Auditoría")
-            .WithSummary("Auditoría de operaciones críticas filtrada por período, usuario y operación (RF-075)");
+            .WithSummary("[SCRUM-128 · HU-20.1] Auditoría de operaciones críticas filtrada por período, usuario y operación (RF-075)");
 
         api.MapGet("/reports/export", async (DateOnly? from, DateOnly? to, BusinessDb db, TimeProvider time,
                 HttpContext http) =>
@@ -80,12 +81,13 @@ public static class ReportingEndpoints
             })
             .RequirePermission(Permission.Reportes)
             .WithTags("Reportes")
-            .WithSummary("Exporta a Excel las ventas, los egresos y los cierres de caja del período (RF-105)");
+            .WithSummary("[SCRUM-129 · HU-18.1] Exporta a Excel las ventas, los egresos y los cierres de caja del período (RF-105)")
+            .Produces(StatusCodes.Status200OK, typeof(byte[]), XlsxWriter.ContentType);
 
         api.MapGet("/settings", async (BusinessDb db) => await OperationalSettings.GetAsync(db))
             .RequireAuthorization()
             .WithTags("Configuración")
-            .WithSummary("Parámetros operativos vigentes (RF-099)");
+            .WithSummary("[SCRUM-130 · HU-28.1] Parámetros operativos vigentes (RF-099)");
 
         api.MapPut("/settings", async (OperationalSettingsDto request, BusinessDb db, HttpContext http,
                 TimeProvider time) =>
@@ -106,7 +108,8 @@ public static class ReportingEndpoints
             })
             .RequireAuthorization(p => p.RequireRole(Roles.Administrador))
             .WithTags("Configuración")
-            .WithSummary("Modifica los parámetros operativos de inventario (RF-099)");
+            .WithSummary("[SCRUM-130 · HU-28.1] Modifica los parámetros operativos de inventario (RF-099)")
+            .Produces<OperationalSettingsDto>().ProducesProblem(StatusCodes.Status422UnprocessableEntity);
     }
 
     /// <summary>Período en hora de La Paz; por defecto, los últimos 7 días incluido hoy.</summary>

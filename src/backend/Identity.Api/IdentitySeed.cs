@@ -35,6 +35,7 @@ public static class IdentitySeed
             db.Users.Add(user);
         }
         db.Devices.AddRange(
+            // SCRUM-127 · HU-03.2: solo PUESTO-01 admite al perfil Administrador.
             new AuthorizedDevice { DeviceId = "PUESTO-01", Description = "Caja principal", AllowsAdministrator = true },
             new AuthorizedDevice { DeviceId = "PUESTO-02", Description = "Caja secundaria", AllowsAdministrator = false });
         await db.SaveChangesAsync();

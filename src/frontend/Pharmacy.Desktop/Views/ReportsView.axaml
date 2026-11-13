@@ -11,7 +11,7 @@
       <TextBlock Classes="ok" Text="{Binding Info}" IsVisible="{Binding Info, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
       <TextBlock Classes="muted" Text="Datos consolidados en el servidor (PostgreSQL) a partir de lo sincronizado por todos los puestos." />
 
-      <!-- HU-18.1 (RF-105): exportación a Excel -->
+      <!-- SCRUM-129 · HU-18.1 (RF-105): exportación a Excel -->
       <Border Classes="card">
         <Grid ColumnDefinitions="Auto,160,160,Auto" ColumnSpacing="10">
           <TextBlock Classes="h2" Text="Exportar a Excel (RF-105)" VerticalAlignment="Center" Margin="0" />

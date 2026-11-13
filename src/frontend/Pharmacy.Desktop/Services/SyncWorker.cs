@@ -143,7 +143,7 @@ public sealed class SyncWorker(
         logger.LogInformation("Catálogo actualizado: {Count} productos", changes.Products.Count);
     }
 
-    /// <summary>HU-28.1 (RF-099): guarda el umbral de vencimiento configurado en el servidor.</summary>
+    /// <summary>SCRUM-130 · HU-28.1 (RF-099): guarda el umbral de vencimiento configurado en el servidor.</summary>
     private static async Task SaveThresholdAsync(LocalDb db, int? days, CancellationToken ct)
     {
         if (days is null) return;
@@ -155,7 +155,7 @@ public sealed class SyncWorker(
     }
 
     /// <summary>
-    /// HU-09 y SCRUM-112: descarga los lotes del servidor para venderlos con FEFO en el puesto. La
+    /// SCRUM-19 · HU-09 y SCRUM-112: descarga los lotes del servidor para venderlos con FEFO en el puesto. La
     /// primera vez pide todos (snapshot) y alinea número, vencimiento y, si el puesto no los movió,
     /// el stock de los que ya tiene; después solo recibe los lotes nuevos de las compras.
     /// </summary>

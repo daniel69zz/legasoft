@@ -11,7 +11,7 @@ public static class PermissionPolicy
         builder.RequireAuthorization(p => p.RequireAssertion(context =>
             context.User.FindFirst("role")?.Value is { } role && RolePermissions.Has(role, permission)));
 
-    /// <summary>Autoriza si el rol tiene al menos uno de los permisos (por ejemplo, listar proveedores para comprar).</summary>
+    /// <summary>SCRUM-18 · HU-08: autoriza si el rol tiene al menos uno de los permisos (por ejemplo, listar proveedores para comprar).</summary>
     public static TBuilder RequireAnyPermission<TBuilder>(this TBuilder builder, params Permission[] permissions)
         where TBuilder : IEndpointConventionBuilder =>
         builder.RequireAuthorization(p => p.RequireAssertion(context =>

@@ -43,7 +43,7 @@ public class EventDispatcher(HttpClient http, IConfiguration configuration)
     }
 
     /// <summary>
-    /// Lotes creados en el servidor por la recepción de compras, desde la versión del puesto. Con
+    /// SCRUM-19 · HU-09 y SCRUM-112: lotes creados en el servidor por la recepción de compras, desde la versión del puesto. Con
     /// <paramref name="snapshot"/>, todos los lotes del servidor (primera descarga del puesto).
     /// </summary>
     public virtual async Task<LotPullResponse> GetLotChangesAsync(long since, bool snapshot, CancellationToken ct)

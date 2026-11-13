@@ -32,7 +32,7 @@ public sealed class AdjustStockValidator : AbstractValidator<AdjustStockCommand>
 }
 
 /// <summary>
-/// HU-06.3 (RF-014 a RF-016) y HU-07.2 (RF-025): entrada, salida, ajuste o retiro manual de un lote en el puesto. El
+/// SCRUM-101 · HU-06.3 (RF-014 a RF-016) y SCRUM-121 · HU-07.2 (RF-025): entrada, salida, ajuste o retiro manual de un lote en el puesto. El
 /// movimiento guarda usuario, fecha, hora y motivo, y viaja al servidor por el Outbox
 /// (StockMovementCreated) en la misma transacción que el cambio de stock (ADR-003).
 /// </summary>
@@ -52,7 +52,7 @@ public sealed class AdjustStockHandler(
         var lot = (await catalog.GetLotsAsync([command.ProductId], ct)).SingleOrDefault(l => l.Id == command.LotId)
             ?? throw new DomainException("El lote no existe para ese producto.");
 
-        // HU-07.2 (RF-025): el retiro, igual que la salida, resta unidades; acepta lotes vencidos.
+        // SCRUM-121 · HU-07.2 (RF-025): el retiro, igual que la salida, resta unidades; acepta lotes vencidos.
         var quantity = command.Type switch
         {
             StockMovementType.Salida or StockMovementType.Retiro => -command.Quantity,

@@ -4,7 +4,7 @@ using Pharmacy.Domain.Purchasing;
 namespace Pharmacy.Application.Demo;
 
 /// <summary>
-/// Proveedores y compra de demostración del Sprint 2: dos distribuidoras ficticias y una
+/// SCRUM-18 y SCRUM-19: proveedores y compra de demostración del Sprint 2: dos distribuidoras ficticias y una
 /// compra pendiente de recibir para mostrar la recepción con lotes y diferencias.
 /// </summary>
 public static class DemoPurchasing

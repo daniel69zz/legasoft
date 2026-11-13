@@ -6,7 +6,7 @@
              x:Class="Pharmacy.Desktop.Views.SuppliersView"
              x:DataType="vm:SuppliersViewModel">
   <Grid ColumnDefinitions="*,380" ColumnSpacing="20">
-    <!-- Listado, productos suministrados (RF-028) e historial de compras (RF-029) -->
+    <!-- SCRUM-18 · HU-08: listado, productos suministrados (RF-028) e historial de compras (RF-029) -->
     <Grid RowDefinitions="*,Auto" RowSpacing="16">
       <Border Classes="card">
         <DockPanel>

@@ -47,7 +47,7 @@ public sealed class LocalStore(LocalDb db)
         (await db.CashSessions.Where(s => s.DeviceId == deviceId).ToListAsync(ct))
         .MaxBy(s => s.OpenedAt);
 
-    /// <summary>Clave de sync_state donde el Sync Worker guarda el umbral recibido del servidor (HU-28.1).</summary>
+    /// <summary>Clave de sync_state donde el Sync Worker guarda el umbral recibido del servidor (SCRUM-130 · HU-28.1).</summary>
     public const string ExpiryThresholdKey = "expiry_threshold_days";
 
     public async Task<int> GetExpiryThresholdDaysAsync(CancellationToken ct = default) =>

@@ -9,7 +9,7 @@ namespace Business.Api;
 public sealed record XlsxSheet(string Name, IReadOnlyList<string> Headers, IReadOnlyList<IReadOnlyList<object?>> Rows);
 
 /// <summary>
-/// HU-18.1 (RF-105): genera un .xlsx (Office Open XML) mínimo sin dependencias externas: una hoja
+/// SCRUM-129 · HU-18.1 (RF-105): genera un .xlsx (Office Open XML) mínimo sin dependencias externas: una hoja
 /// por tabla, encabezados en negrita y números como números para que Excel los pueda sumar.
 /// </summary>
 public static class XlsxWriter

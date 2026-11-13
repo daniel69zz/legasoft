@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""HU-T05.1 (RNF-007): resume la cobertura de líneas de las pruebas xUnit y aplica el umbral.
+"""SCRUM-131 · HU-T05.1 (RNF-007): resume la cobertura de líneas de las pruebas xUnit y aplica el umbral.
 
 Une los reportes Cobertura que deja coverlet (uno por proyecto de pruebas) sumando las líneas
 cubiertas por cualquiera de ellos, calcula la cobertura por ensamblado y la escribe en el

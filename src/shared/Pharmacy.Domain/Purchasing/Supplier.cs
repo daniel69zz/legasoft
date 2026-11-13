@@ -2,7 +2,7 @@ using Pharmacy.Domain.Common;
 
 namespace Pharmacy.Domain.Purchasing;
 
-/// <summary>Proveedor de medicamentos (HU-08, RF-026 y RF-027).</summary>
+/// <summary>Proveedor de medicamentos (SCRUM-18 · HU-08, RF-026 y RF-027).</summary>
 public class Supplier
 {
     private Supplier() { }
@@ -36,7 +36,7 @@ public class Supplier
 
     /// <summary>
     /// Los datos obligatorios se validan por separado para que el mensaje indique cuál falta
-    /// (escenario "Datos obligatorios incompletos" de HU-08).
+    /// (escenario "Datos obligatorios incompletos" de SCRUM-18 · HU-08).
     /// </summary>
     private static void Validate(string name, string phone, string email)
     {

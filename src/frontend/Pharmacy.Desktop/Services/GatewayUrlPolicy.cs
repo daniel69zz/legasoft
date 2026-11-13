@@ -5,7 +5,7 @@ using System.Security.Authentication;
 namespace Pharmacy.Desktop.Services;
 
 /// <summary>
-/// HU-T02.2 (RNF-003): fuera de la propia computadora, el puesto solo habla con el Gateway por
+/// SCRUM-100 · HU-T02.2 (RNF-003): fuera de la propia computadora, el puesto solo habla con el Gateway por
 /// HTTPS con TLS 1.2 o superior y con un certificado válido. HTTP sin cifrar solo se acepta
 /// contra localhost (backend de desarrollo con docker compose).
 /// </summary>

@@ -176,7 +176,7 @@
           </StackPanel>
         </Border>
 
-        <!-- HU-10.1 y HU-10.2: precios por proveedor (RF-034 a RF-036) -->
+        <!-- SCRUM-124 · HU-10.1 y SCRUM-125 · HU-10.2: precios por proveedor (RF-034 a RF-036) -->
         <Border Classes="card" IsVisible="{Binding HasProduct}">
           <StackPanel Spacing="8">
             <TextBlock Classes="h2">

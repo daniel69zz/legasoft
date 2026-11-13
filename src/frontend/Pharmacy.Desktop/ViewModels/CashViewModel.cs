@@ -44,7 +44,7 @@ public sealed partial class CashViewModel : ViewModelBase, IActivatable
     [ObservableProperty] private string _justification = "";
     [ObservableProperty] private string _closingReport = "";
 
-    // HU-16.2 (RF-061, RF-062): entrega de caja al cajero entrante.
+    // SCRUM-126 · HU-16.2 (RF-061, RF-062): entrega de caja al cajero entrante.
     [ObservableProperty] private bool _canHandover;
     [ObservableProperty] [NotifyPropertyChangedFor(nameof(CanOpen))] private bool _isHandoverPending;
     [ObservableProperty] private bool _canConfirmHandover;

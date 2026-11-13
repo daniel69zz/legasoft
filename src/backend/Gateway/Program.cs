@@ -8,7 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSerilog((context, config) => config.ReadFrom.Configuration(context.Configuration)
     .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] Gateway {Message:lj}{NewLine}{Exception}"));
 
-// RNF-003: si el Gateway publica HTTPS directamente, solo acepta TLS 1.2 o superior. En el VPS
+// SCRUM-100 · HU-T02.2 (RNF-003): si el Gateway publica HTTPS directamente, solo acepta TLS 1.2 o superior. En el VPS
 // el TLS lo termina el nginx del servidor (deploy/vps/nginx-farmacia.conf) con la misma restricción.
 builder.WebHost.ConfigureKestrel(k => k.ConfigureHttpsDefaults(h =>
     h.SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13));

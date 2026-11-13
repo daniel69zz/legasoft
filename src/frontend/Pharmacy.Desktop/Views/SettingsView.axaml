@@ -3,6 +3,7 @@
              xmlns:vm="using:Pharmacy.Desktop.ViewModels"
              x:Class="Pharmacy.Desktop.Views.SettingsView"
              x:DataType="vm:SettingsViewModel">
+  <!-- SCRUM-130 · HU-28.1: parámetros operativos de inventario (RF-099) -->
   <Border Classes="card" MaxWidth="560" HorizontalAlignment="Left" VerticalAlignment="Top">
     <StackPanel Spacing="10">
       <TextBlock Classes="h2" Text="Parámetros operativos de inventario (RF-099)" />

@@ -1,6 +1,7 @@
 # Ajustes del VPS sobre docker-compose.yml. Nada queda expuesto a Internet:
 # el Gateway y Mailpit solo escuchan en 127.0.0.1 y PostgreSQL no publica puertos.
-# El nginx del servidor publica el Gateway con HTTPS (TLS 1.2+): deploy/vps/nginx-farmacia.conf.
+# SCRUM-100 · HU-T02.2: el nginx del servidor publica el Gateway con HTTPS (TLS 1.2+):
+# deploy/vps/nginx-farmacia.conf.
 #   docker compose -p farmacia -f docker-compose.yml -f deploy/vps/docker-compose.vps.yml up -d
 services:
   postgres:

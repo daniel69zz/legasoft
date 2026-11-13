@@ -29,7 +29,7 @@ public sealed class AlertScheduler(HttpClient http, NotificationOptions options,
             var delay = TimeSpan.FromMinutes(options.IntervalMinutes);
             try
             {
-                // HU-28.1 (RF-099): la frecuencia configurada por el administrador manda sobre la del despliegue.
+                // SCRUM-130 · HU-28.1 (RF-099): la frecuencia configurada por el administrador manda sobre la del despliegue.
                 delay = TimeSpan.FromMinutes(await IntervalMinutesAsync(stoppingToken) ?? options.IntervalMinutes);
                 await SendAlertsAsync(stoppingToken);
             }

@@ -7,7 +7,7 @@ using Pharmacy.Desktop.Services;
 namespace Pharmacy.Desktop.ViewModels;
 
 /// <summary>
-/// HU-08: proveedores (RF-026 a RF-029). Se administran en línea contra el Business Service;
+/// SCRUM-18 · HU-08: proveedores (RF-026 a RF-029). Se administran en línea contra el Business Service;
 /// al elegir uno se muestran los productos que suministró y su historial de compras.
 /// </summary>
 public sealed partial class SuppliersViewModel(ApiClient api) : ViewModelBase, IActivatable

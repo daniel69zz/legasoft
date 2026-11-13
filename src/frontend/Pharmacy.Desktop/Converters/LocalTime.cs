@@ -4,7 +4,7 @@ using Avalonia.Data.Converters;
 namespace Pharmacy.Desktop.Converters;
 
 /// <summary>
-/// Muestra en hora local del puesto las fechas que llegan del servidor. PostgreSQL las guarda en
+/// SCRUM-128 · HU-20.1 y pantallas del Sprint 2: muestra en hora local del puesto las fechas que llegan del servidor. PostgreSQL las guarda en
 /// UTC, así que formatearlas tal cual mostraría la hora UTC (4 horas más en La Paz).
 /// El formato va en ConverterParameter, por ejemplo 'dd/MM/yyyy HH:mm'.
 /// </summary>

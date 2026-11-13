@@ -38,3 +38,31 @@ documentan ni pasan por el Gateway: se protegen con la cabecera `X-Internal-Key`
 
 El permiso Catálogo lo tienen el Administrador, el Farmacéutico y el Gerente de
 Operaciones (matriz `RolePermissions` en `Pharmacy.Domain`).
+
+## Endpoints del Sprint 2
+
+En Swagger, el resumen de cada uno empieza con su historia: `[SCRUM-n · HU-x]`.
+
+| HU · Jira | Método y ruta | Requisito | Rol o permiso |
+| --- | --- | --- | --- |
+| HU-08 · SCRUM-18 | `GET /api/suppliers` | RF-026 | Proveedores o Compras |
+| HU-08 · SCRUM-18 | `POST /api/suppliers` · `PUT /api/suppliers/{id}` · `POST /api/suppliers/{id}/activate` · `/deactivate` | RF-026, RF-027 | Proveedores (Administrador) |
+| HU-08 · SCRUM-18 | `GET /api/suppliers/{id}/products` · `/purchases` | RF-028, RF-029 | Proveedores o Compras |
+| HU-09 · SCRUM-19 | `GET /api/purchases` · `GET /api/purchases/{id}` · `POST /api/purchases` | RF-030, RF-031 | Compras |
+| HU-09 · SCRUM-19 | `POST /api/purchases/{id}/receive` | RF-032, RF-033, RF-107, RF-108 | Compras |
+| HU-09 · SCRUM-19 | `GET /sync/pull-lots?since=&snapshot=` | RF-033 | Cualquier puesto autenticado |
+| HU-10.1 · SCRUM-124 | `POST /api/suppliers/{id}/prices` · `GET /api/suppliers/{id}/prices` · `/prices/history` | RF-034, RF-035 | Compras o Proveedores |
+| HU-10.2 · SCRUM-125 | `GET /api/products/{id}/supplier-prices` | RF-036 | Compras o Proveedores |
+| HU-06.4 · SCRUM-123 | `GET /api/inventory/movements` | RF-019 | Inventario |
+| HU-20.1 · SCRUM-128 | `GET /api/audit?from=&to=&user=&action=` | RF-075 | Administrador, Gerente General, Contadora |
+| HU-18.1 · SCRUM-129 | `GET /api/reports/export` | RF-105 | Reportes |
+| HU-28.1 · SCRUM-130 | `GET /api/settings` · `PUT /api/settings` | RF-099 | Lectura: autenticado · Cambio: Administrador |
+| HU-03.2 · SCRUM-127 | `POST /auth/login` (403 desde un equipo que no admite al Administrador) | RF-007 | — |
+
+Los ajustes, retiros y entregas de caja (SCRUM-101, SCRUM-121 y SCRUM-126) no tienen
+endpoint propio: se guardan en el puesto y llegan al servidor por `POST /sync/push`.
+
+## Producción
+
+El mismo Gateway está publicado en <https://farmacia.bell7738.com> (Swagger en
+`/swagger`). En Postman, cambie la variable `baseUrl` a esa dirección.

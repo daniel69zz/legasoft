@@ -50,7 +50,7 @@ public sealed class CashHandlers(
     }
 
     /// <summary>
-    /// HU-16.2 (RF-061): el cajero que cerró el último turno entrega la caja al cajero entrante.
+    /// SCRUM-126 · HU-16.2 (RF-061): el cajero que cerró el último turno entrega la caja al cajero entrante.
     /// La entrega queda pendiente hasta que este confirme el monto.
     /// </summary>
     public async Task<CashSession> RequestHandoverAsync(string incomingCashier, CancellationToken ct = default)
@@ -70,7 +70,7 @@ public sealed class CashHandlers(
     }
 
     /// <summary>
-    /// HU-16.2 (RF-062): el cajero entrante confirma el monto recibido y su conformidad. Si coincide
+    /// SCRUM-126 · HU-16.2 (RF-062): el cajero entrante confirma el monto recibido y su conformidad. Si coincide
     /// con lo contado al cierre, la entrega se completa y su turno se abre con ese monto; si no, la
     /// entrega sigue pendiente y la observación queda registrada.
     /// </summary>

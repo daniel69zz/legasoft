@@ -9,7 +9,7 @@ public sealed record StockRow(Guid ProductId, string Code, string Name, string C
 public sealed record InventoryOverview(IReadOnlyList<StockRow> Stock, IReadOnlyList<ExpiryAlert> ExpiryAlerts,
     IReadOnlyList<LowStockAlert> LowStockAlerts, int ExpiryThresholdDays = InventoryAlerts.DefaultExpiryThresholdDays);
 
-/// <summary>HU-07.3 (RF-021): existencia de un lote con su vencimiento y estado.</summary>
+/// <summary>SCRUM-122 · HU-07.3 (RF-021): existencia de un lote con su vencimiento y estado.</summary>
 public sealed record LotStockRow(Guid LotId, string LotNumber, DateOnly ExpirationDate, int Quantity, int DaysToExpire,
     ExpiryStatus Status)
 {
@@ -53,7 +53,7 @@ public sealed class InventoryQueries(ICatalogRepository catalog, IClock clock, I
             InventoryAlerts.LowStock(products, lots, today), threshold);
     }
 
-    /// <summary>HU-07.3 (RF-021): lotes con existencia de un producto, con su estado según el umbral vigente.</summary>
+    /// <summary>SCRUM-122 · HU-07.3 (RF-021): lotes con existencia de un producto, con su estado según el umbral vigente.</summary>
     public async Task<IReadOnlyList<LotStockRow>> GetLotDetailsAsync(Guid productId, CancellationToken ct = default)
     {
         var today = clock.Today;
@@ -71,7 +71,7 @@ public sealed class InventoryQueries(ICatalogRepository catalog, IClock clock, I
         .OrderBy(l => l.ExpirationDate)
         .ToList();
 
-    /// <summary>HU-06.3: historial de movimientos con tipo, lote, cantidad, motivo, usuario, fecha y hora.</summary>
+    /// <summary>SCRUM-101 · HU-06.3: historial de movimientos con tipo, lote, cantidad, motivo, usuario, fecha y hora.</summary>
     public async Task<IReadOnlyList<StockMovementRow>> GetMovementsAsync(Guid productId, CancellationToken ct = default)
     {
         var lots = (await catalog.GetLotsAsync([productId], ct)).ToDictionary(l => l.Id, l => l.LotNumber);

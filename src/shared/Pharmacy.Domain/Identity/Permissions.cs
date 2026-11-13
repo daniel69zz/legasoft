@@ -11,10 +11,10 @@ public enum Permission
     Usuarios,
     Sincronizacion,
 
-    /// <summary>Registro y modificación de proveedores (HU-08).</summary>
+    /// <summary>Registro y modificación de proveedores (SCRUM-18 · HU-08).</summary>
     Proveedores,
 
-    /// <summary>Registro de compras y su recepción (HU-09).</summary>
+    /// <summary>Registro de compras y su recepción (SCRUM-19 · HU-09).</summary>
     Compras,
 }
 

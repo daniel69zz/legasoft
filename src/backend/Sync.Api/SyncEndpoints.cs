@@ -14,14 +14,21 @@ public static class SyncEndpoints
 
     public static void MapSyncEndpoints(this WebApplication app)
     {
-        var sync = app.MapGroup("/sync").RequireAuthorization();
-        sync.MapPost("/push", PushAsync);
-        sync.MapGet("/pull", PullAsync);
+        var sync = app.MapGroup("/sync").RequireAuthorization().WithTags("Sincronización");
+        sync.MapPost("/push", PushAsync)
+            .WithSummary("Recibe en orden los eventos del Outbox de un puesto y descarta duplicados (RF-080, RF-081, RF-102)")
+            .Produces<PushResponse>().ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
+        sync.MapGet("/pull", PullAsync)
+            .WithSummary("Descarga incremental de catálogo, precios y umbral de vencimiento (RF-080)")
+            .Produces<PullResponse>();
         sync.MapGet("/pull-lots", async (long since, bool? snapshot, EventDispatcher dispatcher, CancellationToken ct) =>
                 Results.Ok(await dispatcher.GetLotChangesAsync(since, snapshot == true, ct)))
-            .WithSummary("Descarga de lotes: todos en la primera descarga (snapshot) y luego los recibidos en el servidor");
+            .WithSummary("[SCRUM-19 · HU-09] Descarga de lotes: todos en la primera descarga (snapshot) y luego los recibidos en el servidor")
+            .Produces<LotPullResponse>();
         sync.MapGet("/status/{deviceId}", async (string deviceId, SyncDb db) =>
-            await db.ModuleVersions.Where(v => v.DeviceId == deviceId).ToListAsync());
+            await db.ModuleVersions.Where(v => v.DeviceId == deviceId).ToListAsync())
+            .WithSummary("Versión procesada de cada módulo para un puesto (RF-081)");
     }
 
     private static async Task<IResult> PushAsync(PushRequest request, SyncDb db, EventDispatcher dispatcher,

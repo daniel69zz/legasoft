@@ -8,7 +8,7 @@
       <TextBlock Classes="error" Text="{Binding Error}" IsVisible="{Binding Error, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
       <TextBlock Classes="ok" Text="{Binding Info}" IsVisible="{Binding Info, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
 
-      <!-- HU-16.2: entrega de caja entre cajeros (RF-061, RF-062) -->
+      <!-- SCRUM-126 · HU-16.2: entrega de caja entre cajeros (RF-061, RF-062) -->
       <Border Classes="card" MaxWidth="520" HorizontalAlignment="Left" IsVisible="{Binding CanHandover}">
         <StackPanel Spacing="8">
           <TextBlock Classes="h2" Text="Entregar caja al cajero entrante (RF-061)" />
