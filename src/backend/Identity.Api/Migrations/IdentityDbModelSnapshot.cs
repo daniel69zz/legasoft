@@ -64,6 +64,11 @@ namespace Identity.Api.Migrations
                         .HasColumnType("text")
                         .HasColumnName("device_id");
 
+                    b.Property<bool>("AllowsAdministrator")
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("allows_administrator");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("text")
