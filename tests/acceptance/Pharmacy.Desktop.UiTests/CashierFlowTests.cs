@@ -25,6 +25,11 @@ public class CashierFlowTests
     [Trait("Requirement", "RF-052")]
     [Trait("Requirement", "RF-037")]
     [Trait("Requirement", "RF-058")]
+    [Trait("JiraIssue", "SCRUM-101")]
+    [Trait("Requirement", "RF-016")]
+    [Trait("JiraIssue", "SCRUM-126")]
+    [Trait("Requirement", "RF-061")]
+    [Trait("Requirement", "RF-062")]
     public async Task Cajero_abre_caja_vende_y_cierra()
     {
         var main = App.Services.GetRequiredService<MainWindowViewModel>();
@@ -93,6 +98,31 @@ public class CashierFlowTests
         await Settle();
         Capture(window, "06-sincronizacion");
 
+        // HU-16.2: cajero1 entrega la caja a cajero2, que confirma el monto contado y abre su turno.
+        shell.Selected = shell.Items.Single(i => i.Title == "Caja");
+        cash = Assert.IsType<CashViewModel>(shell.Page);
+        await cash.ActivateAsync();
+        Assert.True(cash.CanHandover, cash.Error);
+        cash.IncomingCashier = "cajero2";
+        await cash.RequestHandoverCommand.ExecuteAsync(null);
+        Assert.True(cash.IsHandoverPending, cash.Error);
+        shell.LogoutCommand.Execute(null);
+        login = Assert.IsType<LoginViewModel>(main.Current);
+        login.UserName = "cajero2";
+        login.Password = "Farmacia2026!";
+        await login.LoginCommand.ExecuteAsync(null);
+        shell = Assert.IsType<ShellViewModel>(main.Current);
+        shell.Selected = shell.Items.Single(i => i.Title == "Caja");
+        cash = Assert.IsType<CashViewModel>(shell.Page);
+        await cash.ActivateAsync();
+        Assert.True(cash.CanConfirmHandover, cash.HandoverStatus);
+        await Settle();
+        Capture(window, "06b-caja-entrega");
+        cash.ReceivedAmount = 265m;
+        await cash.ConfirmHandoverCommand.ExecuteAsync(null);
+        Assert.True(cash.IsOpen, cash.Error);
+        Assert.Equal(265m, cash.OpeningShown);
+
         shell.LogoutCommand.Execute(null);
         login = Assert.IsType<LoginViewModel>(main.Current);
         login.UserName = "farmaceutico";
@@ -106,6 +136,23 @@ public class CashierFlowTests
         await Settle();
         Capture(window, "07-inventario-alertas");
 
+        // HU-06.3: ajuste manual con motivo sobre un lote, también sin conexión.
+        inventory.Selected = inventory.Rows.Single(r => r.Code == "P-0005");
+        await Settle();
+        var stockBefore = inventory.Selected!.Stock;
+        Assert.True(inventory.CanAdjust);
+        Assert.NotNull(inventory.Lot);
+        inventory.Quantity = -3;
+        await inventory.AdjustCommand.ExecuteAsync(null);
+        Assert.Contains("RF-016", inventory.Error);   // sin motivo no se registra
+        inventory.Reason = "Producto dañado";
+        await inventory.AdjustCommand.ExecuteAsync(null);
+        Assert.True(string.IsNullOrEmpty(inventory.Error), inventory.Error);
+        Assert.Equal(stockBefore - 3, inventory.Rows.Single(r => r.Code == "P-0005").Stock);
+        Assert.Contains(inventory.Movements, m => m.Quantity == -3 && m.Reason == "Producto dañado");
+        await Settle();
+        Capture(window, "07b-inventario-ajuste");
+
         // Con el backend en línea: el administrador ve usuarios y reportes consolidados.
         shell.LogoutCommand.Execute(null);
         login = Assert.IsType<LoginViewModel>(main.Current);
@@ -114,7 +161,95 @@ public class CashierFlowTests
         await login.LoginCommand.ExecuteAsync(null);
         shell = Assert.IsType<ShellViewModel>(main.Current);
         Assert.Contains(shell.Items, i => i.Title == "Usuarios");
+        Assert.Contains(shell.Items, i => i.Title == "Compras");
+        Assert.Contains(shell.Items, i => i.Title == "Proveedores");
         if (App.Services.GetRequiredService<Services.Session>().Token is null) return; // sin servidor
+
+        // HU-08 y HU-09 (en línea): proveedores de demostración y compra pendiente de recibir.
+        shell.Selected = shell.Items.Single(i => i.Title == "Proveedores");
+        var suppliers = Assert.IsType<SuppliersViewModel>(shell.Page);
+        await suppliers.ActivateAsync();
+        Assert.NotEmpty(suppliers.Suppliers);
+        suppliers.Selected = suppliers.Suppliers[0];
+        await Settle();
+        Capture(window, "08a-proveedores");
+
+        // HU-06.4, HU-28.1 y HU-18.1 (en línea): movimientos, parámetros y exportación a Excel.
+        shell.Selected = shell.Items.Single(i => i.Title == "Movimientos");
+        var movements = Assert.IsType<MovementsViewModel>(shell.Page);
+        await movements.ActivateAsync();
+        Assert.True(string.IsNullOrEmpty(movements.Error), movements.Error);
+        await Settle();
+        Capture(window, "08c-movimientos");
+
+        shell.Selected = shell.Items.Single(i => i.Title == "Parámetros");
+        var settings = Assert.IsType<SettingsViewModel>(shell.Page);
+        await settings.ActivateAsync();
+        Assert.True(settings.ExpiryThresholdDays > 0, settings.Error);
+        await Settle();
+        Capture(window, "08d-parametros");
+
+        shell.Selected = shell.Items.Single(i => i.Title == "Compras");
+        var purchases = Assert.IsType<PurchasesViewModel>(shell.Page);
+        await purchases.ActivateAsync();
+        Assert.True(string.IsNullOrEmpty(purchases.Error), purchases.Error);
+        purchases.Selected = purchases.Purchases.FirstOrDefault(p => p.Status == "Pendiente")
+                             ?? purchases.Purchases.FirstOrDefault();
+        await Settle();
+        Capture(window, "08b-compras");
+
+        // HU-10.1: precio del proveedor y costo sugerido; HU-09: compra, recepción con dañadas y lote nuevo en el puesto.
+        purchases.Supplier = purchases.Suppliers.Single(s => s.TaxId == "2030405060");
+        purchases.ProductToAdd = purchases.ProductOptions.Single(p => p.Code == "P-0006");
+        await Settle();
+        purchases.NewPrice = 3.10m;
+        await purchases.RegisterPriceCommand.ExecuteAsync(null);
+        Assert.True(string.IsNullOrEmpty(purchases.Error), purchases.Error);
+        Assert.Contains(purchases.Comparison, c => c.Price == 3.10m);
+        purchases.AddProductCommand.Execute(null);
+        var line = Assert.Single(purchases.Draft);
+        Assert.Equal(3.10m, line.UnitCost);   // costo propuesto con el precio vigente
+        line.Quantity = 40;
+        Assert.Equal(124m, purchases.DraftTotal);
+        await purchases.CreateCommand.ExecuteAsync(null);
+        Assert.True(string.IsNullOrEmpty(purchases.Error), purchases.Error);
+        Assert.Equal("Pendiente", purchases.Selected!.Status);
+        var reception = Assert.Single(purchases.Reception);
+        var lotNumber = $"SRO-{Guid.NewGuid().ToString("N")[..6].ToUpperInvariant()}";
+        reception.LotNumber = lotNumber;
+        reception.ExpirationDate = DateTime.Today.AddDays(500);
+        reception.Received = 36;
+        reception.Damaged = 4;
+        Assert.Equal(4, reception.Difference);
+        await purchases.ReceiveCommand.ExecuteAsync(null);
+        Assert.True(string.IsNullOrEmpty(purchases.Error), purchases.Error);
+        Assert.Equal("Recibida", purchases.Selected!.Status);
+        Assert.Equal((36, 4), (purchases.Selected.Lines[0].ReceivedQuantity, purchases.Selected.Lines[0].DamagedQuantity));
+        await Settle();
+        Capture(window, "08e-compra-recibida");
+
+        // HU-28.1: el umbral configurado llega al puesto con la sincronización.
+        shell.Selected = shell.Items.Single(i => i.Title == "Parámetros");
+        settings = Assert.IsType<SettingsViewModel>(shell.Page);
+        await settings.ActivateAsync();
+        settings.ExpiryThresholdDays = 95;
+        await settings.SaveCommand.ExecuteAsync(null);
+        Assert.True(string.IsNullOrEmpty(settings.Error), settings.Error);
+        Assert.True(await App.Services.GetRequiredService<Services.SyncWorker>().SyncOnceAsync());
+
+        shell.Selected = shell.Items.Single(i => i.Title == "Inventario");
+        inventory = Assert.IsType<InventoryViewModel>(shell.Page);
+        await inventory.ActivateAsync();
+        Assert.Equal(95, inventory.ExpiryThresholdDays);
+        Assert.Contains(inventory.ExpiryAlerts, a => a.LotNumber == "SRO-2403");   // vence en 90 días
+        inventory.Selected = inventory.Rows.Single(r => r.Code == "P-0006");
+        await Settle();
+        Assert.Contains(inventory.LotDetails, l => l.LotNumber == lotNumber && l.Quantity == 36);
+        await Settle();
+        Capture(window, "08f-inventario-lote-recibido");
+
+        settings.ExpiryThresholdDays = 60;   // deja el servidor de pruebas como estaba
+        await settings.SaveCommand.ExecuteAsync(null);
 
         shell.Selected = shell.Items.Single(i => i.Title == "Usuarios");
         var users = Assert.IsType<UsersViewModel>(shell.Page);
@@ -127,6 +262,9 @@ public class CashierFlowTests
         var reports = Assert.IsType<ReportsViewModel>(shell.Page);
         await reports.ActivateAsync();
         Assert.NotNull(reports.Summary);
+        ReportsViewModel.ExportFolder = Path.Combine(Path.GetTempPath(), $"farmacia-export-{Guid.NewGuid():N}");
+        await reports.ExportCommand.ExecuteAsync(null);
+        Assert.True(File.Exists(reports.ExportedPath), reports.Error);
         await Settle();
         Capture(window, "09-reportes");
     }
