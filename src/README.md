@@ -98,6 +98,28 @@ borrarse con `docker volume rm farmacia_pgdata`.
 8. Ingresar como `farmaceutico` y abrir **Catálogo**: registrar un medicamento,
    buscarlo por principio activo y desactivarlo. Tras la sincronización ya no
    aparece en el punto de venta del cajero.
+9. Sprint 2 · Ingresar como `admin` y abrir **Proveedores**: registrar uno (sin
+   teléfono se rechaza indicando el dato) y ver su historial de compras.
+10. Ingresar como `operaciones` y abrir **Compras**: la compra `OC-00001` de la
+    semilla está pendiente. Recibirla con lote y vencimiento, por ejemplo 90
+    tabletas en buen estado y 10 dañadas: la diferencia se resalta y solo
+    ingresan 90. Tras la sincronización, el lote nuevo aparece en el
+    **Inventario** del puesto y se vende con FEFO.
+11. En **Inventario**, elegir un producto y registrar un **Ajuste** de −3 con el
+    motivo «Producto dañado» (también sin conexión). Sin motivo se rechaza. El
+    movimiento queda en el historial y llega al servidor por el Outbox. Con
+    **Retiro** se da de baja un lote vencido, y la tarjeta **Stock por lote**
+    muestra cada lote con su estado.
+12. Como `cajero1`, después de cerrar caja, **Entregar** a `cajero2`. Al entrar
+    `cajero2`, la caja no se abre hasta que confirme el monto contado; al
+    confirmarlo, su turno arranca con ese monto.
+13. Como `operaciones`, en **Compras** elegir proveedor y producto: registrar el
+    precio ofrecido, ver el historial y la comparación entre proveedores; al
+    agregar el producto a la compra, el costo se propone con el precio vigente.
+14. Como `admin`: **Parámetros** (umbral de vencimiento y frecuencia de alertas),
+    **Movimientos** (historial consolidado con filtros), **Reportes** (auditoría
+    filtrada y exportación a Excel). El administrador no inicia sesión en
+    `PUESTO-02` (RF-007).
 
 ## Trazabilidad del prototipo
 
@@ -130,6 +152,20 @@ dotnet test Pharmacy.sln --filter "Requirement=RF-001"
 | RF-013, RF-018, RF-022, RF-023 | `InventoryAlerts`, `InventoryQueries`, `Notification.Worker` | `AlertsAndPermissionsTests` |
 | RF-080, RF-081, RF-102 | Outbox en `LocalDb`, `SyncWorker`, `Sync.Api` | `SyncApiTests` (orden, duplicados, reintento) |
 | RF-104, RF-073, RF-074 | `Business.Api/EventApplier.cs`, `/api/dashboard` | `BusinessApiTests` |
+| HU-08 · RF-026 a RF-029 | `Supplier`, `PurchasingEndpoints.cs`, `SuppliersViewModel` | `PurchaseTests`, `PurchasingApiTests` |
+| HU-09 · RF-030 a RF-033, RF-020, RF-107, RF-108 | `Purchase.Receive`, `PurchasingEndpoints.cs`, `PurchasesViewModel`, `/internal/lots` + `SyncWorker.PullLotsAsync` | `PurchaseTests`, `PurchasingApiTests`, `SyncApiTests` |
+| HU-06.3 · RF-014 a RF-016 | `AdjustStockHandler`, evento `StockMovementCreated`, `InventoryViewModel` | `AdjustStockHandlerTests`, `PurchasingApiTests`, `CashierFlowTests` |
+| HU-T02.2 · RNF-003 | `GatewayUrlPolicy`, Kestrel con TLS 1.2+, `deploy/vps/Caddyfile` | `GatewayUrlPolicyTests` |
+| HU-07.2 · RF-025 | Tipo `Retiro` en `AdjustStockHandler` e Inventario | `IncorporatedStoriesTests` |
+| HU-07.3 · RF-021 | `InventoryQueries.GetLotDetailsAsync`, tarjeta «Stock por lote» | `IncorporatedStoriesTests` |
+| HU-06.4 · RF-019 | `GET /api/inventory/movements`, `MovementsViewModel` | `IncorporatedStoriesApiTests` |
+| HU-10.1, HU-10.2 · RF-034 a RF-036 | `SupplierPrice`, endpoints de precios, tarjeta de precios en Compras | `IncorporatedStoriesTests`, `IncorporatedStoriesApiTests` |
+| HU-16.2 · RF-061, RF-062 | `CashHandlers.RequestHandoverAsync` / `ConfirmHandoverAsync`, panel de entrega en Caja | `IncorporatedStoriesTests`, `IncorporatedStoriesApiTests`, `CashierFlowTests` |
+| HU-03.2 · RF-007 | `AuthorizedDevice.AllowsAdministrator` en `AuthEndpoints.cs` | `AdministratorDeviceTests` |
+| HU-20.1 · RF-075 | `GET /api/audit` con filtros, Reportes | `IncorporatedStoriesApiTests` |
+| HU-18.1 · RF-105 | `XlsxWriter`, `GET /api/reports/export`, Reportes | `IncorporatedStoriesApiTests`, `CashierFlowTests` |
+| HU-28.1 · RF-099 | `OperationalSettings`, `PUT /api/settings`, `SettingsViewModel`, Notification Worker | `IncorporatedStoriesTests`, `IncorporatedStoriesApiTests` |
+| HU-T05.1 · RNF-007 | `.github/scripts/cobertura.py` en `dotnet.yml` (umbral 70 %) | Paso «Cobertura» de la CI |
 
 ## Límites conocidos del prototipo
 
@@ -137,13 +173,19 @@ dotnet test Pharmacy.sln --filter "Requirement=RF-001"
   EF Core solo cubren la base central.
 - El catálogo se administra en línea: sin conexión, el puesto vende con el
   catálogo descargado pero no puede registrar ni modificar medicamentos.
-- La descarga desde el servidor trae catálogo y precios, **no lotes nuevos**; la
-  recepción de compras (RF-030 a RF-033) solo existe como `POST /api/lots`.
+- La descarga desde el servidor trae catálogo, precios y los **lotes nuevos**
+  creados al recibir compras. El stock de los lotes existentes lo mueve cada
+  puesto; las ventas y ajustes de un puesto no llegan a los demás puestos.
+- Proveedores y compras se administran en línea, como el catálogo. Una compra se
+  recibe una sola vez: lo que no llegó queda registrado como faltante.
 - La entrega de caja entre cajeros está en el dominio, sin pantalla.
-- Facturación simulada, clientes, recetas como entidad, proveedores, compras,
-  exportación a Excel/PDF y respaldos (RF-082, RF-083) quedan para los próximos sprints.
-- Sin refresh tokens ni TLS (en producción lo termina el Gateway, RNF-003); el
-  administrador puede entrar desde cualquier equipo (RF-007 pendiente).
+- Facturación simulada, clientes, recetas como entidad, exportación a PDF y
+  respaldos (RF-082, RF-083) quedan para los próximos sprints.
+- La restricción de equipos del administrador (RF-007) se aplica al iniciar sesión
+  en línea; sin conexión, el puesto valida solo las credenciales guardadas.
+- TLS (RNF-003): en el VPS lo termina Caddy con `PUBLIC_DOMAIN` en `.env`
+  (`deploy/vps/Caddyfile`), y el Desktop solo acepta `http://` contra localhost.
+  Sin refresh tokens.
 - La contraseña del usuario se conserva **solo en memoria** durante la sesión
   para reconectar tras un inicio sin conexión, y las credenciales de demostración
   se precargan en el puesto para probar el modo sin conexión desde el primer arranque.
