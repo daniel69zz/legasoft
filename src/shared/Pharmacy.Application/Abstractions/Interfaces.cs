@@ -48,6 +48,9 @@ public interface ICashRepository
 {
     void Add(CashSession session);
     Task<CashSession?> GetOpenAsync(string deviceId, CancellationToken ct = default);
+
+    /// <summary>Último turno del puesto (abierto, cerrado o con entrega pendiente).</summary>
+    Task<CashSession?> GetLatestAsync(string deviceId, CancellationToken ct = default);
 }
 
 /// <summary>

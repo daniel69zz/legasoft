@@ -54,6 +54,11 @@ public class CashSessionRecord
     public decimal? Difference { get; set; }
     public string Justification { get; set; } = "";
     public DateTimeOffset? ClosedAt { get; set; }
+
+    // HU-16.2 (RF-061, RF-062): entrega al cajero entrante.
+    public string HandoverTo { get; set; } = "";
+    public decimal? HandoverReceivedAmount { get; set; }
+    public DateTimeOffset? HandoverConfirmedAt { get; set; }
 }
 
 public class CashMovementRecord

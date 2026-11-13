@@ -151,6 +151,20 @@ namespace Business.Api.Migrations
                         .HasColumnType("numeric(12,2)")
                         .HasColumnName("expenses_total");
 
+                    b.Property<DateTimeOffset?>("HandoverConfirmedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("handover_confirmed_at");
+
+                    b.Property<decimal?>("HandoverReceivedAmount")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("handover_received_amount");
+
+                    b.Property<string>("HandoverTo")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("handover_to");
+
                     b.Property<string>("Justification")
                         .IsRequired()
                         .HasColumnType("text")
