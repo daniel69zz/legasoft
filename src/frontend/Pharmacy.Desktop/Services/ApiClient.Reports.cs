@@ -1,6 +1,9 @@
+using System.Net.Http.Headers;
 using Pharmacy.Application.Contracts;
 
 namespace Pharmacy.Desktop.Services;
+
+public sealed record ExportFile(byte[] Content, string FileName, bool IsEmpty);
 
 /// <summary>Consultas incorporadas al Sprint 2: movimientos, auditoría filtrada, exportación, parámetros y precios.</summary>
 public sealed partial class ApiClient
@@ -37,4 +40,22 @@ public sealed partial class ApiClient
 
     public Task<List<SupplierPriceDto>> ComparePricesAsync(Guid productId) =>
         SendAsync<List<SupplierPriceDto>>(HttpMethod.Get, $"/api/products/{productId}/supplier-prices");
+
+    /// <summary>HU-18.1 (RF-105): descarga el .xlsx del período.</summary>
+    public async Task<ExportFile> ExportAsync(DateOnly from, DateOnly to)
+    {
+        using var client = factory.CreateClient("gateway");
+        using var request = new HttpRequestMessage(HttpMethod.Get,
+            $"/api/reports/export?from={from:yyyy-MM-dd}&to={to:yyyy-MM-dd}");
+        if (session.Token is null) throw new ApiException(401, "La sesión no tiene conexión con el servidor.");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", session.Token);
+        using var response = await client.SendAsync(request);
+        if (!response.IsSuccessStatusCode)
+            throw new ApiException((int)response.StatusCode, await ReadProblemAsync(response, default));
+        var name = response.Content.Headers.ContentDisposition?.FileNameStar
+                   ?? response.Content.Headers.ContentDisposition?.FileName?.Trim('"')
+                   ?? $"farmacia-{from:yyyyMMdd}-{to:yyyyMMdd}.xlsx";
+        return new ExportFile(await response.Content.ReadAsByteArrayAsync(), name,
+            response.Headers.Contains("X-Export-Empty"));
+    }
 }
