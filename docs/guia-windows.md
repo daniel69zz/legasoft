@@ -66,3 +66,20 @@ predeterminado es PUESTO-01. Consulta los demás roles en [la guía del prototip
 
 La respuesta de /health comprueba el Gateway; por sí sola no confirma el estado
 de todos los servicios. Usa también el estado de los contenedores y sus logs.
+
+## 6. Detener y reanudar
+
+Para detener los servicios locales conservando el volumen de datos:
+
+```powershell
+docker compose -p farmacia stop
+```
+
+Para reanudar esos mismos contenedores:
+
+```powershell
+docker compose -p farmacia start
+```
+
+La ventana de escritorio se cierra por separado. Después de actualizar el código,
+usa up -d --build como se describe abajo para reconstruir los servicios.
