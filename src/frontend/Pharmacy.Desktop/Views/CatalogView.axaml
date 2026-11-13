@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Pharmacy.Desktop.ViewModels"
+             xmlns:conv="using:Pharmacy.Desktop.Converters"
              xmlns:c="using:Pharmacy.Application.Contracts"
              x:Class="Pharmacy.Desktop.Views.CatalogView"
              x:DataType="vm:CatalogViewModel">
@@ -72,7 +73,7 @@
           <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
             <StackPanel Spacing="4">
               <TextBlock Classes="muted" Text="Precio de venta (Bs)" />
-              <NumericUpDown Value="{Binding SalePrice}" Minimum="0" Increment="0.5" FormatString="0.00" />
+              <NumericUpDown TextConverter="{x:Static conv:DecimalText.Money}" Value="{Binding SalePrice}" Minimum="0" Increment="0.5" />
             </StackPanel>
             <StackPanel Grid.Column="1" Spacing="4">
               <TextBlock Classes="muted" Text="Stock mínimo" />

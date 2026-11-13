@@ -156,7 +156,7 @@
                       <TextBlock Text="{Binding Product.Name}" VerticalAlignment="Center" TextWrapping="Wrap" />
                       <NumericUpDown Grid.Column="1" Value="{Binding Quantity}" Minimum="1" Increment="10" FormatString="0"
                                      ShowButtonSpinner="False" />
-                      <NumericUpDown Grid.Column="2" Value="{Binding UnitCost}" Minimum="0" Increment="0.1" FormatString="0.00"
+                      <NumericUpDown TextConverter="{x:Static conv:DecimalText.Money}" Grid.Column="2" Value="{Binding UnitCost}" Minimum="0" Increment="0.1"
                                      ShowButtonSpinner="False" Watermark="0.00" />
                       <TextBlock Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Right"
                                  Text="{Binding Subtotal, StringFormat='Bs {0:N2}'}" />
@@ -207,7 +207,7 @@
               <StackPanel Spacing="6">
                 <TextBlock FontWeight="SemiBold" Text="Precio ofrecido por el proveedor elegido (RF-034)" />
                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                  <NumericUpDown Value="{Binding NewPrice}" Minimum="0" Increment="0.1" FormatString="0.00"
+                  <NumericUpDown TextConverter="{x:Static conv:DecimalText.Money}" Value="{Binding NewPrice}" Minimum="0" Increment="0.1"
                                  ShowButtonSpinner="False" Watermark="Precio (Bs)" />
                   <Button Grid.Column="1" Content="Registrar precio" Command="{Binding RegisterPriceCommand}" />
                 </Grid>
