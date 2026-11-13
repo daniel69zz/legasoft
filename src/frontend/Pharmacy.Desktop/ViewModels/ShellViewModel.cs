@@ -21,6 +21,7 @@ public sealed partial class ShellViewModel : ViewModelBase
         new("Proveedores", "Registro e historial de compras", Permission.Proveedores, typeof(SuppliersViewModel)),
         new("Reportes", "Dashboard gerencial", Permission.Reportes, typeof(ReportsViewModel)),
         new("Usuarios", "Usuarios y auditoría", Permission.Usuarios, typeof(UsersViewModel)),
+        new("Parámetros", "Umbrales y alertas", Permission.Usuarios, typeof(SettingsViewModel)),
         new("Sincronización", "Outbox del puesto", Permission.Sincronizacion, typeof(SyncViewModel)),
     ];
 

@@ -9,7 +9,8 @@ using Pharmacy.Domain.Sales;
 namespace Pharmacy.Desktop.Data;
 
 /// <summary>LocalRepositories y OutboxRepository: implementan sobre SQLite las interfaces de Pharmacy.Application.</summary>
-public sealed class LocalStore(LocalDb db) : ICatalogRepository, ISalesRepository, ICashRepository, IOutbox, IUnitOfWork
+public sealed class LocalStore(LocalDb db)
+    : ICatalogRepository, ISalesRepository, ICashRepository, IOutbox, IUnitOfWork, IOperationalSettings
 {
     public Task<List<Product>> GetProductsAsync(IReadOnlyCollection<Guid> ids, CancellationToken ct = default) =>
         db.Products.Where(p => ids.Contains(p.Id)).ToListAsync(ct);
@@ -41,6 +42,14 @@ public sealed class LocalStore(LocalDb db) : ICatalogRepository, ISalesRepositor
 
     public Task<CashSession?> GetOpenAsync(string deviceId, CancellationToken ct = default) =>
         db.CashSessions.SingleOrDefaultAsync(s => s.DeviceId == deviceId && s.Status == CashSessionStatus.Abierta, ct);
+
+    /// <summary>Clave de sync_state donde el Sync Worker guarda el umbral recibido del servidor (HU-28.1).</summary>
+    public const string ExpiryThresholdKey = "expiry_threshold_days";
+
+    public async Task<int> GetExpiryThresholdDaysAsync(CancellationToken ct = default) =>
+        await db.SyncState.FindAsync([ExpiryThresholdKey], ct) is { } state && int.TryParse(state.Value, out var days)
+            ? days
+            : Pharmacy.Domain.Inventory.InventoryAlerts.DefaultExpiryThresholdDays;
 
     public void Add(OutboxMessage message) => db.Outbox.Add(message);
 

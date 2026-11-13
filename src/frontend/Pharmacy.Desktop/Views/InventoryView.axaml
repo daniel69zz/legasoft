@@ -103,7 +103,7 @@
 
         <Border Classes="card">
           <StackPanel>
-            <TextBlock Classes="h2" Text="Vencimientos (umbral 60 días)" />
+            <TextBlock Classes="h2" Text="{Binding ExpiryTitle}" />
             <ItemsControl ItemsSource="{Binding ExpiryAlerts}">
               <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="dom:ExpiryAlert">

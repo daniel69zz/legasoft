@@ -39,6 +39,7 @@ public static class DesktopHost
         s.AddScoped<ICashRepository>(sp => sp.GetRequiredService<LocalStore>());
         s.AddScoped<IOutbox>(sp => sp.GetRequiredService<LocalStore>());
         s.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<LocalStore>());
+        s.AddScoped<IOperationalSettings>(sp => sp.GetRequiredService<LocalStore>());
         s.AddScoped<RegisterSaleHandler>();
         s.AddScoped<VoidSaleHandler>();
         s.AddScoped<CashHandlers>();
@@ -69,6 +70,7 @@ public static class DesktopHost
         s.AddTransient<CatalogViewModel>();
         s.AddTransient<SuppliersViewModel>();
         s.AddTransient<PurchasesViewModel>();
+        s.AddTransient<SettingsViewModel>();
 
         var host = builder.Build();
         using var scope = host.Services.CreateScope();
