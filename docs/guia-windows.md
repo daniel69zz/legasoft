@@ -54,3 +54,15 @@ dotnet run --project src/frontend/Pharmacy.Desktop
 Se abre una ventana de escritorio. Para la demo, usa admin o cajero1 con
 la contraseña Farmacia2026! si no has cambiado las credenciales. El puesto
 predeterminado es PUESTO-01. Consulta los demás roles en [la guía del prototipo](../src/README.md).
+
+## 5. Consultar servicios locales
+
+| Recurso | Dirección predeterminada |
+| --- | --- |
+| Salud del Gateway | http://localhost:5100/health |
+| Swagger de las API | http://localhost:5100/swagger |
+| Correos de prueba en Mailpit | http://localhost:8025 |
+| PostgreSQL | localhost:5433, base farmacia |
+
+La respuesta de /health comprueba el Gateway; por sí sola no confirma el estado
+de todos los servicios. Usa también el estado de los contenedores y sus logs.
