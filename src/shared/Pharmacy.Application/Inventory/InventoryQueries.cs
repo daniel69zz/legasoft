@@ -9,6 +9,21 @@ public sealed record StockRow(Guid ProductId, string Code, string Name, string C
 public sealed record InventoryOverview(IReadOnlyList<StockRow> Stock, IReadOnlyList<ExpiryAlert> ExpiryAlerts,
     IReadOnlyList<LowStockAlert> LowStockAlerts, int ExpiryThresholdDays = InventoryAlerts.DefaultExpiryThresholdDays);
 
+/// <summary>HU-07.3 (RF-021): existencia de un lote con su vencimiento y estado.</summary>
+public sealed record LotStockRow(Guid LotId, string LotNumber, DateOnly ExpirationDate, int Quantity, int DaysToExpire,
+    ExpiryStatus Status)
+{
+    public string StatusLabel => Status switch
+    {
+        ExpiryStatus.Vencido => "Vencido",
+        ExpiryStatus.PorVencer => "Por vencer",
+        _ => "Vigente",
+    };
+
+    public bool IsExpired => Status == ExpiryStatus.Vencido;
+    public bool IsExpiring => Status == ExpiryStatus.PorVencer;
+}
+
 /// <summary>Caso de uso InventoryLocalService: stock vendible, lotes y alertas (RF-012, RF-013, RF-018, RF-022).</summary>
 public sealed class InventoryQueries(ICatalogRepository catalog, IClock clock, IOperationalSettings settings)
 {
@@ -36,6 +51,17 @@ public sealed class InventoryQueries(ICatalogRepository catalog, IClock clock, I
 
         return new InventoryOverview(rows, InventoryAlerts.Expiry(products, lots, today, threshold),
             InventoryAlerts.LowStock(products, lots, today), threshold);
+    }
+
+    /// <summary>HU-07.3 (RF-021): lotes con existencia de un producto, con su estado según el umbral vigente.</summary>
+    public async Task<IReadOnlyList<LotStockRow>> GetLotDetailsAsync(Guid productId, CancellationToken ct = default)
+    {
+        var today = clock.Today;
+        var threshold = await settings.GetExpiryThresholdDaysAsync(ct);
+        return (await GetLotsAsync(productId, ct))
+            .Select(l => new LotStockRow(l.Id, l.LotNumber, l.ExpirationDate, l.Quantity, l.DaysToExpire(today),
+                InventoryAlerts.StatusOf(l, today, threshold)))
+            .ToList();
     }
 
     /// <summary>RF-021: lotes con existencia de un producto, el que vence antes primero.</summary>

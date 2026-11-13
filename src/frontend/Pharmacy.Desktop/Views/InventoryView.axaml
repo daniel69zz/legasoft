@@ -74,6 +74,33 @@
           </StackPanel>
         </Border>
 
+        <!-- HU-07.3 (RF-021): stock por lote -->
+        <Border Classes="card" IsVisible="{Binding HasSelection}">
+          <StackPanel>
+            <TextBlock Classes="h2" Text="Stock por lote (RF-021)" />
+            <ItemsControl ItemsSource="{Binding LotDetails}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="inv:LotStockRow">
+                  <Border Classes="row">
+                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+                      <StackPanel>
+                        <TextBlock Text="{Binding LotNumber}" FontWeight="SemiBold" />
+                        <TextBlock Classes="muted" Text="{Binding ExpirationDate, StringFormat='Vence {0:dd/MM/yyyy}'}" />
+                      </StackPanel>
+                      <Border Grid.Column="1" Classes="badge" VerticalAlignment="Center"
+                              Classes.warn="{Binding IsExpiring}" Classes.danger="{Binding IsExpired}">
+                        <TextBlock Text="{Binding StatusLabel}" FontSize="11" />
+                      </Border>
+                      <TextBlock Grid.Column="2" VerticalAlignment="Center" FontWeight="SemiBold"
+                                 Text="{Binding Quantity, StringFormat='{}{0} u.'}" />
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </Border>
+
         <Border Classes="card" IsVisible="{Binding HasSelection}">
           <StackPanel>
             <TextBlock Classes="h2" Text="Historial de movimientos" />
