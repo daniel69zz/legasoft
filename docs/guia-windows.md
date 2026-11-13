@@ -30,3 +30,17 @@ if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 
 Consulta [.env.example](../.env.example) para conocer las variables disponibles.
 Las contraseñas incluidas son de demostración.
+
+## 3. Iniciar el servidor
+
+Desde la raíz del repositorio:
+
+```powershell
+docker compose -p farmacia up -d --build
+docker compose -p farmacia ps
+```
+
+Se levantan PostgreSQL, Identity, Business, Sync, Notification, Gateway y Mailpit.
+Los servicios aplican sus migraciones de la base central al arrancar.
+Mantén el nombre de proyecto farmacia en los comandos siguientes para trabajar
+con los mismos contenedores y volumen.
