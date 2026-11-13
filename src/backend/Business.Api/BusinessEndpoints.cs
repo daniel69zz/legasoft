@@ -173,7 +173,7 @@ public static class BusinessEndpoints
     }
 
     /// <summary>Bolivia usa UTC−4 todo el año (sin horario de verano).</summary>
-    private static readonly TimeSpan LaPaz = TimeSpan.FromHours(-4);
+    internal static readonly TimeSpan LaPaz = TimeSpan.FromHours(-4);
 
     internal static DateOnly Today(TimeProvider time) => DateOnly.FromDateTime(time.GetUtcNow().ToOffset(LaPaz).DateTime);
 }
