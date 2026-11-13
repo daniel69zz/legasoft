@@ -81,12 +81,144 @@ public class PurchasingApiTests : IDisposable
 
     [Fact]
     [Trait("JiraIssue", "SCRUM-19")]
+    [Trait("Requirement", "RF-030")]
+    [Trait("Requirement", "RF-031")]
+    [Trait("Requirement", "RF-032")]
+    [Trait("Requirement", "RF-033")]
+    public async Task Recepcion_completa_de_100_unidades_aumenta_el_stock_en_100()
+    {
+        var stockBefore = await StockAsync(Paracetamol);
+        var purchase = await CreatePurchaseAsync(100, 0.30m);
+        Assert.Equal(30.00m, purchase.Total);
+        Assert.Equal("Pendiente", purchase.Status);
+
+        var received = await ReceiveAsync(purchase, "PCM-2511", 100, 0);
+
+        Assert.Equal("Recibida", received.Status);
+        Assert.Equal(stockBefore + 100, await StockAsync(Paracetamol));
+        var lots = await LotsForDevicesAsync(0);
+        Assert.Contains(lots.Lots, l => l.LotNumber == "PCM-2511" && l.Quantity == 100 && l.ProductId == Paracetamol);
+    }
+
+    [Fact]
+    [Trait("JiraIssue", "SCRUM-19")]
+    [Trait("Requirement", "RF-107")]
+    [Trait("Requirement", "RF-108")]
+    public async Task Con_90_en_buen_estado_y_10_danadas_solo_ingresan_90()
+    {
+        var stockBefore = await StockAsync(Paracetamol);
+        var purchase = await CreatePurchaseAsync(100, 0.30m);
+
+        var received = await ReceiveAsync(purchase, "PCM-2512", 90, 10);
+
+        var line = received.Lines.Single();
+        Assert.Equal((90, 10, 10, 0), (line.ReceivedQuantity, line.DamagedQuantity, line.Difference, line.MissingQuantity));
+        Assert.Equal(stockBefore + 90, await StockAsync(Paracetamol));
+        var audit = await _admin.GetFromJsonAsync<List<AuditEntryDto>>("/api/audit");
+        Assert.Contains(audit!, a => a.Action == "Recepción de compra" && a.Detail.Contains("dañadas 10"));
+    }
+
+    [Fact]
+    [Trait("JiraIssue", "SCRUM-19")]
+    [Trait("Requirement", "RF-032")]
+    public async Task Una_recepcion_invalida_no_cambia_el_stock_ni_la_compra()
+    {
+        var stockBefore = await StockAsync(Paracetamol);
+        var purchase = await CreatePurchaseAsync(100, 0.30m);
+
+        var response = await _operations.PostAsJsonAsync($"/api/purchases/{purchase.Id}/receive",
+            new ReceivePurchaseRequest([new(purchase.Lines[0].Id, "", Expiration, 100, 0)]));
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        Assert.Equal(stockBefore, await StockAsync(Paracetamol));
+        var reloaded = await _operations.GetFromJsonAsync<PurchaseDto>($"/api/purchases/{purchase.Id}");
+        Assert.Equal("Pendiente", reloaded!.Status);
+    }
+
+    [Fact]
+    [Trait("JiraIssue", "SCRUM-18")]
+    [Trait("Requirement", "RF-028")]
+    [Trait("Requirement", "RF-029")]
+    public async Task El_proveedor_muestra_sus_productos_y_su_historial_de_compras()
+    {
+        var purchase = await CreatePurchaseAsync(100, 0.30m);
+        await ReceiveAsync(purchase, "PCM-2513", 100, 0);
+
+        var products = await _admin.GetFromJsonAsync<List<SupplierProductDto>>(
+            $"/api/suppliers/{DemoPurchasing.DrogueriaIllimani}/products");
+        var history = await _admin.GetFromJsonAsync<List<PurchaseDto>>(
+            $"/api/suppliers/{DemoPurchasing.DrogueriaIllimani}/purchases");
+
+        var product = Assert.Single(products!);
+        Assert.Equal((Paracetamol, 100, 0.30m), (product.ProductId, product.TotalQuantity, product.LastUnitCost));
+        var entry = Assert.Single(history!);
+        Assert.Equal((purchase.Number, 30.00m), (entry.Number, entry.Total));
+        Assert.Single(entry.Lines);
+    }
+
+    [Fact]
+    [Trait("JiraIssue", "SCRUM-19")]
     [Trait("Requirement", "RF-002")]
     public async Task Permisos_de_proveedores_y_compras_por_rol()
     {
         var cashier = _factory.ClientFor(Roles.Cajero);
         Assert.Equal(HttpStatusCode.Forbidden, (await cashier.GetAsync("/api/suppliers")).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await cashier.GetAsync("/api/purchases")).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden,
             (await _operations.PostAsJsonAsync("/api/suppliers", Supplier())).StatusCode);
+    }
+
+    [Fact]
+    [Trait("JiraIssue", "SCRUM-101")]
+    [Trait("Requirement", "RF-016")]
+    public async Task Un_ajuste_del_puesto_se_aplica_una_sola_vez_en_el_lote_central()
+    {
+        var stockBefore = await StockAsync(Paracetamol);
+        var payload = new StockMovementPayload(Guid.NewGuid(), Paracetamol, ParacetamolLot, "PCM-2401", "Ajuste", -3,
+            "Producto dañado", "almacen", DateTimeOffset.UtcNow);
+        var message = new SyncEnvelope(Guid.NewGuid(), "PUESTO-01", SyncModules.Inventory,
+            EventTypes.StockMovementCreated, payload.MovementId, 1, DateTimeOffset.UtcNow,
+            JsonSerializer.Serialize(payload, OutboxMessage.Json));
+
+        var client = Internal();
+        (await client.PostAsJsonAsync("/internal/events", message)).EnsureSuccessStatusCode();
+        (await client.PostAsJsonAsync("/internal/events", message)).EnsureSuccessStatusCode();
+
+        Assert.Equal(stockBefore - 3, await StockAsync(Paracetamol));
+        var audit = await _admin.GetFromJsonAsync<List<AuditEntryDto>>("/api/audit");
+        Assert.Single(audit!, a => a.Action == "Movimiento de inventario" && a.Detail.Contains("Producto dañado"));
+    }
+
+    private async Task<PurchaseDto> CreatePurchaseAsync(int quantity, decimal unitCost)
+    {
+        var response = await _operations.PostAsJsonAsync("/api/purchases", new CreatePurchaseRequest(
+            DemoPurchasing.DrogueriaIllimani, [new PurchaseItemRequest(Paracetamol, quantity, unitCost)]));
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        return (await response.Content.ReadFromJsonAsync<PurchaseDto>())!;
+    }
+
+    private async Task<PurchaseDto> ReceiveAsync(PurchaseDto purchase, string lot, int good, int damaged)
+    {
+        var response = await _operations.PostAsJsonAsync($"/api/purchases/{purchase.Id}/receive",
+            new ReceivePurchaseRequest([new(purchase.Lines[0].Id, lot, Expiration, good, damaged)]));
+        response.EnsureSuccessStatusCode();
+        return (await response.Content.ReadFromJsonAsync<PurchaseDto>())!;
+    }
+
+    private async Task<int> StockAsync(Guid productId)
+    {
+        var products = await _admin.GetFromJsonAsync<List<JsonElement>>("/api/products");
+        return products!.Single(p => p.GetProperty("id").GetGuid() == productId).GetProperty("stock").GetInt32();
+    }
+
+    /// <summary>Lo que descarga el Sync Service para los puestos (endpoint interno).</summary>
+    private async Task<LotPullResponse> LotsForDevicesAsync(long since) =>
+        (await Internal().GetFromJsonAsync<LotPullResponse>($"/internal/lots?since={since}"))!;
+
+    private HttpClient Internal()
+    {
+        var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Add("X-Internal-Key", "clave-interna-solo-desarrollo");
+        return client;
     }
 }

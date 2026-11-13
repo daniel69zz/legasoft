@@ -22,6 +22,14 @@ public sealed class FakeDispatcher() : EventDispatcher(new HttpClient(), null!)
 
     public override Task<PullResponse> GetCatalogChangesAsync(long since, CancellationToken ct) =>
         Task.FromResult(new PullResponse(since, []));
+
+    public List<LotChangeDto> Lots { get; } = [];
+
+    public override Task<LotPullResponse> GetLotChangesAsync(long since, CancellationToken ct)
+    {
+        var lots = Lots.Where(l => l.Sequence > since).ToList();
+        return Task.FromResult(new LotPullResponse(lots.Count == 0 ? since : lots.Max(l => l.Sequence), lots));
+    }
 }
 
 /// <summary>RF-081 (orden), RF-102 (idempotencia) y seguridad del Sync Service.</summary>
@@ -79,6 +87,27 @@ public class SyncApiTests : IDisposable
 
         var result = (await response.Content.ReadFromJsonAsync<PushResponse>())!.Results.Single();
         Assert.Equal(PushStatus.Retry, result.Status);
+    }
+
+    [Fact]
+    [Trait("JiraIssue", "SCRUM-112")]
+    [Trait("JiraIssue", "SCRUM-19")]
+    [Trait("Requirement", "RF-033")]
+    public async Task Los_puestos_descargan_solo_los_lotes_nuevos_desde_su_version()
+    {
+        var product = Guid.NewGuid();
+        var expiration = new DateOnly(2027, 12, 31);
+        _dispatcher.Lots.Add(new LotChangeDto(1, Guid.NewGuid(), product, "PCM-2511", expiration, 100));
+        _dispatcher.Lots.Add(new LotChangeDto(2, Guid.NewGuid(), product, "PCM-2512", expiration, 90));
+        var client = _factory.ClientFor(Roles.Cajero);
+
+        var first = await client.GetFromJsonAsync<LotPullResponse>("/sync/pull-lots?since=0");
+        var next = await client.GetFromJsonAsync<LotPullResponse>($"/sync/pull-lots?since={first!.Version}");
+        var anonymous = await _factory.CreateClient().GetAsync("/sync/pull-lots?since=0");
+
+        Assert.Equal((2L, 2), (first.Version, first.Lots.Count));
+        Assert.Empty(next!.Lots);
+        Assert.Equal(HttpStatusCode.Unauthorized, anonymous.StatusCode);
     }
 
     [Fact]

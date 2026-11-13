@@ -18,6 +18,7 @@ public static class PurchasingEndpoints
     public static void MapPurchasingEndpoints(this WebApplication app)
     {
         MapSuppliers(app);
+        MapPurchases(app);
     }
 
     private static void MapSuppliers(WebApplication app)
@@ -75,10 +76,133 @@ public static class PurchasingEndpoints
             })
             .RequirePermission(Permission.Proveedores)
             .WithSummary("Activa o desactiva un proveedor");
+
+        suppliers.MapGet("/{id:guid}/products", async (Guid id, BusinessDb db) =>
+            {
+                if (await db.Suppliers.FindAsync(id) is null) return Results.NotFound();
+                var received = (await db.Purchases
+                        .Where(p => p.SupplierId == id && p.Status == PurchaseStatus.Recibida).ToListAsync())
+                    .OrderBy(p => p.CreatedAt);
+                var products = received
+                    .SelectMany(p => p.Lines.Where(l => l.ReceivedQuantity > 0).Select(l => (Purchase: p, Line: l)))
+                    .GroupBy(x => x.Line.ProductId)
+                    .Select(g =>
+                    {
+                        var last = g.Last();
+                        return new SupplierProductDto(g.Key, last.Line.ProductName,
+                            g.Sum(x => x.Line.ReceivedQuantity), last.Line.UnitCost, last.Purchase.CreatedAt);
+                    })
+                    .OrderBy(p => p.ProductName)
+                    .ToList();
+                return Results.Ok(products);
+            })
+            .RequireAnyPermission(Permission.Proveedores, Permission.Compras)
+            .WithSummary("Productos que suministró el proveedor según las compras recibidas (RF-028)");
+
+        suppliers.MapGet("/{id:guid}/purchases", async (Guid id, BusinessDb db) =>
+            {
+                if (await db.Suppliers.FindAsync(id) is null) return Results.NotFound();
+                var purchases = await db.Purchases.Where(p => p.SupplierId == id).ToListAsync();
+                return Results.Ok(purchases.OrderByDescending(p => p.CreatedAt).Select(ToDto).ToList());
+            })
+            .RequireAnyPermission(Permission.Proveedores, Permission.Compras)
+            .WithSummary("Historial de compras del proveedor con fecha, productos y monto (RF-029)");
+    }
+
+    private static void MapPurchases(WebApplication app)
+    {
+        var purchases = app.MapGroup("/api/purchases").RequirePermission(Permission.Compras).WithTags("Compras");
+
+        purchases.MapGet("/", async (string? status, BusinessDb db) =>
+            {
+                var all = await db.Purchases.ToListAsync();
+                return all
+                    .Where(p => string.IsNullOrEmpty(status)
+                                || p.Status.ToString().Equals(status, StringComparison.OrdinalIgnoreCase))
+                    .OrderByDescending(p => p.CreatedAt)
+                    .Select(ToDto)
+                    .ToList();
+            })
+            .WithSummary("Lista las compras, opcionalmente por estado (Pendiente o Recibida)");
+
+        purchases.MapGet("/{id:guid}", async (Guid id, BusinessDb db) =>
+                await db.Purchases.SingleOrDefaultAsync(p => p.Id == id) is { } purchase
+                    ? Results.Ok(ToDto(purchase))
+                    : Results.NotFound())
+            .WithSummary("Detalle de una compra");
+
+        purchases.MapPost("/", async (CreatePurchaseRequest r, BusinessDb db, HttpContext http, TimeProvider time) =>
+            {
+                if (r.Items is not { Count: > 0 })
+                    throw new DomainException("Agregue al menos un producto a la compra.");
+                var supplier = await db.Suppliers.FindAsync(r.SupplierId)
+                    ?? throw new DomainException("Seleccione un proveedor registrado.");
+
+                var ids = r.Items.Select(i => i.ProductId).Distinct().ToList();
+                var products = await db.Products.Where(p => ids.Contains(p.Id)).ToDictionaryAsync(p => p.Id);
+                var number = $"OC-{await db.Purchases.CountAsync() + 1:D5}";
+                var purchase = Purchase.Create(Guid.NewGuid(), number, supplier, UserName(http), time.GetUtcNow());
+                foreach (var item in r.Items)
+                {
+                    if (!products.TryGetValue(item.ProductId, out var product))
+                        throw new DomainException("Uno de los productos no existe en el catálogo.");
+                    purchase.AddLine(product, item.Quantity, item.UnitCost);
+                }
+
+                db.Purchases.Add(purchase);
+                Audit(db, http, time, "Registro de compra",
+                    $"{purchase.Number} · {supplier.Name} · Bs {purchase.Total:0.00}");
+                await db.SaveChangesAsync();
+                return Results.Created($"/api/purchases/{purchase.Id}", ToDto(purchase));
+            })
+            .WithSummary("Registra una compra y calcula su total (RF-030, RF-031)");
+
+        purchases.MapPost("/{id:guid}/receive", async (Guid id, ReceivePurchaseRequest r, BusinessDb db,
+                HttpContext http, TimeProvider time) =>
+            {
+                var purchase = await db.Purchases.SingleOrDefaultAsync(p => p.Id == id);
+                if (purchase is null) return Results.NotFound();
+
+                var now = time.GetUtcNow();
+                var userName = UserName(http);
+                var received = purchase.Receive(
+                    r.Lines.Select(l => new ReceptionItem(l.LineId, l.LotNumber, l.ExpirationDate, l.ReceivedQuantity,
+                        l.DamagedQuantity)).ToList(),
+                    userName, now, BusinessEndpoints.Today(time));
+
+                foreach (var (line, lot) in received)
+                {
+                    // RF-033: solo ingresan al stock las unidades en buen estado.
+                    db.Lots.Add(lot);
+                    db.StockMovements.Add(new StockMovement(Guid.NewGuid(), lot.ProductId, lot.Id,
+                        StockMovementType.Compra, lot.Quantity, $"Recepción {purchase.Number}", userName, now));
+                    db.LotFeed.Add(new LotFeedEntry
+                    {
+                        LotId = lot.Id, ProductId = lot.ProductId, LotNumber = lot.LotNumber,
+                        ExpirationDate = lot.ExpirationDate, Quantity = lot.Quantity, CreatedAt = now,
+                    });
+                }
+
+                var differences = purchase.Lines.Where(l => l.Difference != 0)
+                    .Select(l => $"{l.ProductName}: {l.ReceivedQuantity}/{l.Quantity} (dañadas {l.DamagedQuantity}, faltan {l.MissingQuantity})")
+                    .ToList();
+                Audit(db, http, time, "Recepción de compra", differences.Count == 0
+                    ? $"{purchase.Number}: recepción completa"
+                    : $"{purchase.Number}: {string.Join("; ", differences)}");
+                await db.SaveChangesAsync();
+                return Results.Ok(ToDto(purchase));
+            })
+            .WithSummary("Registra la recepción con lotes y diferencias; actualiza el stock (RF-032, RF-033, RF-107, RF-108)");
     }
 
     public static SupplierDto ToDto(Supplier s) =>
         new(s.Id, s.TaxId, s.Name, s.ContactName, s.Phone, s.Email, s.Address, s.IsActive);
+
+    public static PurchaseDto ToDto(Purchase p) => new(p.Id, p.Number, p.SupplierId, p.SupplierName,
+        p.Status.ToString(), p.CreatedAt, p.CreatedBy, p.Total, p.ReceivedTotal, p.ReceivedAt, p.ReceivedBy,
+        p.Lines.Select(l => new PurchaseLineDto(l.Id, l.ProductId, l.ProductName, l.Quantity, l.UnitCost, l.Subtotal,
+            l.ReceivedQuantity, l.DamagedQuantity, l.MissingQuantity, l.Difference, l.LotNumber, l.ExpirationDate))
+            .ToList());
 
     private static string UserName(HttpContext http) => http.User.FindFirst("name")?.Value ?? "?";
 

@@ -181,6 +181,46 @@ namespace Business.Api.Migrations
                     b.ToTable("sessions", "cash");
                 });
 
+            modelBuilder.Entity("Business.Api.LotFeedEntry", b =>
+                {
+                    b.Property<long>("Sequence")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("sequence");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Sequence"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateOnly>("ExpirationDate")
+                        .HasColumnType("date")
+                        .HasColumnName("expiration_date");
+
+                    b.Property<Guid>("LotId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("lot_id");
+
+                    b.Property<string>("LotNumber")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("lot_number");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("product_id");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantity");
+
+                    b.HasKey("Sequence")
+                        .HasName("pk_lot_feed");
+
+                    b.ToTable("lot_feed", "inventory");
+                });
+
             modelBuilder.Entity("Business.Api.SaleLineRecord", b =>
                 {
                     b.Property<Guid>("Id")
@@ -467,6 +507,127 @@ namespace Business.Api.Migrations
                     b.ToTable("stock_movements", "inventory");
                 });
 
+            modelBuilder.Entity("Pharmacy.Domain.Purchasing.Purchase", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Number")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("number");
+
+                    b.Property<DateTimeOffset?>("ReceivedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("received_at");
+
+                    b.Property<string>("ReceivedBy")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("received_by");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("SupplierId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("supplier_id");
+
+                    b.Property<string>("SupplierName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("supplier_name");
+
+                    b.HasKey("Id")
+                        .HasName("pk_purchases");
+
+                    b.HasIndex("Number")
+                        .IsUnique()
+                        .HasDatabaseName("ix_purchases_number");
+
+                    b.HasIndex("SupplierId")
+                        .HasDatabaseName("ix_purchases_supplier_id");
+
+                    b.ToTable("purchases", "inventory");
+                });
+
+            modelBuilder.Entity("Pharmacy.Domain.Purchasing.PurchaseLine", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("DamagedQuantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("damaged_quantity");
+
+                    b.Property<DateOnly?>("ExpirationDate")
+                        .HasColumnType("date")
+                        .HasColumnName("expiration_date");
+
+                    b.Property<Guid?>("LotId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("lot_id");
+
+                    b.Property<string>("LotNumber")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("lot_number");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("integer")
+                        .HasColumnName("position");
+
+                    b.Property<Guid>("ProductId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("product_id");
+
+                    b.Property<string>("ProductName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("product_name");
+
+                    b.Property<Guid>("PurchaseId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("purchase_id");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantity");
+
+                    b.Property<int>("ReceivedQuantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("received_quantity");
+
+                    b.Property<decimal>("UnitCost")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("unit_cost");
+
+                    b.HasKey("Id")
+                        .HasName("pk_purchase_lines");
+
+                    b.HasIndex("ProductId")
+                        .HasDatabaseName("ix_purchase_lines_product_id");
+
+                    b.HasIndex("PurchaseId")
+                        .HasDatabaseName("ix_purchase_lines_purchase_id");
+
+                    b.ToTable("purchase_lines", "inventory");
+                });
+
             modelBuilder.Entity("Pharmacy.Domain.Purchasing.Supplier", b =>
                 {
                     b.Property<Guid>("Id")
@@ -531,7 +692,22 @@ namespace Business.Api.Migrations
                         .HasConstraintName("fk_sale_lines_sales_sale_id");
                 });
 
+            modelBuilder.Entity("Pharmacy.Domain.Purchasing.PurchaseLine", b =>
+                {
+                    b.HasOne("Pharmacy.Domain.Purchasing.Purchase", null)
+                        .WithMany("Lines")
+                        .HasForeignKey("PurchaseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_purchase_lines_purchases_purchase_id");
+                });
+
             modelBuilder.Entity("Business.Api.SaleRecord", b =>
+                {
+                    b.Navigation("Lines");
+                });
+
+            modelBuilder.Entity("Pharmacy.Domain.Purchasing.Purchase", b =>
                 {
                     b.Navigation("Lines");
                 });

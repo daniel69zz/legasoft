@@ -23,6 +23,8 @@ public sealed partial class SuppliersViewModel(ApiClient api) : ViewModelBase, I
     [ObservableProperty] private string _address = "";
 
     public ObservableCollection<SupplierDto> Suppliers { get; } = [];
+    public ObservableCollection<SupplierProductDto> Products { get; } = [];
+    public ObservableCollection<PurchaseDto> History { get; } = [];
 
     public bool IsEditing => Selected is not null;
     public string FormTitle => IsEditing ? "Modificar proveedor (RF-027)" : "Registrar proveedor (RF-026)";
@@ -35,6 +37,8 @@ public sealed partial class SuppliersViewModel(ApiClient api) : ViewModelBase, I
     {
         OnPropertyChanged(nameof(IsEditing));
         OnPropertyChanged(nameof(FormTitle));
+        Products.Clear();
+        History.Clear();
         if (value is null) return;
         TaxId = value.TaxId;
         Name = value.Name;
@@ -42,6 +46,7 @@ public sealed partial class SuppliersViewModel(ApiClient api) : ViewModelBase, I
         Phone = value.Phone;
         Email = value.Email;
         Address = value.Address;
+        _ = RunAsync(() => LoadDetailAsync(value.Id));
     }
 
     private async Task LoadAsync()
@@ -55,6 +60,16 @@ public sealed partial class SuppliersViewModel(ApiClient api) : ViewModelBase, I
         var restored = Suppliers.FirstOrDefault(s => s.Id == selectedId);
         if (restored is null && selectedId is not null) New();
         else Selected = restored;
+    }
+
+    private async Task LoadDetailAsync(Guid id)
+    {
+        var products = await api.GetSupplierProductsAsync(id);
+        var history = await api.GetSupplierPurchasesAsync(id);
+        Products.Clear();
+        foreach (var p in products) Products.Add(p);
+        History.Clear();
+        foreach (var h in history) History.Add(h);
     }
 
     [RelayCommand]

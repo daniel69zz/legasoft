@@ -6,6 +6,7 @@ using Pharmacy.Application.Contracts;
 using Pharmacy.Application.Sync;
 using Pharmacy.Desktop.Data;
 using Pharmacy.Domain.Catalog;
+using Pharmacy.Domain.Inventory;
 
 namespace Pharmacy.Desktop.Services;
 
@@ -25,6 +26,7 @@ public sealed class SyncWorker(
 {
     public const int BatchSize = 100;
     private const string CatalogVersionKey = "inventory_version";
+    private const string LotsVersionKey = "lots_version";
     private static readonly TimeSpan MaxDelay = TimeSpan.FromMinutes(5);
 
     private readonly SemaphoreSlim _gate = new(1, 1);
@@ -70,6 +72,7 @@ public sealed class SyncWorker(
                 await services.GetRequiredService<AuthService>().TryReconnectAsync();
 
             await PullCatalogAsync(db, ct);
+            await PullLotsAsync(db, ct);
             await PushOutboxAsync(db, ct);
             status.Update(online: true, pending: await PendingAsync(db, ct), lastSync: DateTimeOffset.Now, error: "");
             return true;
@@ -121,6 +124,28 @@ public sealed class SyncWorker(
         state.Value = changes.Version.ToString();
         await db.SaveChangesAsync(ct);
         logger.LogInformation("Catálogo actualizado: {Count} productos", changes.Products.Count);
+    }
+
+    /// <summary>
+    /// HU-09: descarga los lotes que el servidor creó al recibir compras, para venderlos con FEFO
+    /// en el puesto. Solo agrega lotes nuevos; el stock de los existentes lo mueve el propio puesto.
+    /// </summary>
+    private async Task PullLotsAsync(LocalDb db, CancellationToken ct)
+    {
+        var state = await db.SyncState.FindAsync([LotsVersionKey], ct);
+        var since = long.TryParse(state?.Value, out var v) ? v : 0;
+        var changes = await api.PullLotsAsync(since, ct);
+        if (changes.Lots.Count == 0) return;
+
+        var ids = changes.Lots.Select(l => l.LotId).ToList();
+        var known = (await db.Lots.Where(l => ids.Contains(l.Id)).Select(l => l.Id).ToListAsync(ct)).ToHashSet();
+        foreach (var l in changes.Lots.Where(l => !known.Contains(l.LotId)))
+            db.Lots.Add(new Lot(l.LotId, l.ProductId, l.LotNumber, l.ExpirationDate, l.Quantity));
+
+        if (state is null) db.SyncState.Add(state = new SyncState { Key = LotsVersionKey });
+        state.Value = changes.Version.ToString();
+        await db.SaveChangesAsync(ct);
+        logger.LogInformation("Lotes recibidos del servidor: {Count}", changes.Lots.Count);
     }
 
     private async Task PushOutboxAsync(LocalDb db, CancellationToken ct)

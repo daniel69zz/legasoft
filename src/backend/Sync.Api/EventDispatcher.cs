@@ -41,4 +41,14 @@ public class EventDispatcher(HttpClient http, IConfiguration configuration)
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<PullResponse>(ct))!;
     }
+
+    /// <summary>Lotes creados en el servidor por la recepción de compras, desde la versión del puesto.</summary>
+    public virtual async Task<LotPullResponse> GetLotChangesAsync(long since, CancellationToken ct)
+    {
+        using var request = new HttpRequestMessage(HttpMethod.Get, $"/internal/lots?since={since}");
+        request.Headers.Add(ServiceDefaults.InternalKeyHeader, configuration["Internal:Key"]);
+        using var response = await http.SendAsync(request, ct);
+        response.EnsureSuccessStatusCode();
+        return (await response.Content.ReadFromJsonAsync<LotPullResponse>(ct))!;
+    }
 }

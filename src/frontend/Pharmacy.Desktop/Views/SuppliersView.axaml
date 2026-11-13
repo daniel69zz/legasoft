@@ -1,12 +1,13 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Pharmacy.Desktop.ViewModels"
+             xmlns:conv="using:Pharmacy.Desktop.Converters"
              xmlns:c="using:Pharmacy.Application.Contracts"
              x:Class="Pharmacy.Desktop.Views.SuppliersView"
              x:DataType="vm:SuppliersViewModel">
   <Grid ColumnDefinitions="*,380" ColumnSpacing="20">
-    <!-- Listado de proveedores -->
-    <Grid>
+    <!-- Listado, productos suministrados (RF-028) e historial de compras (RF-029) -->
+    <Grid RowDefinitions="*,Auto" RowSpacing="16">
       <Border Classes="card">
         <DockPanel>
           <TextBox DockPanel.Dock="Top" Watermark="Buscar por razón social, NIT o contacto"
@@ -44,6 +45,58 @@
           </ListBox>
         </DockPanel>
       </Border>
+
+      <Grid Grid.Row="1" ColumnDefinitions="*,*" ColumnSpacing="16" IsVisible="{Binding IsEditing}">
+        <Border Classes="card" VerticalAlignment="Top">
+          <StackPanel>
+            <TextBlock Classes="h2" Text="Productos suministrados (RF-028)" />
+            <TextBlock Classes="muted" Text="Según las compras recibidas." Margin="0,0,0,6" />
+            <ItemsControl ItemsSource="{Binding Products}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="c:SupplierProductDto">
+                  <Border Classes="row">
+                    <Grid ColumnDefinitions="*,Auto">
+                      <StackPanel>
+                        <TextBlock Text="{Binding ProductName}" TextWrapping="Wrap" />
+                        <TextBlock Classes="muted">
+                          <Run Text="{Binding TotalQuantity, Mode=OneWay}" /><Run Text=" u. recibidas · última compra " /><Run Text="{Binding LastPurchaseAt, Mode=OneWay, Converter={x:Static conv:LocalTime.Instance}, ConverterParameter='dd/MM/yyyy'}" />
+                        </TextBlock>
+                      </StackPanel>
+                      <TextBlock Grid.Column="1" VerticalAlignment="Center"
+                                 Text="{Binding LastUnitCost, StringFormat='Bs {0:N2}'}" />
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </Border>
+        <Border Grid.Column="1" Classes="card" VerticalAlignment="Top">
+          <StackPanel>
+            <TextBlock Classes="h2" Text="Historial de compras (RF-029)" />
+            <ItemsControl ItemsSource="{Binding History}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="c:PurchaseDto">
+                  <Border Classes="row">
+                    <Grid ColumnDefinitions="*,Auto">
+                      <StackPanel>
+                        <TextBlock FontWeight="SemiBold">
+                          <Run Text="{Binding Number, Mode=OneWay}" /><Run Text=" · " /><Run Text="{Binding CreatedAt, Mode=OneWay, Converter={x:Static conv:LocalTime.Instance}, ConverterParameter='dd/MM/yyyy'}" />
+                        </TextBlock>
+                        <TextBlock Classes="muted">
+                          <Run Text="{Binding Lines.Count, Mode=OneWay}" /><Run Text=" productos · " /><Run Text="{Binding Status, Mode=OneWay}" />
+                        </TextBlock>
+                      </StackPanel>
+                      <TextBlock Grid.Column="1" VerticalAlignment="Center" FontWeight="SemiBold"
+                                 Text="{Binding Total, StringFormat='Bs {0:N2}'}" />
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </Border>
+      </Grid>
     </Grid>
 
     <!-- Registro y modificación (RF-026, RF-027) -->
