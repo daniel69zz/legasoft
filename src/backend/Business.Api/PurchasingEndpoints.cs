@@ -69,6 +69,16 @@ public static class PurchasingEndpoints
                     .ToList());
             })
             .WithSummary("Historial de precios de un producto con el proveedor (RF-035)");
+
+        prices.MapGet("/products/{id:guid}/supplier-prices", async (Guid id, BusinessDb db) =>
+            {
+                var suppliers = await db.Suppliers.Where(s => s.IsActive).ToDictionaryAsync(s => s.Id, s => s.Name);
+                var names = await ProductNamesAsync(db);
+                var compared = SupplierPrice.Compare(await db.SupplierPrices.Where(p => p.ProductId == id).ToListAsync(),
+                    id, suppliers.Keys.ToHashSet());
+                return compared.Select(p => ToDto(p, suppliers[p.SupplierId], names.GetValueOrDefault(id, "?"))).ToList();
+            })
+            .WithSummary("Precios vigentes de todos los proveedores activos, del menor al mayor (RF-036)");
     }
 
     private static async Task<Dictionary<Guid, string>> ProductNamesAsync(BusinessDb db) =>
