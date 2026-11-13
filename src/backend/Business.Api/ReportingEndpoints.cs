@@ -68,6 +68,20 @@ public static class ReportingEndpoints
             .WithTags("Auditoría")
             .WithSummary("Auditoría de operaciones críticas filtrada por período, usuario y operación (RF-075)");
 
+        api.MapGet("/reports/export", async (DateOnly? from, DateOnly? to, BusinessDb db, TimeProvider time,
+                HttpContext http) =>
+            {
+                var (start, end) = Period(from, to, time);
+                var sheets = await ExportSheetsAsync(db, start, end);
+                var empty = sheets.All(s => s.Rows.Count == 1); // solo la fila del aviso
+                if (empty) http.Response.Headers["X-Export-Empty"] = "true";
+                var name = $"farmacia-{DateOnly.FromDateTime(start.DateTime):yyyyMMdd}-{DateOnly.FromDateTime(end.DateTime).AddDays(-1):yyyyMMdd}.xlsx";
+                return Results.File(XlsxWriter.Write(sheets), XlsxWriter.ContentType, name);
+            })
+            .RequirePermission(Permission.Reportes)
+            .WithTags("Reportes")
+            .WithSummary("Exporta a Excel las ventas, los egresos y los cierres de caja del período (RF-105)");
+
         api.MapGet("/settings", async (BusinessDb db) => await OperationalSettings.GetAsync(db))
             .RequireAuthorization()
             .WithTags("Configuración")
@@ -104,4 +118,51 @@ public static class ReportingEndpoints
         return (new DateTimeOffset(first.ToDateTime(TimeOnly.MinValue), BusinessEndpoints.LaPaz),
             new DateTimeOffset(last.AddDays(1).ToDateTime(TimeOnly.MinValue), BusinessEndpoints.LaPaz));
     }
+
+    private static async Task<IReadOnlyList<XlsxSheet>> ExportSheetsAsync(BusinessDb db, DateTimeOffset start,
+        DateTimeOffset end)
+    {
+        var sales = (await db.Sales.Where(s => s.CreatedAt >= start && s.CreatedAt < end).ToListAsync())
+            .OrderBy(s => s.CreatedAt).ToList();
+        var expenses = (await db.CashMovements
+                .Where(m => m.Type != "Venta" && m.OccurredAt >= start && m.OccurredAt < end).ToListAsync())
+            .OrderBy(m => m.OccurredAt).ToList();
+        var closures = (await db.CashSessions
+                .Where(s => s.ClosedAt != null && s.ClosedAt >= start && s.ClosedAt < end).ToListAsync())
+            .OrderBy(s => s.ClosedAt).ToList();
+
+        var salesRows = sales.Select(s => Row(Local(s.CreatedAt), s.ReceiptNumber, s.CashierName, s.DeviceId,
+            s.Status, s.Subtotal, s.Discount, s.Total)).ToList();
+        var completed = sales.Where(s => s.Status == "Completada").ToList();
+        salesRows.Add(Row("Total (completadas)", null, null, null, null, completed.Sum(s => s.Subtotal),
+            completed.Sum(s => s.Discount), completed.Sum(s => s.Total)));
+
+        var expenseRows = expenses.Select(m => Row(Local(m.OccurredAt), m.Type, m.Category, m.Reason, m.UserName,
+            m.Amount)).ToList();
+        expenseRows.Add(Row("Total", null, null, null, null, expenses.Sum(m => m.Amount)));
+
+        var closureRows = closures.Select(s => Row(Local(s.OpenedAt), Local(s.ClosedAt!.Value), s.CashierName,
+            s.DeviceId, s.OpeningAmount, s.SalesTotal, s.ExpensesTotal, s.ExpectedAmount, s.CountedAmount,
+            s.Difference, s.Justification)).ToList();
+        closureRows.Add(Row("Total", null, null, null, null, closures.Sum(s => s.SalesTotal ?? 0),
+            closures.Sum(s => s.ExpensesTotal ?? 0), null, null, closures.Sum(s => s.Difference ?? 0)));
+
+        // Período sin datos: hojas con el aviso en lugar de las filas de totales en cero.
+        const string none = "Sin operaciones en el período";
+        if (sales.Count == 0) salesRows = [Row(none)];
+        if (expenses.Count == 0) expenseRows = [Row(none)];
+        if (closures.Count == 0) closureRows = [Row(none)];
+
+        return
+        [
+            new("Ventas", ["Fecha", "Recibo", "Cajero", "Puesto", "Estado", "Subtotal", "Descuento", "Total"], salesRows),
+            new("Egresos", ["Fecha", "Tipo", "Categoría", "Motivo", "Usuario", "Monto"], expenseRows),
+            new("Cierres de caja", ["Apertura", "Cierre", "Cajero", "Puesto", "Inicial", "Ventas", "Egresos",
+                "Esperado", "Contado", "Diferencia", "Justificación"], closureRows),
+        ];
+    }
+
+    private static IReadOnlyList<object?> Row(params object?[] cells) => cells;
+
+    private static DateTimeOffset Local(DateTimeOffset value) => value.ToOffset(BusinessEndpoints.LaPaz);
 }

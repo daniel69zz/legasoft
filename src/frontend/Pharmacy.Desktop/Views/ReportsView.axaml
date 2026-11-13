@@ -10,6 +10,19 @@
       <TextBlock Classes="error" Text="{Binding Error}" IsVisible="{Binding Error, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
       <TextBlock Classes="ok" Text="{Binding Info}" IsVisible="{Binding Info, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
       <TextBlock Classes="muted" Text="Datos consolidados en el servidor (PostgreSQL) a partir de lo sincronizado por todos los puestos." />
+
+      <!-- HU-18.1 (RF-105): exportación a Excel -->
+      <Border Classes="card">
+        <Grid ColumnDefinitions="Auto,160,160,Auto" ColumnSpacing="10">
+          <TextBlock Classes="h2" Text="Exportar a Excel (RF-105)" VerticalAlignment="Center" Margin="0" />
+          <CalendarDatePicker Grid.Column="1" SelectedDate="{Binding ExportFrom}" SelectedDateFormat="Custom"
+                              CustomDateFormatString="dd/MM/yyyy" Watermark="Desde" HorizontalAlignment="Stretch" />
+          <CalendarDatePicker Grid.Column="2" SelectedDate="{Binding ExportTo}" SelectedDateFormat="Custom"
+                              CustomDateFormatString="dd/MM/yyyy" Watermark="Hasta" HorizontalAlignment="Stretch" />
+          <Button Grid.Column="3" Classes="primary" Content="Ventas, egresos y cierres (.xlsx)"
+                  Command="{Binding ExportCommand}" />
+        </Grid>
+      </Border>
       <Grid ColumnDefinitions="*,*,*,*,*" ColumnSpacing="16" IsVisible="{Binding Summary, Converter={x:Static ObjectConverters.IsNotNull}}">
         <Border Classes="card"><StackPanel><TextBlock Classes="muted" Text="Ventas de hoy" /><TextBlock Classes="kpi" Text="{Binding Summary.SalesToday, StringFormat='Bs {0:N2}'}" /><TextBlock Classes="muted" Text="{Binding Summary.SalesCountToday, StringFormat='{}{0} ventas'}" /></StackPanel></Border>
         <Border Grid.Column="1" Classes="card"><StackPanel><TextBlock Classes="muted" Text="Últimos 7 días" /><TextBlock Classes="kpi" Text="{Binding Summary.SalesLast7Days, StringFormat='Bs {0:N2}'}" /></StackPanel></Border>

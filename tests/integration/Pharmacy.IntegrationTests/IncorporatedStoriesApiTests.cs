@@ -128,6 +128,47 @@ public class IncorporatedStoriesApiTests : IDisposable
     }
 
     [Fact]
+    [Trait("JiraIssue", "SCRUM-129")]
+    [Trait("Requirement", "RF-105")]
+    public async Task Exporta_a_Excel_ventas_egresos_y_cierres_del_periodo()
+    {
+        var sale = Guid.NewGuid();
+        await SendAsync(EventTypes.SaleCreated, sale, new SaleCreatedPayload(sale, "PUESTO-01-000042", "PUESTO-01",
+            "cajero1", Guid.NewGuid(), DateTimeOffset.UtcNow, 5m, 0m, 5m, 10m, 5m, "", "", "",
+            [new SaleLinePayload(Paracetamol, "Paracetamol", ParacetamolLot, "PCM-2401", 10, 0.5m)]));
+        var contadora = _factory.ClientFor(Roles.Contadora, "contadora");
+
+        var response = await contadora.GetAsync("/api/reports/export");
+
+        response.EnsureSuccessStatusCode();
+        Assert.Equal(XlsxWriter.ContentType, response.Content.Headers.ContentType?.MediaType);
+        Assert.False(response.Headers.Contains("X-Export-Empty"));
+        using var zip = new ZipArchive(await response.Content.ReadAsStreamAsync());
+        var workbook = await new StreamReader(zip.GetEntry("xl/workbook.xml")!.Open()).ReadToEndAsync();
+        var sales = await new StreamReader(zip.GetEntry("xl/worksheets/sheet1.xml")!.Open()).ReadToEndAsync();
+        Assert.Contains("name=\"Ventas\"", workbook);
+        Assert.Contains("name=\"Egresos\"", workbook);
+        Assert.Contains("name=\"Cierres de caja\"", workbook);
+        Assert.Contains("PUESTO-01-000042", sales);
+    }
+
+    [Fact]
+    [Trait("JiraIssue", "SCRUM-129")]
+    [Trait("Requirement", "RF-105")]
+    public async Task Un_periodo_sin_datos_genera_las_hojas_con_el_aviso()
+    {
+        var response = await _factory.ClientFor(Roles.Contadora).GetAsync("/api/reports/export?from=2020-01-01&to=2020-01-31");
+
+        response.EnsureSuccessStatusCode();
+        Assert.True(response.Headers.Contains("X-Export-Empty"));
+        using var zip = new ZipArchive(await response.Content.ReadAsStreamAsync());
+        var sheet = await new StreamReader(zip.GetEntry("xl/worksheets/sheet2.xml")!.Open()).ReadToEndAsync();
+        Assert.Contains("Sin operaciones en el período", sheet);
+        Assert.Equal(HttpStatusCode.Forbidden,
+            (await _factory.ClientFor(Roles.Cajero).GetAsync("/api/reports/export")).StatusCode);
+    }
+
+    [Fact]
     [Trait("JiraIssue", "SCRUM-130")]
     [Trait("Requirement", "RF-099")]
     public async Task El_umbral_configurado_llega_a_los_puestos_y_cambia_las_alertas()
