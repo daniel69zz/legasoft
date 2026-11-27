@@ -30,7 +30,12 @@ public sealed class SyncWorker(
 
     // Marca que el puesto ya alineó sus lotes con los del servidor (SCRUM-112).
     private const string LotsSnapshotKey = "lots_snapshot_at";
-    private static readonly TimeSpan MaxDelay = TimeSpan.FromMinutes(5);
+    /// <summary>SCRUM-39 · HU-T04 (RNF-006): tras un corte, la sincronización se reintenta como máximo cada 5 minutos.</summary>
+    public static readonly TimeSpan MaxDelay = TimeSpan.FromMinutes(5);
+
+    /// <summary>Retroceso exponencial: duplica la espera tras cada fallo, sin pasar de <see cref="MaxDelay"/>.</summary>
+    public static TimeSpan NextDelay(TimeSpan current, bool ok, TimeSpan interval) =>
+        ok ? interval : TimeSpan.FromTicks(Math.Min(current.Ticks * 2, MaxDelay.Ticks));
 
     private readonly SemaphoreSlim _gate = new(1, 1);
     private readonly SemaphoreSlim _wake = new(0, 1);
@@ -47,7 +52,7 @@ public sealed class SyncWorker(
         while (!stoppingToken.IsCancellationRequested)
         {
             var ok = await SyncOnceAsync(stoppingToken);
-            delay = ok ? interval : TimeSpan.FromTicks(Math.Min(delay.Ticks * 2, MaxDelay.Ticks));
+            delay = NextDelay(delay, ok, interval);
             try
             {
                 await _wake.WaitAsync(delay, stoppingToken);
@@ -74,9 +79,10 @@ public sealed class SyncWorker(
             if (session.Token is null)
                 await services.GetRequiredService<AuthService>().TryReconnectAsync();
 
+            // SCRUM-35 · HU-22: primero se envía lo del puesto y después se baja el stock, que ya lo incluye.
             await PullCatalogAsync(db, ct);
-            await PullLotsAsync(db, ct);
             await PushOutboxAsync(db, ct);
+            await PullLotsAsync(db, ct);
             status.Update(online: true, pending: await PendingAsync(db, ct), lastSync: DateTimeOffset.Now, error: "");
             return true;
         }
@@ -104,6 +110,9 @@ public sealed class SyncWorker(
         var since = long.TryParse(state?.Value, out var v) ? v : 0;
         var changes = await api.PullAsync(since, ct);
         await SaveThresholdAsync(db, changes.ExpiryThresholdDays, ct);
+        await SaveStateAsync(db, LocalStore.MaxDiscountKey, changes.MaxDiscountPercent?.ToString(), ct);
+        await SaveStateAsync(db, LocalStore.CompanyKey,
+            changes.Company is null ? null : System.Text.Json.JsonSerializer.Serialize(changes.Company), ct);
         if (changes.Products.Count == 0) return;
 
         var ids = changes.Products.Select(p => p.Id).ToList();
@@ -143,6 +152,17 @@ public sealed class SyncWorker(
         logger.LogInformation("Catálogo actualizado: {Count} productos", changes.Products.Count);
     }
 
+    /// <summary>Sprint 3: guarda en sync_state un valor recibido del servidor (descuento máximo, datos de la empresa).</summary>
+    private static async Task SaveStateAsync(LocalDb db, string key, string? value, CancellationToken ct)
+    {
+        if (value is null) return;
+        var state = await db.SyncState.FindAsync([key], ct);
+        if (state?.Value == value) return;
+        if (state is null) db.SyncState.Add(state = new SyncState { Key = key });
+        state.Value = value;
+        await db.SaveChangesAsync(ct);
+    }
+
     /// <summary>SCRUM-130 · HU-28.1 (RF-099): guarda el umbral de vencimiento configurado en el servidor.</summary>
     private static async Task SaveThresholdAsync(LocalDb db, int? days, CancellationToken ct)
     {
@@ -155,9 +175,10 @@ public sealed class SyncWorker(
     }
 
     /// <summary>
-    /// SCRUM-19 · HU-09 y SCRUM-112: descarga los lotes del servidor para venderlos con FEFO en el puesto. La
-    /// primera vez pide todos (snapshot) y alinea número, vencimiento y, si el puesto no los movió,
-    /// el stock de los que ya tiene; después solo recibe los lotes nuevos de las compras.
+    /// SCRUM-19 · HU-09, SCRUM-112 y SCRUM-35 · HU-22: descarga los lotes del servidor para venderlos con FEFO
+    /// en el puesto. La primera vez pide todos (snapshot); después recibe cada cambio de stock (compras,
+    /// ventas, anulaciones y ajustes de cualquier puesto). El stock local queda en el del servidor más lo
+    /// que este puesto todavía no envió.
     /// </summary>
     private async Task PullLotsAsync(LocalDb db, CancellationToken ct)
     {
@@ -171,9 +192,7 @@ public sealed class SyncWorker(
         {
             var ids = changes.Lots.Select(l => l.LotId).ToList();
             var local = await db.Lots.Where(l => ids.Contains(l.Id)).ToDictionaryAsync(l => l.Id, ct);
-            var moved = (await db.StockMovements.Where(m => ids.Contains(m.LotId)).Select(m => m.LotId)
-                .Distinct().ToListAsync(ct)).ToHashSet();
-            var result = LotSync.Merge(local, moved, changes.Lots);
+            var result = LotSync.Merge(local, await PendingDeltasAsync(db, ct), changes.Lots);
             db.Lots.AddRange(result.Added);
             db.SyncDownloads.Add(new SyncDownload
             {
@@ -192,6 +211,19 @@ public sealed class SyncWorker(
         state.Value = changes.Version.ToString();
         if (snapshot) db.SyncState.Add(new SyncState { Key = LotsSnapshotKey, Value = DateTimeOffset.Now.ToString("O") });
         await db.SaveChangesAsync(ct);
+    }
+
+    /// <summary>
+    /// SCRUM-35 · HU-22: lo que el puesto movió y el servidor todavía no recibió (Outbox sin sincronizar).
+    /// </summary>
+    private static async Task<IReadOnlyDictionary<Guid, int>> PendingDeltasAsync(LocalDb db, CancellationToken ct)
+    {
+        var pending = await db.Outbox.Where(m => m.Status != OutboxStatus.Sincronizado).ToListAsync(ct);
+        if (pending.Count == 0) return new Dictionary<Guid, int>();
+        var sales = await db.Sales.ToDictionaryAsync(s => s.Id, ct);
+        return PendingLotDeltas.From(pending, saleId => sales.TryGetValue(saleId, out var sale)
+            ? sale.Lines.Select(l => (l.LotId, l.Quantity))
+            : []);
     }
 
     private async Task PushOutboxAsync(LocalDb db, CancellationToken ct)
