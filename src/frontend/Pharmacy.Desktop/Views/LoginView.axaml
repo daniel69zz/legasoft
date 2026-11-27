@@ -4,59 +4,61 @@
              x:Class="Pharmacy.Desktop.Views.LoginView"
              x:DataType="vm:LoginViewModel">
   <Grid ColumnDefinitions="5*,4*">
-    <!-- Panel de marca -->
-    <Border>
-      <Border.Background>
-        <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
-          <GradientStop Offset="0" Color="#0F8B6E" />
-          <GradientStop Offset="1" Color="#123A5F" />
-        </LinearGradientBrush>
-      </Border.Background>
-      <StackPanel VerticalAlignment="Center" Margin="64" Spacing="18">
-        <Border Width="72" Height="72" CornerRadius="18" Background="#26FFFFFF" HorizontalAlignment="Left">
-          <PathIcon Data="{StaticResource CrossIcon}" Width="38" Height="38" Foreground="White" />
-        </Border>
-        <TextBlock Text="Sistema de Gestión para Farmacéutica" FontSize="32" FontWeight="Bold"
-                   Foreground="White" TextWrapping="Wrap" />
-        <TextBlock Text="Ventas, caja e inventario que siguen funcionando sin Internet. Cada operación se guarda en el puesto y se sincroniza sola cuando vuelve la conexión."
-                   FontSize="15" Foreground="#E3F4EF" TextWrapping="Wrap" MaxWidth="460" HorizontalAlignment="Left" />
-        <WrapPanel>
-          <Border Classes="badge" Background="#26FFFFFF" Margin="0,0,8,8">
-            <TextBlock Text="FEFO y lotes vencidos" Foreground="White" FontSize="12" />
+    <!-- Panel de marca: el letrero de la cruz verde -->
+    <Border Background="{StaticResource Pine}">
+      <Grid RowDefinitions="*,Auto">
+        <StackPanel VerticalAlignment="Center" Margin="72,48" Spacing="22" MaxWidth="560" HorizontalAlignment="Left">
+          <Border Classes="sign" Width="84" Height="84" CornerRadius="20" HorizontalAlignment="Left">
+            <PathIcon Data="{StaticResource CrossIcon}" Width="42" Height="42" Foreground="White" />
           </Border>
-          <Border Classes="badge" Background="#26FFFFFF" Margin="0,0,8,8">
-            <TextBlock Text="Outbox + sincronización" Foreground="White" FontSize="12" />
-          </Border>
-          <Border Classes="badge" Background="#26FFFFFF" Margin="0,0,8,8">
-            <TextBlock Text="Roles y auditoría" Foreground="White" FontSize="12" />
-          </Border>
-        </WrapPanel>
-        <TextBlock Text="Prototipo inicial · Legasoft · UCB 2026" Foreground="#A9C7D8" FontSize="12" Margin="0,24,0,0" />
-      </StackPanel>
+          <TextBlock Text="Sistema de Gestión para Farmacéutica" FontSize="34" FontWeight="Bold" LetterSpacing="-0.6"
+                     LineHeight="40" Foreground="White" TextWrapping="Wrap" />
+          <TextBlock Text="Ventas, caja e inventario que siguen funcionando sin Internet. Cada operación se guarda en el puesto y se sincroniza sola cuando vuelve la conexión."
+                     FontSize="15" LineHeight="23" Foreground="{StaticResource PineText}" TextWrapping="Wrap" MaxWidth="460"
+                     HorizontalAlignment="Left" />
+          <WrapPanel>
+            <Border Classes="badge" Background="Transparent" BorderBrush="#3A5E56" BorderThickness="1" Margin="0,0,8,8" Padding="10,4">
+              <TextBlock Text="FEFO y lotes vencidos" Foreground="{StaticResource PineText}" FontSize="12" />
+            </Border>
+            <Border Classes="badge" Background="Transparent" BorderBrush="#3A5E56" BorderThickness="1" Margin="0,0,8,8" Padding="10,4">
+              <TextBlock Text="Outbox + sincronización" Foreground="{StaticResource PineText}" FontSize="12" />
+            </Border>
+            <Border Classes="badge" Background="Transparent" BorderBrush="#3A5E56" BorderThickness="1" Margin="0,0,8,8" Padding="10,4">
+              <TextBlock Text="Roles y auditoría" Foreground="{StaticResource PineText}" FontSize="12" />
+            </Border>
+          </WrapPanel>
+        </StackPanel>
+        <TextBlock Grid.Row="1" Text="Prototipo inicial · Legasoft · UCB 2026" Foreground="{StaticResource PineMuted}"
+                   FontSize="12" Margin="72,0,72,32" />
+      </Grid>
     </Border>
 
     <!-- Formulario -->
-    <Border Grid.Column="1" Classes="card" Margin="56" VerticalAlignment="Center" Padding="32">
+    <Border Grid.Column="1" Classes="card" Margin="56" VerticalAlignment="Center" Padding="36" MaxWidth="460">
       <StackPanel Spacing="14">
-        <TextBlock Classes="h1" Text="Iniciar sesión" />
-        <TextBlock Classes="muted" TextWrapping="Wrap">
-          <Run Text="Puesto" />
-          <Run Text="{Binding DeviceId, Mode=OneWay}" FontWeight="SemiBold" />
-          <Run Text="· servidor" />
-          <Run Text="{Binding Server, Mode=OneWay}" />
-        </TextBlock>
-        <TextBox Watermark="Usuario" Text="{Binding UserName}" />
-        <TextBox Watermark="Contraseña" PasswordChar="●" Text="{Binding Password}">
+        <StackPanel Spacing="4" Margin="0,0,0,6">
+          <TextBlock Classes="h1" Text="Iniciar sesión" />
+          <TextBlock Classes="muted" TextWrapping="Wrap">
+            <Run Text="Puesto" />
+            <Run Text="{Binding DeviceId, Mode=OneWay}" FontWeight="SemiBold" />
+            <Run Text="· servidor" />
+            <Run Text="{Binding Server, Mode=OneWay}" />
+          </TextBlock>
+        </StackPanel>
+        <TextBlock Classes="label" Text="Usuario" />
+        <TextBox Watermark="Ej. cajero1" Text="{Binding UserName}" />
+        <TextBlock Classes="label" Text="Contraseña" />
+        <TextBox Watermark="Su contraseña" PasswordChar="●" Text="{Binding Password}">
           <TextBox.KeyBindings>
             <KeyBinding Gesture="Enter" Command="{Binding LoginCommand}" />
           </TextBox.KeyBindings>
         </TextBox>
-        <Button Classes="primary" Content="Ingresar" HorizontalAlignment="Stretch"
+        <Button Classes="primary" Content="Ingresar" HorizontalAlignment="Stretch" Margin="0,6,0,0"
                 HorizontalContentAlignment="Center" Command="{Binding LoginCommand}" IsDefault="True" />
         <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
         <TextBlock Classes="error" Text="{Binding Error}" IsVisible="{Binding Error, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-        <Border Background="{StaticResource Canvas}" CornerRadius="8" Padding="12" Margin="0,8,0,0">
-          <TextBlock Classes="muted" TextWrapping="Wrap"
+        <Border Background="{StaticResource Canvas}" CornerRadius="8" Padding="12" Margin="0,6,0,0">
+          <TextBlock Classes="muted" TextWrapping="Wrap" LineHeight="18"
                      Text="Usuarios de demostración: admin, cajero1, cajero2, farmaceutico, gerente, contadora, operaciones, almacen. Contraseña de demo en appsettings.json (Seed:DemoPassword)." />
         </Border>
       </StackPanel>

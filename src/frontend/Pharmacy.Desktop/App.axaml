@@ -9,7 +9,7 @@
   <Application.Styles>
     <FluentTheme>
       <FluentTheme.Palettes>
-        <ColorPaletteResources x:Key="Light" Accent="#0F8B6E" RegionColor="#FFFFFF" ErrorText="#B83A3A" />
+        <ColorPaletteResources x:Key="Light" Accent="#0E7A5E" RegionColor="#FFFFFF" ErrorText="#B42318" />
       </FluentTheme.Palettes>
     </FluentTheme>
     <StyleInclude Source="avares://Pharmacy.Desktop/Styles/Theme.axaml" />
