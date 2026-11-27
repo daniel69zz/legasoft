@@ -1,4 +1,5 @@
 using System.Globalization;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
@@ -60,6 +61,31 @@ public class PurchasesInputTests
         var total = window.GetVisualDescendants().OfType<TextBlock>().Single(t => t.Text?.StartsWith("Total Bs") == true);
         Assert.Equal("Total Bs 12,00", total.Text);
     }
+
+    [AvaloniaFact]
+    [Trait("JiraIssue", "SCRUM-124")]
+    [Trait("JiraIssue", "SCRUM-125")]
+    [Trait("Requirement", "RF-034")]
+    [Trait("Requirement", "RF-036")]
+    public void Con_un_producto_sin_precios_la_comparacion_y_el_registro_de_precio_no_se_solapan()
+    {
+        var vm = new PurchasesViewModel(null!, null!, null!);
+        var producto = new ProductOption(Guid.NewGuid(), "P-0001", "Paracetamol 500 mg");
+        vm.ProductOptions.Add(producto);
+        var window = new Window { Content = new PurchasesView { DataContext = vm }, Width = 1000, Height = 800 };
+        window.Show();
+
+        vm.ProductToAdd = producto;
+        Settle();
+
+        var sinPrecios = Zona(window, window.GetVisualDescendants().OfType<TextBlock>()
+            .Single(t => t.Text == "Ningún proveedor registró precio para este producto."));
+        var precio = Zona(window, Campo(window, n => n.DataContext == vm && n.TextConverter is not null));
+        Assert.True(sinPrecios.Right <= precio.Left, $"Se solapan: {sinPrecios} y {precio}");
+    }
+
+    private static Rect Zona(Window window, Control control) =>
+        new(control.TranslatePoint(new Point(0, 0), window)!.Value, control.Bounds.Size);
 
     private static NumericUpDown Campo(Window window, Func<NumericUpDown, bool> filtro) =>
         window.GetVisualDescendants().OfType<NumericUpDown>().Single(n => n.IsEffectivelyVisible && filtro(n));
