@@ -28,6 +28,8 @@ public sealed class NavIcon : IValueConverter
         ["Compras"] = Geometry.Parse("M9,3.5 H15 V6.5 H9 Z M7,5 H5.5 V20.5 H18.5 V5 H17 M8.5,11 H15.5 M8.5,15 H13.5"),
         // Camión de reparto
         ["Proveedores"] = Geometry.Parse("M3,6 H14 V16 H3 Z M14,9.5 H18 L21,12.5 V16 H14 M5.2,18 A1.6,1.6 0 1 1 8.4,18 A1.6,1.6 0 1 1 5.2,18 M15.6,18 A1.6,1.6 0 1 1 18.8,18 A1.6,1.6 0 1 1 15.6,18"),
+        // Tarjeta de cliente
+        ["Clientes"] = Geometry.Parse("M3.5,6 H20.5 V18 H3.5 Z M9,9.5 A2,2 0 1 1 9,13.5 A2,2 0 1 1 9,9.5 M6,16 A3,3 0 0 1 12,16 M14,10 H18 M14,13.5 H17"),
         // Barras
         ["Reportes"] = Geometry.Parse("M4,20 H20 M7,16.5 V11 M12,16.5 V5.5 M17,16.5 V8.5"),
         // Personas
