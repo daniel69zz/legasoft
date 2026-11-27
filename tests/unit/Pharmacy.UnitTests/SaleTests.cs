@@ -36,9 +36,10 @@ public class SaleTests
         var sale = NewSale();
         sale.AddLine(p, FefoAllocator.Allocate([Lot(p, "A", 50, 10)], 1, Today));
 
-        Assert.Throws<DomainException>(() => sale.Complete(10m, " "));
-        sale.Complete(10m, "RX-123");
-        Assert.Equal("RX-123", sale.PrescriptionNumber);
+        Assert.Throws<DomainException>(() => sale.Complete(10m));
+        sale.Complete(10m, Prescription.Create("RX-123", "Dra. Ana Vargas", "Juan Pérez", Today.AddDays(-2), Today));
+        Assert.Equal(("RX-123", "Dra. Ana Vargas", "Juan Pérez", Today.AddDays(-2)),
+            (sale.PrescriptionNumber, sale.PrescriptionDoctor, sale.PrescriptionPatient, sale.PrescriptionIssuedOn));
     }
 
     [Fact]

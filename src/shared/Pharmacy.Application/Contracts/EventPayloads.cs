@@ -6,7 +6,10 @@ public sealed record SaleLinePayload(Guid ProductId, string ProductName, Guid Lo
 public sealed record SaleCreatedPayload(Guid SaleId, string ReceiptNumber, string DeviceId, string CashierName,
     Guid CashSessionId, DateTimeOffset CreatedAt, decimal Subtotal, decimal Discount, decimal Total,
     decimal CashReceived, decimal Change, string PrescriptionNumber, string CustomerName, string CustomerTaxId,
-    IReadOnlyList<SaleLinePayload> Lines);
+    IReadOnlyList<SaleLinePayload> Lines,
+    // SCRUM-29 · HU-25 y SCRUM-30 · HU-27: opcionales para aceptar eventos de puestos anteriores al Sprint 3.
+    string PrescriptionDoctor = "", string PrescriptionPatient = "", DateOnly? PrescriptionIssuedOn = null,
+    string DiscountAuthorizedBy = "");
 
 public sealed record SaleVoidedPayload(Guid SaleId, string Reason, string VoidedBy, DateTimeOffset VoidedAt);
 
@@ -31,3 +34,11 @@ public sealed record CashHandoverPayload(Guid CashSessionId, string DeviceId, st
 /// <summary>SCRUM-101 · HU-06.3: entrada, salida o ajuste manual registrado en un puesto (RF-014 a RF-016).</summary>
 public sealed record StockMovementPayload(Guid MovementId, Guid ProductId, Guid LotId, string LotNumber, string Type,
     int Quantity, string Reason, string UserName, DateTimeOffset OccurredAt);
+
+/// <summary>
+/// SCRUM-25 · HU-15 (RF-056): arqueo durante el turno. Cuenta el efectivo sin cerrar la caja y deja
+/// registrada la diferencia del momento.
+/// </summary>
+public sealed record CashArqueoPayload(Guid ArqueoId, Guid CashSessionId, string DeviceId, string UserName,
+    decimal ExpectedAmount, decimal CountedAmount, decimal Difference, string Note, DateTimeOffset OccurredAt,
+    IReadOnlyDictionary<decimal, int> Denominations);
