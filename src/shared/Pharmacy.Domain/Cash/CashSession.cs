@@ -17,6 +17,7 @@ public enum CashSessionStatus
 public class CashSession
 {
     private readonly List<CashMovement> _movements = [];
+    private readonly List<CashArqueo> _arqueos = [];
 
     private CashSession() { }
 
@@ -49,6 +50,9 @@ public class CashSession
     public DateTimeOffset? HandoverConfirmedAt { get; private set; }
 
     public IReadOnlyList<CashMovement> Movements => _movements;
+
+    /// <summary>SCRUM-25 · HU-15 (RF-056): arqueos hechos durante el turno.</summary>
+    public IReadOnlyList<CashArqueo> Arqueos => _arqueos;
 
     public decimal SalesTotal => _movements.Where(m => m.Type == CashMovementType.Venta).Sum(m => m.Amount);
     public decimal ExpensesTotal => _movements.Where(m => m.Type != CashMovementType.Venta).Sum(m => m.Amount);
@@ -84,6 +88,19 @@ public class CashSession
         if (amount > ExpectedAmount)
             throw new DomainException($"El egreso supera el efectivo disponible en caja (Bs {ExpectedAmount:0.00}).");
         return Add(CashMovementType.Egreso, amount, reason.Trim(), category.Trim(), userName, now, null);
+    }
+
+    /// <summary>
+    /// SCRUM-25 · HU-15 (RF-056): arqueo durante el turno. Compara el conteo con el esperado sin cerrar la
+    /// caja; la diferencia queda registrada para que el cajero la explique al cierre.
+    /// </summary>
+    public CashArqueo RegisterArqueo(CashCount count, string? note, string userName, DateTimeOffset now)
+    {
+        EnsureOpen();
+        if (count.Total <= 0) throw new DomainException("Registre el conteo por denominación para el arqueo.");
+        var arqueo = new CashArqueo(Guid.NewGuid(), Id, ExpectedAmount, count.Total, note?.Trim() ?? "", userName, now);
+        _arqueos.Add(arqueo);
+        return arqueo;
     }
 
     /// <summary>RF-058, RF-059 y RF-106: cierre con conteo y justificación obligatoria si hay diferencia.</summary>

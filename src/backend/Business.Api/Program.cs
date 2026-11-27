@@ -9,6 +9,17 @@ builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddPharmacyDb<BusinessDb>(builder.Configuration, "Business", historySchema: "inventory");
 builder.Services.AddScoped<EventApplier>();
 
+// SCRUM-36 · HU-23 y SCRUM-41 · HU-T06: respaldos (COPY de PostgreSQL; registro simulado con InMemory).
+var backupOptions = builder.Configuration.GetSection("Backup").Get<BackupOptions>() ?? new BackupOptions();
+builder.Services.AddSingleton(backupOptions);
+builder.Services.AddSingleton<InMemoryBackupStore>();
+builder.Services.AddScoped<IBackupStore>(sp => sp.GetRequiredService<BusinessDb>().Database.IsRelational()
+    ? ActivatorUtilities.CreateInstance<PostgresBackupStore>(sp)
+    : sp.GetRequiredService<InMemoryBackupStore>());
+builder.Services.AddSingleton<BackupScheduler>();
+if (backupOptions.Scheduled && !builder.Environment.IsEnvironment("Testing"))
+    builder.Services.AddHostedService(sp => sp.GetRequiredService<BackupScheduler>());
+
 var app = builder.Build();
 app.UseServiceDefaults();
 app.MapBusinessEndpoints();

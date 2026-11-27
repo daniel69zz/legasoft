@@ -25,6 +25,17 @@ public class SaleRecord
     public string Status { get; set; } = "Completada";
     public string VoidReason { get; set; } = "";
     public List<SaleLineRecord> Lines { get; set; } = [];
+
+    // SCRUM-29 · HU-25 (RF-088, RF-089): receta asociada a la venta.
+    public string PrescriptionDoctor { get; set; } = "";
+    public string PrescriptionPatient { get; set; } = "";
+    public DateOnly? PrescriptionIssuedOn { get; set; }
+
+    /// <summary>SCRUM-30 · HU-27 (RF-096): usuario que aplicó el descuento.</summary>
+    public string DiscountAuthorizedBy { get; set; } = "";
+
+    /// <summary>SCRUM-34 · HU-29 (RF-100): sucursal del puesto que registró la venta.</summary>
+    public string Branch { get; set; } = "";
 }
 
 public class SaleLineRecord
@@ -59,6 +70,9 @@ public class CashSessionRecord
     public string HandoverTo { get; set; } = "";
     public decimal? HandoverReceivedAmount { get; set; }
     public DateTimeOffset? HandoverConfirmedAt { get; set; }
+
+    /// <summary>SCRUM-34 · HU-29 (RF-100).</summary>
+    public string Branch { get; set; } = "";
 }
 
 public class CashMovementRecord
@@ -71,6 +85,54 @@ public class CashMovementRecord
     public string Category { get; set; } = "";
     public string UserName { get; set; } = "";
     public DateTimeOffset OccurredAt { get; set; }
+
+    /// <summary>SCRUM-34 · HU-29 (RF-100).</summary>
+    public string Branch { get; set; } = "";
+}
+
+/// <summary>SCRUM-25 · HU-15 (RF-056): arqueo hecho durante un turno.</summary>
+public class CashArqueoRecord
+{
+    public Guid Id { get; set; }
+    public Guid CashSessionId { get; set; }
+    public string DeviceId { get; set; } = "";
+    public string UserName { get; set; } = "";
+    public decimal ExpectedAmount { get; set; }
+    public decimal CountedAmount { get; set; }
+    public decimal Difference { get; set; }
+    public string Note { get; set; } = "";
+    public DateTimeOffset OccurredAt { get; set; }
+}
+
+/// <summary>SCRUM-28 · HU-24 (RF-084 a RF-087): cliente registrado; el NIT o CI es único.</summary>
+public class CustomerRecord
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; } = "";
+    public string TaxId { get; set; } = "";
+    public string Phone { get; set; } = "";
+    public string Email { get; set; } = "";
+    public DateTimeOffset CreatedAt { get; set; }
+    public string CreatedBy { get; set; } = "";
+}
+
+/// <summary>
+/// SCRUM-27 · HU-17 (RF-063 a RF-067, RF-101): factura simulada. El número es correlativo y único en el
+/// servidor, por eso se emite en línea sobre una venta ya sincronizada.
+/// </summary>
+public class InvoiceRecord
+{
+    public Guid Id { get; set; }
+    public int Number { get; set; }
+    public Guid SaleId { get; set; }
+    public string ReceiptNumber { get; set; } = "";
+    public DateTimeOffset IssuedAt { get; set; }
+    public string IssuedBy { get; set; } = "";
+    public string CustomerName { get; set; } = "";
+    public string CustomerTaxId { get; set; } = "";
+    public decimal Subtotal { get; set; }
+    public decimal Discount { get; set; }
+    public decimal Total { get; set; }
 }
 
 /// <summary>Bitácora de operaciones críticas con usuario, dispositivo y fecha (RF-075).</summary>
@@ -124,6 +186,31 @@ public class BusinessDb(DbContextOptions<BusinessDb> options) : DbContext(option
     public DbSet<LotFeedEntry> LotFeed => Set<LotFeedEntry>();
     public DbSet<SupplierPrice> SupplierPrices => Set<SupplierPrice>();
     public DbSet<SettingEntry> Settings => Set<SettingEntry>();
+    public DbSet<CashArqueoRecord> CashArqueos => Set<CashArqueoRecord>();      // SCRUM-25
+    public DbSet<CustomerRecord> Customers => Set<CustomerRecord>();          // SCRUM-28
+    public DbSet<InvoiceRecord> Invoices => Set<InvoiceRecord>();             // SCRUM-27
+
+    /// <summary>
+    /// SCRUM-13 · HU-20 (RF-075): la bitácora de auditoría solo admite altas. Además de esta regla, la
+    /// migración BitacoraInalterable agrega un trigger en PostgreSQL que rechaza UPDATE, DELETE y TRUNCATE.
+    /// </summary>
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        EnsureAuditIsAppendOnly();
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken ct = default)
+    {
+        EnsureAuditIsAppendOnly();
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, ct);
+    }
+
+    private void EnsureAuditIsAppendOnly()
+    {
+        if (ChangeTracker.Entries<AuditEntry>().Any(e => e.State is EntityState.Modified or EntityState.Deleted))
+            throw new InvalidOperationException("La bitácora de auditoría no se puede modificar ni borrar (RF-075).");
+    }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder b)
     {
@@ -151,6 +238,7 @@ public class BusinessDb(DbContextOptions<BusinessDb> options) : DbContext(option
             e.ToTable("stock_movements", "inventory");
             e.Property(m => m.Id).ValueGeneratedNever();
             e.Property(m => m.Type).HasConversion<string>();
+            e.Property<string>(Branches.Column).HasDefaultValue("");   // SCRUM-34 · HU-29
         });
         b.Entity<SaleRecord>(e =>
         {
@@ -220,6 +308,26 @@ public class BusinessDb(DbContextOptions<BusinessDb> options) : DbContext(option
         {
             e.ToTable("settings", "inventory");
             e.HasKey(x => x.Key);
+        });
+        b.Entity<CashArqueoRecord>(e =>
+        {
+            e.ToTable("arqueos", "cash");
+            e.Property(x => x.Id).ValueGeneratedNever();
+            e.HasIndex(x => x.CashSessionId);
+        });
+        b.Entity<CustomerRecord>(e =>
+        {
+            e.ToTable("customers", "sales");
+            e.Property(x => x.Id).ValueGeneratedNever();
+            e.HasIndex(x => x.TaxId).IsUnique();
+            e.HasIndex(x => x.Name);
+        });
+        b.Entity<InvoiceRecord>(e =>
+        {
+            e.ToTable("invoices", "sales");
+            e.Property(x => x.Id).ValueGeneratedNever();
+            e.HasIndex(x => x.Number).IsUnique();
+            e.HasIndex(x => x.SaleId).IsUnique();
         });
         b.Entity<LotFeedEntry>(e =>
         {

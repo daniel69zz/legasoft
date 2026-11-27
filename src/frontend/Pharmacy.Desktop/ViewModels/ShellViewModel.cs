@@ -20,9 +20,10 @@ public sealed partial class ShellViewModel : ViewModelBase
         new("Movimientos", "Historial general de inventario", Permission.Inventario, typeof(MovementsViewModel)), // SCRUM-123
         new("Compras", "Compras, recepción y precios", Permission.Compras, typeof(PurchasesViewModel)),          // SCRUM-19, 124, 125
         new("Proveedores", "Registro e historial de compras", Permission.Proveedores, typeof(SuppliersViewModel)), // SCRUM-18
-        new("Reportes", "Dashboard gerencial", Permission.Reportes, typeof(ReportsViewModel)),
+        new("Clientes", "Registro e historial de compras", Permission.Clientes, typeof(CustomersViewModel)),       // SCRUM-28
+        new("Reportes", "Dashboard, reportes y cierre diario", Permission.Reportes, typeof(ReportsViewModel)),
         new("Usuarios", "Usuarios y auditoría", Permission.Usuarios, typeof(UsersViewModel)),
-        new("Parámetros", "Umbrales y alertas", Permission.Usuarios, typeof(SettingsViewModel)),                 // SCRUM-130
+        new("Parámetros", "Empresa, alertas y respaldos", Permission.Usuarios, typeof(SettingsViewModel)),                 // SCRUM-130
         new("Sincronización", "Outbox del puesto", Permission.Sincronizacion, typeof(SyncViewModel)),
     ];
 

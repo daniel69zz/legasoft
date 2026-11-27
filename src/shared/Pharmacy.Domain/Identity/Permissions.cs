@@ -16,6 +16,15 @@ public enum Permission
 
     /// <summary>Registro de compras y su recepción (SCRUM-19 · HU-09).</summary>
     Compras,
+
+    /// <summary>SCRUM-30 · HU-27 (RF-096): aplicar descuentos en la venta.</summary>
+    Descuentos,
+
+    /// <summary>SCRUM-28 · HU-24 (RF-084 a RF-087): registro y consulta de clientes.</summary>
+    Clientes,
+
+    /// <summary>SCRUM-36 · HU-23 (RF-082, RF-083): respaldo y recuperación de la información.</summary>
+    Respaldos,
 }
 
 /// <summary>
@@ -27,11 +36,12 @@ public static class RolePermissions
     private static readonly Dictionary<string, Permission[]> Matrix = new()
     {
         [Roles.Administrador] = Enum.GetValues<Permission>(),
-        [Roles.GerenteGeneral] = [Permission.Reportes, Permission.Inventario],
+        [Roles.GerenteGeneral] = [Permission.Reportes, Permission.Inventario, Permission.Descuentos],
         [Roles.Contadora] = [Permission.Reportes, Permission.Caja],
         [Roles.GerenteOperaciones] = [Permission.Inventario, Permission.Catalogo, Permission.Reportes, Permission.Compras],
-        [Roles.Cajero] = [Permission.Ventas, Permission.Caja, Permission.Sincronizacion],
-        [Roles.Farmaceutico] = [Permission.Ventas, Permission.Inventario, Permission.Catalogo],
+        [Roles.Cajero] = [Permission.Ventas, Permission.Caja, Permission.Sincronizacion, Permission.Clientes],
+        [Roles.Farmaceutico] = [Permission.Ventas, Permission.Inventario, Permission.Catalogo, Permission.Descuentos,
+            Permission.Clientes],
         [Roles.Almacen] = [Permission.Inventario],
     };
 

@@ -13,6 +13,7 @@ public static class OperationalSettings
 {
     public const string ExpiryThresholdDays = "ExpiryThresholdDays";
     public const string AlertIntervalMinutes = "AlertIntervalMinutes";
+    public const string MaxDiscountPercent = "MaxDiscountPercent";   // SCRUM-30 · HU-27
 
     public const int DefaultAlertIntervalMinutes = 60;
 
@@ -21,7 +22,8 @@ public static class OperationalSettings
         var values = await db.Settings.ToDictionaryAsync(s => s.Key, s => s.Value);
         return new OperationalSettingsDto(
             Read(values, ExpiryThresholdDays, InventoryAlerts.DefaultExpiryThresholdDays),
-            Read(values, AlertIntervalMinutes, DefaultAlertIntervalMinutes));
+            Read(values, AlertIntervalMinutes, DefaultAlertIntervalMinutes),
+            Read(values, MaxDiscountPercent, Pharmacy.Domain.Sales.DiscountPolicy.DefaultMaxPercent));
     }
 
     /// <summary>
@@ -41,12 +43,15 @@ public static class OperationalSettings
             throw new DomainException("El umbral de vencimiento debe estar entre 1 y 365 días.");
         if (s.AlertIntervalMinutes is < 5 or > 1440)
             throw new DomainException("La frecuencia de las alertas debe estar entre 5 y 1440 minutos.");
+        if (s.MaxDiscountPercent is < 0 or > 100)
+            throw new DomainException("El descuento máximo debe estar entre 0 y 100 %.");
     }
 
     public static async Task SaveAsync(BusinessDb db, OperationalSettingsDto s, string userName, DateTimeOffset now)
     {
         await SetAsync(db, ExpiryThresholdDays, s.ExpiryThresholdDays, userName, now);
         await SetAsync(db, AlertIntervalMinutes, s.AlertIntervalMinutes, userName, now);
+        await SetAsync(db, MaxDiscountPercent, s.MaxDiscountPercent, userName, now);
     }
 
     private static async Task SetAsync(BusinessDb db, string key, int value, string userName, DateTimeOffset now)

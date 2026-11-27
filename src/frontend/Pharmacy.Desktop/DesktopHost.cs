@@ -72,7 +72,8 @@ public static class DesktopHost
         s.AddTransient<SuppliersViewModel>();   // SCRUM-18
         s.AddTransient<PurchasesViewModel>();   // SCRUM-19, SCRUM-124 y SCRUM-125
         s.AddTransient<MovementsViewModel>();   // SCRUM-123
-        s.AddTransient<SettingsViewModel>();    // SCRUM-130
+        s.AddTransient<SettingsViewModel>();    // SCRUM-130, SCRUM-33, SCRUM-34 y SCRUM-36
+        s.AddTransient<CustomersViewModel>();   // SCRUM-28
 
         var host = builder.Build();
         using var scope = host.Services.CreateScope();

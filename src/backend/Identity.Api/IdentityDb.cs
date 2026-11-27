@@ -54,6 +54,25 @@ public class IdentityDb(DbContextOptions<IdentityDb> options) : DbContext(option
     public DbSet<Attendance> Attendance => Set<Attendance>();
     public DbSet<UserChange> UserChanges => Set<UserChange>();
 
+    /// <summary>SCRUM-13 · HU-20 (RF-075): los cambios de usuarios y los accesos rechazados solo admiten altas.</summary>
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        EnsureAppendOnly();
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken ct = default)
+    {
+        EnsureAppendOnly();
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, ct);
+    }
+
+    private void EnsureAppendOnly()
+    {
+        if (ChangeTracker.Entries<UserChange>().Any(e => e.State is EntityState.Modified or EntityState.Deleted))
+            throw new InvalidOperationException("La bitácora de cambios de usuarios no se puede modificar ni borrar (RF-075).");
+    }
+
     protected override void OnModelCreating(ModelBuilder b)
     {
         b.HasDefaultSchema("identity");

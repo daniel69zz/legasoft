@@ -23,6 +23,38 @@
                   Command="{Binding ExportCommand}" />
         </Grid>
       </Border>
+      <!-- SCRUM-31 · HU-18: reportes del período y cierre diario, en pantalla, Excel o PDF -->
+      <Border Classes="card">
+        <StackPanel Spacing="10">
+          <TextBlock Classes="h2" Text="Reportes operativos (RF-068 a RF-072, RF-103)" />
+          <Grid ColumnDefinitions="2*,150,150,*" ColumnSpacing="10">
+            <ComboBox ItemsSource="{Binding ReportChoices}" SelectedItem="{Binding ReportKind}" HorizontalAlignment="Stretch" />
+            <CalendarDatePicker Grid.Column="1" SelectedDate="{Binding ReportFrom}" SelectedDateFormat="Custom"
+                                CustomDateFormatString="dd/MM/yyyy" Watermark="Desde" HorizontalAlignment="Stretch"
+                                IsEnabled="{Binding IsRange}" />
+            <CalendarDatePicker Grid.Column="2" SelectedDate="{Binding ReportTo}" SelectedDateFormat="Custom"
+                                CustomDateFormatString="dd/MM/yyyy" Watermark="Hasta" HorizontalAlignment="Stretch" />
+            <TextBox Grid.Column="3" Watermark="Sucursal (opcional, RF-100)" Text="{Binding Branch}" />
+          </Grid>
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Button Classes="primary" Content="Ver reporte" Command="{Binding ViewReportCommand}" />
+            <Button Content="Excel" Command="{Binding ExportReportCommand}" CommandParameter="xlsx" />
+            <Button Content="PDF" Command="{Binding ExportReportCommand}" CommandParameter="pdf" />
+            <Button Content="Resumen de la sucursal" Command="{Binding BranchSummaryCommand}" />
+          </StackPanel>
+          <StackPanel Spacing="4" IsVisible="{Binding Report, Converter={x:Static ObjectConverters.IsNotNull}}">
+            <TextBlock FontWeight="SemiBold">
+              <Run Text="{Binding Report.Title, Mode=OneWay}" /><Run Text=" · " /><Run Text="{Binding Report.Subtitle, Mode=OneWay}" />
+            </TextBlock>
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" MaxHeight="320">
+              <SelectableTextBlock FontFamily="{StaticResource Mono}" FontSize="11" Text="{Binding ReportPreview}" />
+            </ScrollViewer>
+          </StackPanel>
+          <SelectableTextBlock FontFamily="{StaticResource Mono}" FontSize="11" Text="{Binding BranchSummary}"
+                               IsVisible="{Binding BranchSummary, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+        </StackPanel>
+      </Border>
+
       <Grid ColumnDefinitions="*,*,*,*,*" ColumnSpacing="16" IsVisible="{Binding Summary, Converter={x:Static ObjectConverters.IsNotNull}}">
         <Border Classes="card"><StackPanel><TextBlock Classes="muted" Text="Ventas de hoy" /><TextBlock Classes="kpi" Text="{Binding Summary.SalesToday, StringFormat='Bs {0:N2}'}" /><TextBlock Classes="muted" Text="{Binding Summary.SalesCountToday, StringFormat='{}{0} ventas'}" /></StackPanel></Border>
         <Border Grid.Column="1" Classes="card"><StackPanel><TextBlock Classes="muted" Text="Últimos 7 días" /><TextBlock Classes="kpi" Text="{Binding Summary.SalesLast7Days, StringFormat='Bs {0:N2}'}" /></StackPanel></Border>
@@ -33,7 +65,12 @@
       <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
         <Border Classes="card">
           <StackPanel>
-            <TextBlock Classes="h2" Text="Ventas por cajero y día (RF-074)" />
+            <Grid ColumnDefinitions="*,200" ColumnSpacing="8" Margin="0,0,0,8">
+              <TextBlock Classes="h2" Text="Ventas por cajero (RF-074)" VerticalAlignment="Center" Margin="0" />
+              <!-- SCRUM-32 · HU-19: agrupación por día, semana o mes -->
+              <ComboBox Grid.Column="1" ItemsSource="{Binding GroupingChoices}" SelectedItem="{Binding Grouping}"
+                        HorizontalAlignment="Stretch" />
+            </Grid>
             <ItemsControl ItemsSource="{Binding SalesByCashier}">
               <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="c:SalesByCashierRow">

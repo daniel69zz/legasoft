@@ -246,12 +246,15 @@ public static class PurchasingEndpoints
                         l.DamagedQuantity)).ToList(),
                     userName, now, BusinessEndpoints.Today(time));
 
+                var branch = await Branches.ForDeviceAsync(db, http.User.FindFirst("device")?.Value ?? "");
                 foreach (var (line, lot) in received)
                 {
                     // RF-033: solo ingresan al stock las unidades en buen estado.
                     db.Lots.Add(lot);
-                    db.StockMovements.Add(new StockMovement(Guid.NewGuid(), lot.ProductId, lot.Id,
-                        StockMovementType.Compra, lot.Quantity, $"Recepción {purchase.Number}", userName, now));
+                    var movement = new StockMovement(Guid.NewGuid(), lot.ProductId, lot.Id,
+                        StockMovementType.Compra, lot.Quantity, $"Recepción {purchase.Number}", userName, now);
+                    db.StockMovements.Add(movement);
+                    db.Entry(movement).Property(Branches.Column).CurrentValue = branch;   // SCRUM-34 · HU-29
                     db.LotFeed.Add(new LotFeedEntry
                     {
                         LotId = lot.Id, ProductId = lot.ProductId, LotNumber = lot.LotNumber,

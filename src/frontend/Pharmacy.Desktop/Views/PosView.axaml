@@ -77,16 +77,39 @@
 
           <Grid ColumnDefinitions="*,Auto" Margin="0,6,0,0">
             <TextBlock Text="Total" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center" />
-            <TextBlock Grid.Column="1" Classes="kpi" Text="{Binding Total, StringFormat='Bs {0:N2}'}" />
+            <TextBlock Grid.Column="1" Classes="kpi" Text="{Binding TotalToPay, StringFormat='Bs {0:N2}'}" />
           </Grid>
 
-          <StackPanel Spacing="6" IsVisible="{Binding NeedsPrescription}">
-            <TextBlock Text="La venta incluye medicamentos con receta (RF-091)" Foreground="{StaticResource Warn}" FontSize="12" />
-            <TextBox Watermark="N.º de receta médica" Text="{Binding PrescriptionNumber}" />
-          </StackPanel>
-          <Grid ColumnDefinitions="*,120" ColumnSpacing="8">
+          <!-- SCRUM-30 · HU-27: descuento autorizado (solo con permiso) -->
+          <Grid ColumnDefinitions="*,140" ColumnSpacing="8" IsVisible="{Binding CanDiscount}">
+            <TextBlock Classes="muted" VerticalAlignment="Center" TextWrapping="Wrap"
+                       Text="Descuento autorizado (RF-096); queda registrado con su usuario" />
+            <NumericUpDown Grid.Column="1" TextConverter="{x:Static conv:DecimalText.Money}" Value="{Binding Discount}"
+                           Minimum="0" Increment="1" Watermark="Bs 0,00" />
+          </Grid>
+
+          <!-- SCRUM-29 · HU-25: receta médica registrada y asociada a la venta -->
+          <Border Classes="card" Padding="12" IsVisible="{Binding NeedsPrescription}">
+            <StackPanel Spacing="6">
+              <TextBlock Text="La venta incluye medicamentos con receta (RF-091)" Foreground="{StaticResource Warn}"
+                         FontWeight="SemiBold" FontSize="12" />
+              <Grid ColumnDefinitions="*,140" ColumnSpacing="8">
+                <TextBox Watermark="N.º de receta" Text="{Binding PrescriptionNumber}" />
+                <CalendarDatePicker Grid.Column="1" SelectedDate="{Binding PrescriptionDate}"
+                                    SelectedDateFormat="Custom" CustomDateFormatString="dd/MM/yyyy"
+                                    HorizontalAlignment="Stretch" Watermark="Emitida el" />
+              </Grid>
+              <TextBox Watermark="Médico que la emitió" Text="{Binding PrescriptionDoctor}" />
+              <TextBox Watermark="Paciente" Text="{Binding PrescriptionPatient}" />
+            </StackPanel>
+          </Border>
+
+          <!-- SCRUM-28 · HU-24: cliente registrado (búsqueda por NIT/CI con conexión) -->
+          <Grid ColumnDefinitions="*,120,Auto" ColumnSpacing="8">
             <TextBox Watermark="Cliente (opcional)" Text="{Binding CustomerName}" />
             <TextBox Grid.Column="1" Watermark="NIT / CI" Text="{Binding CustomerTaxId}" />
+            <Button Grid.Column="2" Classes="small" Content="Buscar" Command="{Binding LookupCustomerCommand}"
+                    ToolTip.Tip="Completa el nombre de un cliente registrado" />
           </Grid>
           <TextBlock Classes="muted" Text="Efectivo recibido (único medio de pago)" />
           <NumericUpDown TextConverter="{x:Static conv:DecimalText.Money}" Value="{Binding CashReceived}" Minimum="0" Increment="10" />
@@ -95,6 +118,11 @@
             <TextBlock Grid.Column="1" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource Navy}"
                        Text="{Binding ChangePreview, StringFormat='Bs {0:N2}', FallbackValue='—', TargetNullValue='—'}" />
           </Grid>
+          <!-- SCRUM-22 · HU-12: el efectivo no alcanza -->
+          <Border Classes="badge danger" Padding="10,6" IsVisible="{Binding HasMissing}">
+            <TextBlock Foreground="{StaticResource Danger}" FontWeight="SemiBold"
+                       Text="{Binding Missing, StringFormat='Faltan Bs {0:N2} para cubrir el total'}" />
+          </Border>
           <Button Classes="primary" Content="Cobrar y emitir recibo" HorizontalAlignment="Stretch"
                   HorizontalContentAlignment="Center" Command="{Binding ConfirmCommand}" />
           <TextBlock Classes="error" Text="{Binding Error}" IsVisible="{Binding Error, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
@@ -117,20 +145,38 @@
         <ItemsControl ItemsSource="{Binding RecentSales}">
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="vm:RecentSale">
-              <Grid ColumnDefinitions="170,120,*,110,Auto" Margin="0,2">
+              <Grid ColumnDefinitions="170,110,*,100,Auto" Margin="0,2">
                 <TextBlock Text="{Binding ReceiptNumber}" VerticalAlignment="Center" />
                 <TextBlock Grid.Column="1" Classes="muted" VerticalAlignment="Center"
-                           Text="{Binding CreatedAt, StringFormat='{}{0:dd/MM HH:mm}'}" />
+                           Text="{Binding CreatedAt, Converter={x:Static conv:LocalTime.Instance}, ConverterParameter='dd/MM HH:mm'}" />
                 <TextBlock Grid.Column="2" Classes="muted" VerticalAlignment="Center" Text="{Binding Status}" />
                 <TextBlock Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,12,0"
                            Text="{Binding Total, StringFormat='Bs {0:N2}'}" />
-                <Button Grid.Column="4" Classes="small danger" Content="Anular" IsVisible="{Binding CanVoid}"
-                        Command="{Binding $parent[UserControl].((vm:PosViewModel)DataContext).VoidCommand}"
-                        CommandParameter="{Binding}" />
+                <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="6">
+                  <Button Classes="small" Content="Recibo PDF" ToolTip.Tip="Descarga el recibo (RF-050)"
+                          Command="{Binding $parent[UserControl].((vm:PosViewModel)DataContext).DownloadReceiptCommand}"
+                          CommandParameter="{Binding}" />
+                  <Button Classes="small" Content="Factura" IsVisible="{Binding CanVoid}"
+                          ToolTip.Tip="Factura simulada sin validez fiscal (RF-063); requiere conexión"
+                          Command="{Binding $parent[UserControl].((vm:PosViewModel)DataContext).InvoiceCommand}"
+                          CommandParameter="{Binding}" />
+                  <Button Classes="small danger" Content="Anular" IsVisible="{Binding CanVoid}"
+                          Command="{Binding $parent[UserControl].((vm:PosViewModel)DataContext).VoidCommand}"
+                          CommandParameter="{Binding}" />
+                </StackPanel>
               </Grid>
             </DataTemplate>
           </ItemsControl.ItemTemplate>
         </ItemsControl>
+        <!-- SCRUM-24 · HU-14 (RF-051): recibos del período en un solo PDF -->
+        <Grid ColumnDefinitions="Auto,140,140,Auto" ColumnSpacing="8" Margin="0,6,0,0">
+          <TextBlock Classes="muted" VerticalAlignment="Center" Text="Recibos del período (RF-051)" />
+          <CalendarDatePicker Grid.Column="1" SelectedDate="{Binding ReceiptsFrom}" SelectedDateFormat="Custom"
+                              CustomDateFormatString="dd/MM/yyyy" HorizontalAlignment="Stretch" />
+          <CalendarDatePicker Grid.Column="2" SelectedDate="{Binding ReceiptsTo}" SelectedDateFormat="Custom"
+                              CustomDateFormatString="dd/MM/yyyy" HorizontalAlignment="Stretch" />
+          <Button Grid.Column="3" Classes="small" Content="Descargar PDF" Command="{Binding DownloadReceiptsCommand}" />
+        </Grid>
       </StackPanel>
     </Border>
   </Grid>

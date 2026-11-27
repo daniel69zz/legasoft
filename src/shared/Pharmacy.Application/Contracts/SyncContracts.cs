@@ -17,6 +17,7 @@ public static class EventTypes
     public const string CashSessionClosed = "CashSessionClosed";
     public const string CashHandoverRequested = "CashHandoverRequested";
     public const string CashHandoverConfirmed = "CashHandoverConfirmed";
+    public const string CashArqueoRegistered = "CashArqueoRegistered";   // SCRUM-25 · HU-15
 }
 
 /// <summary>Mensaje Outbox tal como viaja al Sync Service (Documento 3, sección 7.2).</summary>
@@ -53,4 +54,6 @@ public sealed record CatalogProductDto(Guid Id, string Code, string Name, string
 /// vencimiento vigente (SCRUM-130 · HU-28.1); es nulo cuando responde un servidor anterior al Sprint 2.
 /// </summary>
 public sealed record PullResponse(long Version, IReadOnlyList<CatalogProductDto> Products,
-    int? ExpiryThresholdDays = null);
+    int? ExpiryThresholdDays = null,
+    // Sprint 3: descuento máximo (SCRUM-30 · HU-27) y datos de la empresa para los recibos (SCRUM-33 · HU-28).
+    int? MaxDiscountPercent = null, CompanyProfileDto? Company = null);

@@ -13,8 +13,12 @@ namespace Business.Api;
 /// </summary>
 public class EventApplier(BusinessDb db, ILogger<EventApplier> logger)
 {
+    /// <summary>SCRUM-34 · HU-29: sucursal del puesto que envió el evento.</summary>
+    private string _branch = "";
+
     public async Task ApplyAsync(SyncEnvelope message, CancellationToken ct)
     {
+        _branch = await Branches.ForDeviceAsync(db, message.DeviceId, ct);
         switch (message.EventType)
         {
             case EventTypes.SaleCreated:
@@ -29,7 +33,7 @@ public class EventApplier(BusinessDb db, ILogger<EventApplier> logger)
                     db.CashSessions.Add(new CashSessionRecord
                     {
                         Id = opened.CashSessionId, DeviceId = opened.DeviceId, CashierName = opened.CashierName,
-                        OpeningAmount = opened.OpeningAmount, OpenedAt = opened.OpenedAt,
+                        OpeningAmount = opened.OpeningAmount, OpenedAt = opened.OpenedAt, Branch = _branch,
                     });
                 break;
             case EventTypes.CashMovementRegistered:
@@ -38,6 +42,7 @@ public class EventApplier(BusinessDb db, ILogger<EventApplier> logger)
                 {
                     Id = m.MovementId, CashSessionId = m.CashSessionId, Type = m.Type, Amount = m.Amount,
                     Reason = m.Reason, Category = m.Category, UserName = m.UserName, OccurredAt = m.OccurredAt,
+                    Branch = _branch,
                 });
                 Audit(message, m.UserName, "Egreso de caja", $"Bs {m.Amount:0.00} · {m.Category} · {m.Reason}");
                 break;
@@ -49,6 +54,9 @@ public class EventApplier(BusinessDb db, ILogger<EventApplier> logger)
                 break;
             case EventTypes.StockMovementCreated:
                 await StockMovementAsync(Read<StockMovementPayload>(message), message, ct);
+                break;
+            case EventTypes.CashArqueoRegistered:
+                await ArqueoAsync(Read<CashArqueoPayload>(message), message, ct);
                 break;
             default:
                 throw new ArgumentException($"Tipo de evento desconocido: {message.EventType}");
@@ -66,7 +74,9 @@ public class EventApplier(BusinessDb db, ILogger<EventApplier> logger)
             CashSessionId = p.CashSessionId, CreatedAt = p.CreatedAt, Subtotal = p.Subtotal, Discount = p.Discount,
             Total = p.Total, CashReceived = p.CashReceived, Change = p.Change,
             PrescriptionNumber = p.PrescriptionNumber, CustomerName = p.CustomerName,
-            CustomerTaxId = p.CustomerTaxId,
+            CustomerTaxId = p.CustomerTaxId, PrescriptionDoctor = p.PrescriptionDoctor,
+            PrescriptionPatient = p.PrescriptionPatient, PrescriptionIssuedOn = p.PrescriptionIssuedOn,
+            DiscountAuthorizedBy = p.DiscountAuthorizedBy, Branch = _branch,
             Lines = p.Lines.Select(l => new SaleLineRecord
             {
                 Id = Guid.NewGuid(), SaleId = p.SaleId, ProductId = l.ProductId, ProductName = l.ProductName,
@@ -77,10 +87,15 @@ public class EventApplier(BusinessDb db, ILogger<EventApplier> logger)
         {
             Id = Guid.NewGuid(), CashSessionId = p.CashSessionId, Type = "Venta", Amount = p.Total,
             Reason = $"Venta {p.ReceiptNumber}", Category = "Ventas", UserName = p.CashierName,
-            OccurredAt = p.CreatedAt,
+            OccurredAt = p.CreatedAt, Branch = _branch,
         });
+        // SCRUM-30 · HU-27 y SCRUM-13 · HU-20: el descuento queda en la bitácora con quién lo autorizó.
         if (p.Discount > 0)
-            Audit(message, p.CashierName, "Descuento aplicado", $"{p.ReceiptNumber}: Bs {p.Discount:0.00}");
+            Audit(message, string.IsNullOrEmpty(p.DiscountAuthorizedBy) ? p.CashierName : p.DiscountAuthorizedBy,
+                "Descuento aplicado", $"{p.ReceiptNumber}: Bs {p.Discount:0.00} sobre Bs {p.Subtotal:0.00}");
+        if (!string.IsNullOrEmpty(p.PrescriptionDoctor))
+            Audit(message, p.CashierName, "Venta con receta",
+                $"{p.ReceiptNumber}: receta {p.PrescriptionNumber} · Dr. {p.PrescriptionDoctor} · {p.PrescriptionPatient}");
 
         await MoveStockAsync(p.Lines.Select(l => (l.ProductId, l.LotId, -l.Quantity)), StockMovementType.Venta,
             $"Venta {p.ReceiptNumber}", p.CashierName, p.CreatedAt, ct);
@@ -98,6 +113,7 @@ public class EventApplier(BusinessDb db, ILogger<EventApplier> logger)
         {
             Id = Guid.NewGuid(), CashSessionId = sale.CashSessionId, Type = "AnulacionVenta", Amount = sale.Total,
             Reason = p.Reason, Category = "Anulaciones", UserName = p.VoidedBy, OccurredAt = p.VoidedAt,
+            Branch = _branch,
         });
         await MoveStockAsync(sale.Lines.Select(l => (l.ProductId, l.LotId, l.Quantity)), StockMovementType.Ajuste,
             $"Anulación {sale.ReceiptNumber}", p.VoidedBy, p.VoidedAt, ct);
@@ -111,7 +127,7 @@ public class EventApplier(BusinessDb db, ILogger<EventApplier> logger)
             db.CashSessions.Add(session = new CashSessionRecord
             {
                 Id = p.CashSessionId, DeviceId = p.DeviceId, CashierName = p.CashierName, OpenedAt = p.OpenedAt,
-                OpeningAmount = p.OpeningAmount,
+                OpeningAmount = p.OpeningAmount, Branch = _branch,
             });
         session.Status = "Cerrada";
         session.SalesTotal = p.SalesTotal;
@@ -173,8 +189,11 @@ public class EventApplier(BusinessDb db, ILogger<EventApplier> logger)
                 logger.LogWarning("Stock central insuficiente en el lote {Lot}: faltan {Missing} unidades",
                     lot.LotNumber, -p.Quantity - take);
         }
-        db.StockMovements.Add(new StockMovement(p.MovementId, p.ProductId, p.LotId, type, p.Quantity, p.Reason,
-            p.UserName, p.OccurredAt));
+        var movement = new StockMovement(p.MovementId, p.ProductId, p.LotId, type, p.Quantity, p.Reason,
+            p.UserName, p.OccurredAt);
+        db.StockMovements.Add(movement);
+        db.Entry(movement).Property(Branches.Column).CurrentValue = _branch;
+        if (lot is not null) LotFeed.Publish(db, lot, message.Timestamp);   // SCRUM-35 · HU-22
         Audit(message, p.UserName, "Movimiento de inventario",
             $"{type} {p.Quantity:+0;-0} u. · lote {p.LotNumber} · {p.Reason}");
     }
@@ -202,9 +221,26 @@ public class EventApplier(BusinessDb db, ILogger<EventApplier> logger)
                     logger.LogWarning("Stock central insuficiente en el lote {Lot}: faltan {Missing} unidades",
                         lot.LotNumber, -quantity - take);
             }
-            db.StockMovements.Add(new StockMovement(Guid.NewGuid(), productId, lotId, type, quantity, reason, userName,
-                at));
+            var movement = new StockMovement(Guid.NewGuid(), productId, lotId, type, quantity, reason, userName, at);
+            db.StockMovements.Add(movement);
+            db.Entry(movement).Property(Branches.Column).CurrentValue = _branch;
+            if (lot is not null) LotFeed.Publish(db, lot, at);   // SCRUM-35 · HU-22
         }
+    }
+
+    /// <summary>SCRUM-25 · HU-15 (RF-056): arqueo durante el turno.</summary>
+    private async Task ArqueoAsync(CashArqueoPayload p, SyncEnvelope message, CancellationToken ct)
+    {
+        if (await db.CashArqueos.AnyAsync(a => a.Id == p.ArqueoId, ct)) return;
+        db.CashArqueos.Add(new CashArqueoRecord
+        {
+            Id = p.ArqueoId, CashSessionId = p.CashSessionId, DeviceId = p.DeviceId, UserName = p.UserName,
+            ExpectedAmount = p.ExpectedAmount, CountedAmount = p.CountedAmount, Difference = p.Difference,
+            Note = p.Note, OccurredAt = p.OccurredAt,
+        });
+        Audit(message, p.UserName, "Arqueo de caja",
+            $"Esperado Bs {p.ExpectedAmount:0.00}, contado Bs {p.CountedAmount:0.00}, diferencia Bs {p.Difference:0.00}" +
+            (p.Note.Length > 0 ? $" · {p.Note}" : ""));
     }
 
     private void Audit(SyncEnvelope message, string userName, string action, string detail) =>

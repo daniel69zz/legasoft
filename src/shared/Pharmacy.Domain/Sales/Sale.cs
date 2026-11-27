@@ -45,6 +45,11 @@ public class Sale
     public decimal CashReceived { get; private set; }
     public decimal Change { get; private set; }
     public string PrescriptionNumber { get; private set; } = "";
+
+    // SCRUM-29 · HU-25 (RF-088, RF-089): datos de la receta asociada a la venta.
+    public string PrescriptionDoctor { get; private set; } = "";
+    public string PrescriptionPatient { get; private set; } = "";
+    public DateOnly? PrescriptionIssuedOn { get; private set; }
     public string CustomerName { get; private set; } = "";
     public string CustomerTaxId { get; private set; } = "";
     public string VoidReason { get; private set; } = "";
@@ -89,21 +94,35 @@ public class Sale
         CustomerTaxId = taxId.Trim();
     }
 
-    /// <summary>Cierra la venta con el efectivo recibido y calcula el cambio (RF-042, RF-044, RF-045).</summary>
-    public void Complete(decimal cashReceived, string? prescriptionNumber)
+    /// <summary>
+    /// Cierra la venta con el efectivo recibido y calcula el cambio (RF-042, RF-044, RF-045). Si incluye
+    /// medicamentos con receta, la receta es obligatoria y queda asociada a la venta (RF-089 a RF-091).
+    /// </summary>
+    public void Complete(decimal cashReceived, Prescription? prescription = null)
     {
         EnsureInProgress();
         if (_lines.Count == 0) throw new DomainException("La venta no tiene productos.");
-        if (RequiresPrescription && string.IsNullOrWhiteSpace(prescriptionNumber))
+        if (RequiresPrescription && prescription is null)
             throw new DomainException("La venta incluye medicamentos que requieren receta: registre la receta (RF-091).");
+        // SCRUM-22 · HU-12: indica cuánto falta para cubrir el total.
         if (cashReceived < Total)
-            throw new DomainException($"El efectivo recibido (Bs {cashReceived:0.00}) no cubre el total (Bs {Total:0.00}).");
+            throw new DomainException(
+                $"El efectivo recibido (Bs {cashReceived:N2}) no cubre el total (Bs {Total:N2}): faltan Bs {MissingFor(cashReceived):N2}.");
 
-        PrescriptionNumber = prescriptionNumber?.Trim() ?? "";
+        if (prescription is not null)
+        {
+            PrescriptionNumber = prescription.Number;
+            PrescriptionDoctor = prescription.Doctor;
+            PrescriptionPatient = prescription.Patient;
+            PrescriptionIssuedOn = prescription.IssuedOn;
+        }
         CashReceived = MoneyMath.Round(cashReceived);
         Change = MoneyMath.Round(CashReceived - Total);
         Status = SaleStatus.Completada;
     }
+
+    /// <summary>SCRUM-22 · HU-12 (RF-044): lo que falta para cubrir el total con el efectivo recibido.</summary>
+    public decimal MissingFor(decimal cashReceived) => Math.Max(0, MoneyMath.Round(Total - cashReceived));
 
     /// <summary>RF-048: solo se anula una venta completada y con motivo.</summary>
     public void Void(string reason, string userName, DateTimeOffset now)

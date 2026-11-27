@@ -18,6 +18,8 @@ public static class BusinessEndpoints
         app.MapCatalogEndpoints();
         app.MapPurchasingEndpoints();
         app.MapReportingEndpoints();
+        app.MapSprint3Endpoints();
+        app.MapBackupEndpoints();
 
         var api = app.MapGroup("/api");
 
@@ -75,18 +77,28 @@ public static class BusinessEndpoints
             .Produces(StatusCodes.Status201Created).ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status422UnprocessableEntity);
 
-        api.MapGet("/reports/sales", async (DateOnly? from, DateOnly? to, BusinessDb db, TimeProvider time) =>
+        api.MapGet("/reports/sales", async (DateOnly? from, DateOnly? to, string? groupBy, BusinessDb db,
+            TimeProvider time) =>
         {
             var end = to ?? Today(time);
             var start = from ?? end.AddDays(-6);
-            return await SalesByCashierAsync(db, start, end);
+            return await SalesByCashierAsync(db, start, end, groupBy);
         }).RequirePermission(Permission.Reportes).WithTags("Reportes")
             .WithSummary("Ventas por cajero y día del período (RF-074)");
 
-        api.MapGet("/dashboard", async (BusinessDb db, TimeProvider time) =>
+        // SCRUM-32 · HU-19: el comparativo por cajero se agrupa por día (7 días), semana (8 semanas) o mes (6 meses).
+        api.MapGet("/dashboard", async (string? groupBy, BusinessDb db, TimeProvider time) =>
         {
             var today = Today(time);
             var last7 = await SalesByCashierAsync(db, today.AddDays(-6), today);
+            var comparative = groupBy switch
+            {
+                SalesGrouping.Week => await SalesByCashierAsync(db,
+                    SalesGrouping.PeriodStart(today, SalesGrouping.Week).AddDays(-7 * 7), today, SalesGrouping.Week),
+                SalesGrouping.Month => await SalesByCashierAsync(db,
+                    SalesGrouping.PeriodStart(today, SalesGrouping.Month).AddMonths(-5), today, SalesGrouping.Month),
+                _ => last7,
+            };
             var products = await db.Products.ToListAsync();
             var lots = await db.Lots.ToListAsync();
             var settings = await OperationalSettings.GetAsync(db);
@@ -99,7 +111,7 @@ public static class BusinessEndpoints
                 ExpiringLots: expiry.Count(e => e.Status == ExpiryStatus.PorVencer),
                 ExpiredLots: expiry.Count(e => e.Status == ExpiryStatus.Vencido),
                 ClosuresWithDifference: await db.CashSessions.CountAsync(s => s.Difference != null && s.Difference != 0),
-                SalesByCashier: last7);
+                SalesByCashier: comparative);
         }).RequirePermission(Permission.Reportes).WithTags("Reportes")
             .WithSummary("Dashboard gerencial: ventas de hoy y de 7 días, alertas y cierres con diferencia (RF-073)");
 
@@ -136,7 +148,8 @@ public static class BusinessEndpoints
             var settings = await OperationalSettings.GetAsync(db);
             return new PullResponse(version, products.Select(p => new CatalogProductDto(p.Id, p.Code, p.Name,
                 p.ActiveIngredient, p.Concentration, p.Presentation, p.Laboratory, p.Category, p.RequiresPrescription,
-                p.SalePrice, p.MinimumStock, p.Location, p.IsActive, p.UpdatedAt)).ToList(), settings.ExpiryThresholdDays);
+                p.SalePrice, p.MinimumStock, p.Location, p.IsActive, p.UpdatedAt)).ToList(), settings.ExpiryThresholdDays,
+                settings.MaxDiscountPercent, await CompanyProfile.GetAsync(db));
         });
 
         // SCRUM-19 · HU-09: lotes creados en el servidor (recepción de compras) para que los puestos los vendan con FEFO.
@@ -173,18 +186,21 @@ public static class BusinessEndpoints
                 $"Lote {e.LotNumber}: {e.Quantity} u., vence {e.ExpirationDate:dd/MM/yyyy} ({e.DaysToExpire} días)"));
             var low = InventoryAlerts.LowStock(products, lots, today).Select(a => new AlertDto("Stock mínimo",
                 a.ProductName, $"Stock {a.Stock} u. (mínimo {a.MinimumStock})"));
-            return expiry.Concat(low).ToList();
+            // SCRUM-41 · HU-T06 (RNF-008): el Notification Worker avisa si el respaldo diario falló o falta.
+            return expiry.Concat(low).Concat(await BackupHealth.AlertsAsync(db, time)).ToList();
         });
     }
 
-    private static async Task<List<SalesByCashierRow>> SalesByCashierAsync(BusinessDb db, DateOnly start, DateOnly end)
+    internal static async Task<List<SalesByCashierRow>> SalesByCashierAsync(BusinessDb db, DateOnly start,
+        DateOnly end, string? groupBy = null)
     {
         var from = new DateTimeOffset(start.ToDateTime(TimeOnly.MinValue), LaPaz);
         var to = new DateTimeOffset(end.AddDays(1).ToDateTime(TimeOnly.MinValue), LaPaz);
         var sales = await db.Sales.Where(s => s.Status == "Completada" && s.CreatedAt >= from && s.CreatedAt < to)
             .Select(s => new { s.CreatedAt, s.CashierName, s.Total }).ToListAsync();
         return sales
-            .GroupBy(s => (Day: DateOnly.FromDateTime(s.CreatedAt.ToOffset(LaPaz).DateTime), s.CashierName))
+            .GroupBy(s => (Day: SalesGrouping.PeriodStart(DateOnly.FromDateTime(s.CreatedAt.ToOffset(LaPaz).DateTime),
+                groupBy), s.CashierName))
             .Select(g => new SalesByCashierRow(g.Key.Day, g.Key.CashierName, g.Count(), g.Sum(s => s.Total)))
             .OrderBy(r => r.Day).ThenBy(r => r.CashierName)
             .ToList();

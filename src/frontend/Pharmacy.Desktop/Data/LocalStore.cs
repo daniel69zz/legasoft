@@ -55,6 +55,34 @@ public sealed class LocalStore(LocalDb db)
             ? days
             : Pharmacy.Domain.Inventory.InventoryAlerts.DefaultExpiryThresholdDays;
 
+    /// <summary>SCRUM-30 · HU-27: descuento máximo recibido del servidor.</summary>
+    public const string MaxDiscountKey = "max_discount_percent";
+
+    /// <summary>SCRUM-33 · HU-28: datos de la empresa recibidos del servidor, para los recibos.</summary>
+    public const string CompanyKey = "company_profile";
+
+    public async Task<int> GetMaxDiscountPercentAsync(CancellationToken ct = default) =>
+        await db.SyncState.FindAsync([MaxDiscountKey], ct) is { } state && int.TryParse(state.Value, out var percent)
+            ? percent
+            : Pharmacy.Domain.Sales.DiscountPolicy.DefaultMaxPercent;
+
+    public async Task<Pharmacy.Application.Contracts.CompanyProfileDto> GetCompanyAsync(CancellationToken ct = default)
+    {
+        if (await db.SyncState.FindAsync([CompanyKey], ct) is { } state)
+        {
+            try
+            {
+                return System.Text.Json.JsonSerializer.Deserialize<Pharmacy.Application.Contracts.CompanyProfileDto>(
+                    state.Value) ?? Pharmacy.Application.Contracts.CompanyProfileDto.Default;
+            }
+            catch (System.Text.Json.JsonException)
+            {
+                // Si el valor guardado no se puede leer, se usan los datos por defecto.
+            }
+        }
+        return Pharmacy.Application.Contracts.CompanyProfileDto.Default;
+    }
+
     public void Add(OutboxMessage message) => db.Outbox.Add(message);
 
     public Task SaveChangesAsync(CancellationToken ct = default) => db.SaveChangesAsync(ct);

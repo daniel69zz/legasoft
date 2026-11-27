@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- SCRUM-37 · HU-T01 (RNF-001, RNF-002): prueba de carga contra un backend levantado (no corre en la CI) -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\shared\Pharmacy.Application\Pharmacy.Application.csproj" />
+  </ItemGroup>
+</Project>

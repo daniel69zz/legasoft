@@ -110,9 +110,37 @@
               <TextBlock Text="Diferencia (RF-059)" FontWeight="SemiBold" />
               <TextBlock Grid.Column="1" FontWeight="Bold" Foreground="{StaticResource Navy}" Text="{Binding Difference, StringFormat='Bs {0:N2}'}" />
             </Grid>
+            <!-- SCRUM-25 · HU-15 (RF-056): arqueo con el mismo conteo, sin cerrar la caja -->
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+              <TextBox Watermark="Nota del arqueo (opcional)" Text="{Binding ArqueoNote}" />
+              <Button Grid.Column="1" Content="Registrar arqueo" Command="{Binding RegisterArqueoCommand}"
+                      ToolTip.Tip="Cuenta el efectivo sin cerrar la caja (RF-056)" />
+            </Grid>
             <TextBox Watermark="Justificación (obligatoria si hay diferencia, RF-106)" Text="{Binding Justification}"
                      AcceptsReturn="True" Height="60" TextWrapping="Wrap" />
             <Button Classes="primary" Content="Cerrar caja" Command="{Binding CloseCommand}" />
+            <StackPanel Spacing="4" Margin="0,8,0,0"
+                        IsVisible="{Binding Arqueos.Count, Converter={x:Static conv:CountToVisible.Instance}}">
+              <TextBlock Classes="h2" Text="Arqueos del turno (RF-056)" />
+              <ItemsControl ItemsSource="{Binding Arqueos}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:ArqueoRow">
+                    <Border Classes="row">
+                      <Grid ColumnDefinitions="60,*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="8">
+                        <TextBlock Classes="muted" Text="{Binding OccurredAt, StringFormat='{}{0:HH:mm}'}" />
+                        <TextBlock Grid.Column="1" TextWrapping="Wrap">
+                          <Run Text="Contado Bs " /><Run Text="{Binding Counted, Mode=OneWay, StringFormat='{}{0:N2}'}" /><Run Text=" · esperado Bs " /><Run Text="{Binding Expected, Mode=OneWay, StringFormat='{}{0:N2}'}" />
+                        </TextBlock>
+                        <TextBlock Grid.Column="2" FontWeight="SemiBold"
+                                   Text="{Binding Difference, StringFormat='Bs {0:N2}'}" />
+                        <TextBlock Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Classes="muted" Text="{Binding Note}"
+                                   IsVisible="{Binding Note, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
           </StackPanel>
         </Border>
       </Grid>
