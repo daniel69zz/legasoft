@@ -66,6 +66,59 @@ namespace Business.Api.Migrations
                     b.ToTable("entries", "audit");
                 });
 
+            modelBuilder.Entity("Business.Api.CashArqueoRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("CashSessionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("cash_session_id");
+
+                    b.Property<decimal>("CountedAmount")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("counted_amount");
+
+                    b.Property<string>("DeviceId")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("device_id");
+
+                    b.Property<decimal>("Difference")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("difference");
+
+                    b.Property<decimal>("ExpectedAmount")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("expected_amount");
+
+                    b.Property<string>("Note")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("note");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("occurred_at");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("user_name");
+
+                    b.HasKey("Id")
+                        .HasName("pk_arqueos");
+
+                    b.HasIndex("CashSessionId")
+                        .HasDatabaseName("ix_arqueos_cash_session_id");
+
+                    b.ToTable("arqueos", "cash");
+                });
+
             modelBuilder.Entity("Business.Api.CashMovementRecord", b =>
                 {
                     b.Property<Guid>("Id")
@@ -76,6 +129,11 @@ namespace Business.Api.Migrations
                         .HasPrecision(12, 2)
                         .HasColumnType("numeric(12,2)")
                         .HasColumnName("amount");
+
+                    b.Property<string>("Branch")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("branch");
 
                     b.Property<Guid>("CashSessionId")
                         .HasColumnType("uuid")
@@ -116,6 +174,11 @@ namespace Business.Api.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid")
                         .HasColumnName("id");
+
+                    b.Property<string>("Branch")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("branch");
 
                     b.Property<string>("CashierName")
                         .IsRequired()
@@ -193,6 +256,121 @@ namespace Business.Api.Migrations
                         .HasName("pk_sessions");
 
                     b.ToTable("sessions", "cash");
+                });
+
+            modelBuilder.Entity("Business.Api.CustomerRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("email");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("phone");
+
+                    b.Property<string>("TaxId")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("tax_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_customers");
+
+                    b.HasIndex("Name")
+                        .HasDatabaseName("ix_customers_name");
+
+                    b.HasIndex("TaxId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_customers_tax_id");
+
+                    b.ToTable("customers", "sales");
+                });
+
+            modelBuilder.Entity("Business.Api.InvoiceRecord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("CustomerName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("customer_name");
+
+                    b.Property<string>("CustomerTaxId")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("customer_tax_id");
+
+                    b.Property<decimal>("Discount")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("discount");
+
+                    b.Property<DateTimeOffset>("IssuedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("issued_at");
+
+                    b.Property<string>("IssuedBy")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("issued_by");
+
+                    b.Property<int>("Number")
+                        .HasColumnType("integer")
+                        .HasColumnName("number");
+
+                    b.Property<string>("ReceiptNumber")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("receipt_number");
+
+                    b.Property<Guid>("SaleId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sale_id");
+
+                    b.Property<decimal>("Subtotal")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("subtotal");
+
+                    b.Property<decimal>("Total")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("total");
+
+                    b.HasKey("Id")
+                        .HasName("pk_invoices");
+
+                    b.HasIndex("Number")
+                        .IsUnique()
+                        .HasDatabaseName("ix_invoices_number");
+
+                    b.HasIndex("SaleId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_invoices_sale_id");
+
+                    b.ToTable("invoices", "sales");
                 });
 
             modelBuilder.Entity("Business.Api.LotFeedEntry", b =>
@@ -287,6 +465,11 @@ namespace Business.Api.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
+                    b.Property<string>("Branch")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("branch");
+
                     b.Property<decimal>("CashReceived")
                         .HasPrecision(12, 2)
                         .HasColumnType("numeric(12,2)")
@@ -330,10 +513,29 @@ namespace Business.Api.Migrations
                         .HasColumnType("numeric(12,2)")
                         .HasColumnName("discount");
 
+                    b.Property<string>("DiscountAuthorizedBy")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("discount_authorized_by");
+
+                    b.Property<string>("PrescriptionDoctor")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("prescription_doctor");
+
+                    b.Property<DateOnly?>("PrescriptionIssuedOn")
+                        .HasColumnType("date")
+                        .HasColumnName("prescription_issued_on");
+
                     b.Property<string>("PrescriptionNumber")
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("prescription_number");
+
+                    b.Property<string>("PrescriptionPatient")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("prescription_patient");
 
                     b.Property<string>("ReceiptNumber")
                         .IsRequired()
@@ -509,6 +711,12 @@ namespace Business.Api.Migrations
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid")
                         .HasColumnName("id");
+
+                    b.Property<string>("Branch")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("")
+                        .HasColumnName("branch");
 
                     b.Property<Guid>("LotId")
                         .HasColumnType("uuid")
