@@ -96,11 +96,19 @@ public class LocalDb(DbContextOptions<LocalDb> options) : DbContext(options)
             e.Property(s => s.Id).ValueGeneratedNever();
             e.HasMany(s => s.Movements).WithOne().HasForeignKey(m => m.CashSessionId);
             e.Navigation(s => s.Movements).UsePropertyAccessMode(PropertyAccessMode.Field).AutoInclude();
+            e.HasMany(s => s.Arqueos).WithOne().HasForeignKey(a => a.CashSessionId);
+            e.Navigation(s => s.Arqueos).UsePropertyAccessMode(PropertyAccessMode.Field).AutoInclude();
         });
         b.Entity<CashMovement>(e =>
         {
             e.ToTable("cash_movements");
             e.Property(m => m.Id).ValueGeneratedNever();
+        });
+        // SCRUM-25 · HU-15 (RF-056): arqueos del turno.
+        b.Entity<CashArqueo>(e =>
+        {
+            e.ToTable("cash_arqueos");
+            e.Property(a => a.Id).ValueGeneratedNever();
         });
         b.Entity<OutboxMessage>(e =>
         {

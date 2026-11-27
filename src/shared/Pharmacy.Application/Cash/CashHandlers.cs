@@ -105,6 +105,21 @@ public sealed class CashHandlers(
         return movement;
     }
 
+    /// <summary>SCRUM-25 · HU-15 (RF-056): arqueo durante el turno, sin cerrar la caja.</summary>
+    public async Task<CashArqueo> RegisterArqueoAsync(IReadOnlyDictionary<decimal, int> denominations, string? note,
+        CancellationToken ct = default)
+    {
+        var session = await RequireOpenAsync(ct);
+        var now = clock.Now;
+        var arqueo = session.RegisterArqueo(new CashCount(denominations), note, user.UserName, now);
+        outbox.Add(OutboxMessage.Create(user.DeviceId, SyncModules.Cash, EventTypes.CashArqueoRegistered, arqueo.Id,
+            new CashArqueoPayload(arqueo.Id, session.Id, session.DeviceId, user.UserName, arqueo.ExpectedAmount,
+                arqueo.CountedAmount, arqueo.Difference, arqueo.Note, now,
+                denominations.Where(d => d.Value > 0).ToDictionary()), now));
+        await unitOfWork.SaveChangesAsync(ct);
+        return arqueo;
+    }
+
     /// <summary>RF-057 a RF-060 y RF-106.</summary>
     public async Task<CashSessionClosedPayload> CloseAsync(IReadOnlyDictionary<decimal, int> denominations,
         string? justification, CancellationToken ct = default)

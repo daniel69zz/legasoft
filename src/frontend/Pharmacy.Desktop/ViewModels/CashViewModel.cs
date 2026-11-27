@@ -25,6 +25,10 @@ public sealed partial class DenominationEntry(decimal value, Action changed) : O
 
 public sealed record MovementRow(DateTimeOffset OccurredAt, string Type, string Detail, decimal SignedAmount);
 
+/// <summary>SCRUM-25 · HU-15 (RF-056): arqueo hecho en el turno.</summary>
+public sealed record ArqueoRow(DateTimeOffset OccurredAt, decimal Expected, decimal Counted, decimal Difference,
+    string Note);
+
 /// <summary>Caja del puesto (RF-052 a RF-060, RF-106): apertura, egresos y cierre por denominación.</summary>
 public sealed partial class CashViewModel : ViewModelBase, IActivatable
 {
@@ -43,6 +47,7 @@ public sealed partial class CashViewModel : ViewModelBase, IActivatable
     [ObservableProperty] private string _expenseCategory = ExpenseCategories[0];
     [ObservableProperty] private string _justification = "";
     [ObservableProperty] private string _closingReport = "";
+    [ObservableProperty] private string _arqueoNote = "";
 
     // SCRUM-126 · HU-16.2 (RF-061, RF-062): entrega de caja al cajero entrante.
     [ObservableProperty] private bool _canHandover;
@@ -72,6 +77,7 @@ public sealed partial class CashViewModel : ViewModelBase, IActivatable
     public string[] Categories => ExpenseCategories;
     public ObservableCollection<DenominationEntry> Denominations { get; } = [];
     public ObservableCollection<MovementRow> Movements { get; } = [];
+    public ObservableCollection<ArqueoRow> Arqueos { get; } = [];
     public decimal Counted => Denominations.Sum(d => d.Subtotal);
     public decimal Difference => Counted - Expected;
 
@@ -82,6 +88,7 @@ public sealed partial class CashViewModel : ViewModelBase, IActivatable
         var session = await _operations.RunAsync<CashHandlers, CashSession?>(h => h.GetOpenAsync());
         IsOpen = session is not null;
         Movements.Clear();
+        Arqueos.Clear();
         await LoadHandoverAsync(session is null);
         if (session is null) return;
 
@@ -92,6 +99,8 @@ public sealed partial class CashViewModel : ViewModelBase, IActivatable
         foreach (var m in session.Movements.OrderByDescending(m => m.OccurredAt))
             Movements.Add(new MovementRow(m.OccurredAt, m.Type.ToString(),
                 m.Type == CashMovementType.Egreso ? $"{m.Category}: {m.Reason}" : m.Reason, m.SignedAmount));
+        foreach (var a in session.Arqueos.OrderByDescending(a => a.OccurredAt))
+            Arqueos.Add(new ArqueoRow(a.OccurredAt, a.ExpectedAmount, a.CountedAmount, a.Difference, a.Note));
     }
 
     /// <summary>Estado de la entrega según el último turno del puesto y el usuario conectado.</summary>
@@ -170,6 +179,23 @@ public sealed partial class CashViewModel : ViewModelBase, IActivatable
         Justification = "";
         await LoadAsync();
     }, "Caja cerrada. El reporte de cierre se sincronizará con el servidor.");
+
+    /// <summary>
+    /// SCRUM-25 · HU-15 (RF-056): arqueo durante el turno con el conteo por denominación, sin cerrar la caja.
+    /// </summary>
+    [RelayCommand]
+    private Task RegisterArqueoAsync() => RunAsync(async () =>
+    {
+        var units = Denominations.Where(d => d.Count > 0).ToDictionary(d => d.Value, d => (int)d.Count!.Value);
+        var arqueo = await _operations.RunAsync<CashHandlers, CashArqueo>(
+            h => h.RegisterArqueoAsync(units, ArqueoNote), changesData: true);
+        foreach (var d in Denominations) d.Count = null;
+        ArqueoNote = "";
+        await LoadAsync();
+        Info = arqueo.Difference == 0
+            ? $"Arqueo registrado: la caja cuadra (Bs {arqueo.CountedAmount:N2})."
+            : $"Arqueo registrado con una diferencia de Bs {arqueo.Difference:N2} (contado Bs {arqueo.CountedAmount:N2}, esperado Bs {arqueo.ExpectedAmount:N2}).";
+    });
 
     private void CountChanged()
     {
