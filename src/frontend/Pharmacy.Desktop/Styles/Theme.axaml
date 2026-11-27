@@ -242,6 +242,11 @@
     <Setter Property="Foreground" Value="White" />
   </Style>
 
+  <!-- Páginas con desplazamiento: espacio para la barra, que Fluent dibuja encima del contenido -->
+  <Style Selector="ScrollViewer.page">
+    <Setter Property="Padding" Value="0,0,14,0" />
+  </Style>
+
   <!-- Pestañas: tamaño acorde a los títulos de tarjeta -->
   <Style Selector="TabItem">
     <Setter Property="FontSize" Value="15" />

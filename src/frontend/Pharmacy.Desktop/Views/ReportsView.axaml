@@ -5,7 +5,7 @@
              xmlns:c="using:Pharmacy.Application.Contracts"
              x:Class="Pharmacy.Desktop.Views.ReportsView"
              x:DataType="vm:ReportsViewModel">
-  <ScrollViewer>
+  <ScrollViewer Classes="page">
     <StackPanel Spacing="16">
       <TextBlock Classes="error" Text="{Binding Error}" IsVisible="{Binding Error, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
       <TextBlock Classes="ok" Text="{Binding Info}" IsVisible="{Binding Info, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />

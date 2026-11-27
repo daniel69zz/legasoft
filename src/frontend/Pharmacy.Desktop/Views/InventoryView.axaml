@@ -44,7 +44,7 @@
       </DockPanel>
     </Border>
 
-    <ScrollViewer Grid.Column="1">
+    <ScrollViewer Grid.Column="1" Classes="page">
       <StackPanel Spacing="16">
         <TextBlock Classes="error" Text="{Binding Error}"
                    IsVisible="{Binding Error, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
