@@ -60,6 +60,10 @@ public interface ICashRepository
 public interface IOperationalSettings
 {
     Task<int> GetExpiryThresholdDaysAsync(CancellationToken ct = default);
+
+    /// <summary>SCRUM-30 · HU-27 (RF-096): descuento máximo autorizado, en % del subtotal.</summary>
+    Task<int> GetMaxDiscountPercentAsync(CancellationToken ct = default) =>
+        Task.FromResult(Pharmacy.Domain.Sales.DiscountPolicy.DefaultMaxPercent);
 }
 
 public interface IOutbox

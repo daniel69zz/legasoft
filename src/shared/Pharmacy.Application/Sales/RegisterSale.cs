@@ -3,6 +3,7 @@ using Pharmacy.Application.Abstractions;
 using Pharmacy.Application.Contracts;
 using Pharmacy.Application.Sync;
 using Pharmacy.Domain.Common;
+using Pharmacy.Domain.Identity;
 using Pharmacy.Domain.Inventory;
 using Pharmacy.Domain.Sales;
 
@@ -16,11 +17,15 @@ public sealed record RegisterSaleCommand(
     string? PrescriptionNumber = null,
     decimal Discount = 0,
     string? CustomerName = null,
-    string? CustomerTaxId = null);
+    string? CustomerTaxId = null,
+    string? PrescriptionDoctor = null,
+    string? PrescriptionPatient = null,
+    DateOnly? PrescriptionIssuedOn = null);
 
 public sealed record SaleReceipt(Guid SaleId, string ReceiptNumber, DateTimeOffset CreatedAt, string CashierName,
     IReadOnlyList<SaleLinePayload> Lines, decimal Subtotal, decimal Discount, decimal Total, decimal CashReceived,
-    decimal Change);
+    decimal Change, string CustomerName = "", string CustomerTaxId = "", string PrescriptionNumber = "",
+    string Status = "Completada");
 
 public sealed class RegisterSaleValidator : AbstractValidator<RegisterSaleCommand>
 {
@@ -45,7 +50,8 @@ public sealed class RegisterSaleHandler(
     IOutbox outbox,
     IUnitOfWork unitOfWork,
     IClock clock,
-    ICurrentUser user)
+    ICurrentUser user,
+    IOperationalSettings? settings = null)
 {
     private readonly RegisterSaleValidator _validator = new();
 
@@ -77,9 +83,23 @@ public sealed class RegisterSaleHandler(
             sale.AddLine(product, FefoAllocator.Allocate(lots[item.ProductId], item.Quantity, today));
         }
 
-        if (command.Discount > 0) sale.ApplyDiscount(command.Discount, user.UserName);
+        // SCRUM-30 · HU-27 (RF-096): solo con permiso y hasta el máximo configurado.
+        if (command.Discount > 0)
+        {
+            if (!RolePermissions.Has(user.Role, Permission.Descuentos))
+                throw new DomainException("No tiene permiso para aplicar descuentos (RF-096).");
+            var maxPercent = settings is null ? DiscountPolicy.DefaultMaxPercent
+                : await settings.GetMaxDiscountPercentAsync(ct);
+            DiscountPolicy.EnsureWithinLimit(command.Discount, sale.Subtotal, maxPercent);
+            sale.ApplyDiscount(command.Discount, user.UserName);
+        }
         sale.SetCustomer(command.CustomerName ?? "", command.CustomerTaxId ?? "");
-        sale.Complete(command.CashReceived, command.PrescriptionNumber);
+        // SCRUM-29 · HU-25: la receta solo se registra si la venta la requiere.
+        var prescription = sale.RequiresPrescription
+            ? Prescription.Create(command.PrescriptionNumber, command.PrescriptionDoctor, command.PrescriptionPatient,
+                command.PrescriptionIssuedOn, today)
+            : null;
+        sale.Complete(command.CashReceived, prescription);
 
         var lotsById = lots.SelectMany(g => g).ToDictionary(l => l.Id);
         foreach (var line in sale.Lines)
@@ -107,8 +127,10 @@ public static class SalePayloads
 
     public static SaleCreatedPayload Created(Sale sale) => new(sale.Id, sale.ReceiptNumber, sale.DeviceId,
         sale.CashierName, sale.CashSessionId, sale.CreatedAt, sale.Subtotal, sale.Discount, sale.Total,
-        sale.CashReceived, sale.Change, sale.PrescriptionNumber, sale.CustomerName, sale.CustomerTaxId, Lines(sale));
+        sale.CashReceived, sale.Change, sale.PrescriptionNumber, sale.CustomerName, sale.CustomerTaxId, Lines(sale),
+        sale.PrescriptionDoctor, sale.PrescriptionPatient, sale.PrescriptionIssuedOn, sale.DiscountAuthorizedBy);
 
     public static SaleReceipt Receipt(Sale sale) => new(sale.Id, sale.ReceiptNumber, sale.CreatedAt,
-        sale.CashierName, Lines(sale), sale.Subtotal, sale.Discount, sale.Total, sale.CashReceived, sale.Change);
+        sale.CashierName, Lines(sale), sale.Subtotal, sale.Discount, sale.Total, sale.CashReceived, sale.Change,
+        sale.CustomerName, sale.CustomerTaxId, sale.PrescriptionNumber, sale.Status.ToString());
 }
