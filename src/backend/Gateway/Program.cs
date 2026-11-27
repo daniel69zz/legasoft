@@ -17,8 +17,10 @@ builder.Services.AddReverseProxy().LoadFromConfig(builder.Configuration.GetSecti
 builder.Services.AddRateLimiter(o =>
 {
     o.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    // SCRUM-37 · HU-T01: el cupo es por puesto y usuario (claims del token), no por IP. Detrás de nginx y
+    // Cloudflare todas las solicitudes llegan desde 127.0.0.1 y compartían un único cupo entre todas las cajas.
     o.AddPolicy("por-puesto", context => RateLimitPartition.GetFixedWindowLimiter(
-        context.Connection.RemoteIpAddress?.ToString() ?? "desconocido",
+        RateLimitKey.For(context),
         _ => new FixedWindowRateLimiterOptions { PermitLimit = 300, Window = TimeSpan.FromMinutes(1) }));
 });
 builder.Services.AddHealthChecks();
@@ -47,3 +49,42 @@ app.UseSwaggerUI(o =>
 });
 app.MapReverseProxy();
 app.Run();
+
+/// <summary>
+/// Clave del límite de solicitudes: «puesto/usuario» leídos del JWT o, sin token, la IP. El Gateway no valida
+/// la firma (lo hacen los servicios); un token alterado solo cambia el cupo, no da acceso a nada.
+/// </summary>
+static class RateLimitKey
+{
+    public static string For(HttpContext context)
+    {
+        var auth = context.Request.Headers.Authorization.ToString();
+        if (auth.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+        {
+            var parts = auth[7..].Split('.');
+            if (parts.Length == 3)
+            {
+                try
+                {
+                    var json = System.Text.Encoding.UTF8.GetString(Base64Url(parts[1]));
+                    using var doc = System.Text.Json.JsonDocument.Parse(json);
+                    var device = doc.RootElement.TryGetProperty("device", out var d) ? d.GetString() : null;
+                    var name = doc.RootElement.TryGetProperty("name", out var n) ? n.GetString() : null;
+                    if (device is not null || name is not null) return $"{device}/{name}";
+                }
+                catch (Exception e) when (e is FormatException or System.Text.Json.JsonException
+                                              or InvalidOperationException)
+                {
+                    // token ilegible: se usa la IP
+                }
+            }
+        }
+        return context.Connection.RemoteIpAddress?.ToString() ?? "desconocido";
+    }
+
+    private static byte[] Base64Url(string s)
+    {
+        s = s.Replace('-', '+').Replace('_', '/');
+        return Convert.FromBase64String(s.PadRight(s.Length + (4 - s.Length % 4) % 4, '='));
+    }
+}
