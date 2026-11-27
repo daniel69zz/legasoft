@@ -58,8 +58,18 @@ public static class AuthEndpoints
         // RF-006: los cajeros solo inician sesión en computadoras autorizadas.
         var deviceAuthorized = await db.Devices.AnyAsync(d => d.DeviceId == request.DeviceId && d.IsActive);
         if (user.Role == Roles.Cajero && !deviceAuthorized)
+        {
+            // SCRUM-11 · HU-03: el intento queda registrado con usuario, equipo, fecha y hora.
+            db.UserChanges.Add(new UserChange
+            {
+                Id = Guid.NewGuid(), OccurredAt = now, ChangedBy = user.UserName, Action = "Acceso rechazado",
+                Detail = $"Inicio de sesión de cajero desde el equipo no autorizado {request.DeviceId}",
+            });
+            await db.SaveChangesAsync();
+            logger.LogWarning("Cajero {UserName} rechazado en el equipo {DeviceId}", userName, request.DeviceId);
             return Results.Problem("Este equipo no está autorizado para el inicio de sesión de cajeros.",
                 statusCode: StatusCodes.Status403Forbidden);
+        }
 
         // SCRUM-127 · HU-03.2 (RF-007): el administrador solo entra desde equipos autorizados para su perfil.
         if (user.Role == Roles.Administrador && !await db.Devices.AnyAsync(d =>
