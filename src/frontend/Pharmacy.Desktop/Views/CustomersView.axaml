@@ -5,13 +5,13 @@
              xmlns:c="using:Pharmacy.Application.Contracts"
              x:Class="Pharmacy.Desktop.Views.CustomersView"
              x:DataType="vm:CustomersViewModel">
-  <Grid ColumnDefinitions="*,380" ColumnSpacing="20">
+  <Grid ColumnDefinitions="*,340" ColumnSpacing="20">
     <!-- SCRUM-28 · HU-24: búsqueda (RF-086) e historial de compras (RF-087) -->
     <Grid RowDefinitions="*,Auto" RowSpacing="16">
       <Border Classes="card">
         <DockPanel>
           <TextBox DockPanel.Dock="Top" Watermark="Buscar por nombre o NIT/CI" Text="{Binding Search}" Margin="0,0,0,12" />
-          <Grid DockPanel.Dock="Top" ColumnDefinitions="*,140,140" Margin="10,0,10,6">
+          <Grid DockPanel.Dock="Top" ColumnDefinitions="*,100,100" Margin="10,0,10,6">
             <TextBlock Classes="muted" Text="Cliente" />
             <TextBlock Grid.Column="1" Classes="muted" Text="NIT / CI" />
             <TextBlock Grid.Column="2" Classes="muted" Text="Teléfono" />
@@ -19,7 +19,7 @@
           <ListBox ItemsSource="{Binding Customers}" SelectedItem="{Binding Selected}" Background="Transparent">
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="c:CustomerDto">
-                <Grid ColumnDefinitions="*,140,140">
+                <Grid ColumnDefinitions="*,100,100">
                   <StackPanel>
                     <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
                     <TextBlock Classes="muted" Text="{Binding Email}" />

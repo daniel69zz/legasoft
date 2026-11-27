@@ -5,23 +5,23 @@
              xmlns:dom="using:Pharmacy.Domain.Inventory"
              x:Class="Pharmacy.Desktop.Views.InventoryView"
              x:DataType="vm:InventoryViewModel">
-  <Grid ColumnDefinitions="*,380" ColumnSpacing="20">
+  <Grid ColumnDefinitions="*,340" ColumnSpacing="20">
     <Border Classes="card">
       <DockPanel>
         <TextBox DockPanel.Dock="Top" Watermark="Buscar producto" Text="{Binding Search}" Margin="0,0,0,12" />
-        <Grid DockPanel.Dock="Top" ColumnDefinitions="*,120,80,80,110" Margin="10,0,10,6">
+        <Grid DockPanel.Dock="Top" ColumnDefinitions="*,100,60,60,92" ColumnSpacing="6" Margin="10,0,38,6">
           <TextBlock Classes="muted" Text="Producto" />
           <TextBlock Grid.Column="1" Classes="muted" Text="Ubicación" />
           <TextBlock Grid.Column="2" Classes="muted" Text="Stock" HorizontalAlignment="Right" />
           <TextBlock Grid.Column="3" Classes="muted" Text="Mínimo" HorizontalAlignment="Right" />
           <TextBlock Grid.Column="4" Classes="muted" Text="Próx. venc." HorizontalAlignment="Right" />
         </Grid>
-        <ScrollViewer>
+        <ScrollViewer Classes="page">
           <ListBox ItemsSource="{Binding Rows}" SelectedItem="{Binding Selected}" Background="Transparent">
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="inv:StockRow">
                 <Border Classes="row">
-                  <Grid ColumnDefinitions="*,120,80,80,110">
+                  <Grid ColumnDefinitions="*,100,60,60,92" ColumnSpacing="6">
                     <StackPanel>
                       <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
                       <TextBlock Classes="muted">

@@ -14,20 +14,24 @@
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="c:UserDto">
                 <Border Classes="row">
-                  <Grid ColumnDefinitions="140,*,170,90,Auto,Auto" ColumnSpacing="6">
-                    <TextBlock Text="{Binding UserName}" FontWeight="SemiBold" VerticalAlignment="Center" />
-                    <TextBlock Grid.Column="1" Text="{Binding FullName}" VerticalAlignment="Center" />
-                    <TextBlock Grid.Column="2" Classes="muted" Text="{Binding Role}" VerticalAlignment="Center" />
-                    <Border Grid.Column="3" Classes="badge" VerticalAlignment="Center" HorizontalAlignment="Left" IsVisible="{Binding IsActive}">
+                  <!-- Fila adaptable: nombre y rol apilados para que los botones no invadan el formulario -->
+                  <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8">
+                    <StackPanel VerticalAlignment="Center">
+                      <TextBlock Text="{Binding UserName}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                      <TextBlock Classes="muted" TextTrimming="CharacterEllipsis">
+                        <Run Text="{Binding FullName, Mode=OneWay}" /><Run Text=" · " /><Run Text="{Binding Role, Mode=OneWay}" />
+                      </TextBlock>
+                    </StackPanel>
+                    <Border Grid.Column="1" Classes="badge" VerticalAlignment="Center" IsVisible="{Binding IsActive}">
                       <TextBlock Text="Activo" FontSize="11" Foreground="{StaticResource BrandDark}" />
                     </Border>
-                    <Border Grid.Column="3" Classes="badge danger" VerticalAlignment="Center" HorizontalAlignment="Left" IsVisible="{Binding !IsActive}">
+                    <Border Grid.Column="1" Classes="badge danger" VerticalAlignment="Center" IsVisible="{Binding !IsActive}">
                       <TextBlock Text="Inactivo" FontSize="11" Foreground="{StaticResource Danger}" />
                     </Border>
-                    <Button Grid.Column="4" Classes="small" Content="Editar"
+                    <Button Grid.Column="2" Classes="small" Content="Editar" VerticalAlignment="Center"
                             Command="{Binding $parent[UserControl].((vm:UsersViewModel)DataContext).EditCommand}"
                             CommandParameter="{Binding}" />
-                    <Button Grid.Column="5" Classes="small" Content="Activar / desactivar"
+                    <Button Grid.Column="3" Classes="small" Content="Activar / desactivar" VerticalAlignment="Center"
                             Command="{Binding $parent[UserControl].((vm:UsersViewModel)DataContext).ToggleCommand}"
                             CommandParameter="{Binding}" />
                   </Grid>
