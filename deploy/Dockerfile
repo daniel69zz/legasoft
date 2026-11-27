@@ -12,6 +12,8 @@ ARG PROJECT
 ENV APP_DLL=${PROJECT}.dll ASPNETCORE_URLS=http://+:8080
 WORKDIR /app
 COPY --from=build /app .
+# SCRUM-36 · HU-23 y SCRUM-41 · HU-T06: carpeta de respaldos del Business Service (volumen en docker-compose).
+RUN mkdir -p /backups && chown app /backups
 USER app
 EXPOSE 8080
 ENTRYPOINT ["sh", "-c", "exec dotnet $APP_DLL"]

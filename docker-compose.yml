@@ -40,6 +40,10 @@ services:
     environment:
       <<: *common-env
       ConnectionStrings__Business: Host=postgres;Database=farmacia;Username=business_svc;Password=business_dev
+      Backup__Directory: /backups
+    # SCRUM-36 · HU-23 y SCRUM-41 · HU-T06: respaldos lógicos del negocio (diario automático y a pedido)
+    volumes:
+      - backups:/backups
 
   sync:
     <<: *service
@@ -76,3 +80,4 @@ services:
 volumes:
   # Volumen creado desde las migraciones EF Core (el anterior, pgdata, no tenía historial)
   postgres-data:
+  backups:
