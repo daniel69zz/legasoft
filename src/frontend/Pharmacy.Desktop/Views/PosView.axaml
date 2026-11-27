@@ -5,33 +5,35 @@
              xmlns:inv="using:Pharmacy.Application.Inventory"
              x:Class="Pharmacy.Desktop.Views.PosView"
              x:DataType="vm:PosViewModel">
-  <Grid ColumnDefinitions="*,400" RowDefinitions="*,Auto" ColumnSpacing="20" RowSpacing="16">
+  <Grid ColumnDefinitions="*,360" RowDefinitions="*,Auto" ColumnSpacing="20" RowSpacing="16">
     <!-- Catálogo -->
     <Border Classes="card">
       <DockPanel>
         <TextBox DockPanel.Dock="Top" Watermark="Buscar por nombre, código, principio activo o categoría"
                  Text="{Binding Search}" Margin="0,0,0,12" />
         <ScrollViewer>
-          <ItemsControl ItemsSource="{Binding Results}">
+          <ItemsControl Margin="0,0,18,0" ItemsSource="{Binding Results}">
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="inv:StockRow">
                 <Border Classes="row">
-                  <Grid ColumnDefinitions="*,Auto,90,80,Auto" ColumnSpacing="12">
+                  <!-- Fila compacta: cabe en la ventana mínima sin invadir la barra de desplazamiento -->
+                  <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12">
                     <StackPanel>
-                      <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
-                      <TextBlock Classes="muted">
-                        <Run Text="{Binding Code, Mode=OneWay}" /><Run Text=" · " /><Run Text="{Binding Category, Mode=OneWay}" /><Run Text=" · " /><Run Text="{Binding Location, Mode=OneWay}" />
-                      </TextBlock>
+                      <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                      <Grid ColumnDefinitions="Auto,*" ColumnSpacing="6">
+                        <Border Classes="badge warn" Padding="6,0" IsVisible="{Binding RequiresPrescription}">
+                          <TextBlock Text="Receta" FontSize="11" Foreground="{StaticResource Warn}" />
+                        </Border>
+                        <TextBlock Grid.Column="1" Classes="muted" TextTrimming="CharacterEllipsis">
+                          <Run Text="{Binding Code, Mode=OneWay}" /><Run Text=" · " /><Run Text="{Binding Category, Mode=OneWay}" /><Run Text=" · " /><Run Text="{Binding Location, Mode=OneWay}" />
+                        </TextBlock>
+                      </Grid>
                     </StackPanel>
-                    <Border Grid.Column="1" Classes="badge warn" VerticalAlignment="Center"
-                            IsVisible="{Binding RequiresPrescription}">
-                      <TextBlock Text="Receta" FontSize="11" Foreground="{StaticResource Warn}" />
-                    </Border>
-                    <TextBlock Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right"
-                               Text="{Binding SalePrice, StringFormat='Bs {0:N2}'}" FontWeight="SemiBold" />
-                    <TextBlock Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Right" Classes="muted"
-                               Text="{Binding Stock, StringFormat='{}{0} u.'}" />
-                    <Button Grid.Column="4" Classes="small" Content="Agregar"
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" MinWidth="76">
+                      <TextBlock HorizontalAlignment="Right" FontWeight="SemiBold" Text="{Binding SalePrice, StringFormat='Bs {0:N2}'}" />
+                      <TextBlock HorizontalAlignment="Right" Classes="muted" Text="{Binding Stock, StringFormat='{}{0} u.'}" />
+                    </StackPanel>
+                    <Button Grid.Column="2" Classes="small" Content="Agregar" VerticalAlignment="Center"
                             Command="{Binding $parent[UserControl].((vm:PosViewModel)DataContext).AddCommand}"
                             CommandParameter="{Binding}" />
                   </Grid>
@@ -46,7 +48,7 @@
     <!-- Carrito y cobro -->
     <Border Grid.Column="1" Grid.RowSpan="2" Classes="card">
       <ScrollViewer>
-        <StackPanel Spacing="10">
+        <StackPanel Spacing="10" Margin="0,0,18,0">
           <TextBlock Classes="h2" Text="Venta en curso" />
           <ItemsControl ItemsSource="{Binding Cart}">
             <ItemsControl.ItemTemplate>
@@ -135,47 +137,53 @@
       </ScrollViewer>
     </Border>
 
-    <!-- Últimas ventas -->
+    <!-- Últimas ventas: título, motivo de anulación y recibos del período en filas propias para que quepan en
+         la ventana mínima -->
     <Border Grid.Row="1" Classes="card">
       <StackPanel Spacing="6">
-        <Grid ColumnDefinitions="*,280">
-          <TextBlock Classes="h2" Text="Últimas ventas del puesto" />
+        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+          <TextBlock Classes="h2" Text="Últimas ventas del puesto" VerticalAlignment="Center" Margin="0" />
           <TextBox Grid.Column="1" Watermark="Motivo de anulación (RF-048)" Text="{Binding VoidReason}" />
         </Grid>
-        <ItemsControl ItemsSource="{Binding RecentSales}">
-          <ItemsControl.ItemTemplate>
-            <DataTemplate x:DataType="vm:RecentSale">
-              <Grid ColumnDefinitions="170,110,*,100,Auto" Margin="0,2">
-                <TextBlock Text="{Binding ReceiptNumber}" VerticalAlignment="Center" />
-                <TextBlock Grid.Column="1" Classes="muted" VerticalAlignment="Center"
-                           Text="{Binding CreatedAt, Converter={x:Static conv:LocalTime.Instance}, ConverterParameter='dd/MM HH:mm'}" />
-                <TextBlock Grid.Column="2" Classes="muted" VerticalAlignment="Center" Text="{Binding Status}" />
-                <TextBlock Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,12,0"
-                           Text="{Binding Total, StringFormat='Bs {0:N2}'}" />
-                <StackPanel Grid.Column="4" Orientation="Horizontal" Spacing="6">
-                  <Button Classes="small" Content="Recibo PDF" ToolTip.Tip="Descarga el recibo (RF-050)"
-                          Command="{Binding $parent[UserControl].((vm:PosViewModel)DataContext).DownloadReceiptCommand}"
-                          CommandParameter="{Binding}" />
-                  <Button Classes="small" Content="Factura" IsVisible="{Binding CanVoid}"
-                          ToolTip.Tip="Factura simulada sin validez fiscal (RF-063); requiere conexión"
-                          Command="{Binding $parent[UserControl].((vm:PosViewModel)DataContext).InvoiceCommand}"
-                          CommandParameter="{Binding}" />
-                  <Button Classes="small danger" Content="Anular" IsVisible="{Binding CanVoid}"
-                          Command="{Binding $parent[UserControl].((vm:PosViewModel)DataContext).VoidCommand}"
-                          CommandParameter="{Binding}" />
-                </StackPanel>
-              </Grid>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
+        <ScrollViewer MaxHeight="150">
+          <ItemsControl Margin="0,0,18,0" ItemsSource="{Binding RecentSales}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:RecentSale">
+                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10" Margin="0,3">
+                  <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="{Binding ReceiptNumber}" FontWeight="SemiBold" />
+                    <TextBlock Classes="muted">
+                      <Run Text="{Binding CreatedAt, Mode=OneWay, Converter={x:Static conv:LocalTime.Instance}, ConverterParameter='dd/MM HH:mm'}" /><Run Text=" · " /><Run Text="{Binding Status, Mode=OneWay}" />
+                    </TextBlock>
+                  </StackPanel>
+                  <TextBlock Grid.Column="1" VerticalAlignment="Center" FontWeight="SemiBold"
+                             Text="{Binding Total, StringFormat='Bs {0:N2}'}" />
+                  <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                    <Button Classes="small" Content="Recibo" ToolTip.Tip="Descarga el recibo en PDF (RF-050)"
+                            Command="{Binding $parent[UserControl].((vm:PosViewModel)DataContext).DownloadReceiptCommand}"
+                            CommandParameter="{Binding}" />
+                    <Button Classes="small" Content="Factura" IsVisible="{Binding CanVoid}"
+                            ToolTip.Tip="Factura simulada sin validez fiscal (RF-063); requiere conexión"
+                            Command="{Binding $parent[UserControl].((vm:PosViewModel)DataContext).InvoiceCommand}"
+                            CommandParameter="{Binding}" />
+                    <Button Classes="small danger" Content="Anular" IsVisible="{Binding CanVoid}"
+                            Command="{Binding $parent[UserControl].((vm:PosViewModel)DataContext).VoidCommand}"
+                            CommandParameter="{Binding}" />
+                  </StackPanel>
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
         <!-- SCRUM-24 · HU-14 (RF-051): recibos del período en un solo PDF -->
-        <Grid ColumnDefinitions="Auto,140,140,Auto" ColumnSpacing="8" Margin="0,6,0,0">
-          <TextBlock Classes="muted" VerticalAlignment="Center" Text="Recibos del período (RF-051)" />
-          <CalendarDatePicker Grid.Column="1" SelectedDate="{Binding ReceiptsFrom}" SelectedDateFormat="Custom"
-                              CustomDateFormatString="dd/MM/yyyy" HorizontalAlignment="Stretch" />
-          <CalendarDatePicker Grid.Column="2" SelectedDate="{Binding ReceiptsTo}" SelectedDateFormat="Custom"
-                              CustomDateFormatString="dd/MM/yyyy" HorizontalAlignment="Stretch" />
-          <Button Grid.Column="3" Classes="small" Content="Descargar PDF" Command="{Binding DownloadReceiptsCommand}" />
+        <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="6" Margin="0,4,0,0">
+          <CalendarDatePicker SelectedDate="{Binding ReceiptsFrom}" SelectedDateFormat="Custom"
+                              CustomDateFormatString="dd/MM/yyyy" HorizontalAlignment="Stretch" Watermark="Desde"
+                              ToolTip.Tip="Recibos del período (RF-051)" />
+          <CalendarDatePicker Grid.Column="1" SelectedDate="{Binding ReceiptsTo}" SelectedDateFormat="Custom"
+                              CustomDateFormatString="dd/MM/yyyy" HorizontalAlignment="Stretch" Watermark="Hasta" />
+          <Button Grid.Row="1" Grid.ColumnSpan="2" Classes="small" HorizontalAlignment="Left"
+                  Content="Descargar los recibos del período (PDF)" Command="{Binding DownloadReceiptsCommand}" />
         </Grid>
       </StackPanel>
     </Border>

@@ -13,13 +13,13 @@
 
       <!-- SCRUM-129 · HU-18.1 (RF-105): exportación a Excel -->
       <Border Classes="card">
-        <Grid ColumnDefinitions="Auto,160,160,Auto" ColumnSpacing="10">
+        <Grid ColumnDefinitions="*,140,140,Auto" ColumnSpacing="10">
           <TextBlock Classes="h2" Text="Exportar a Excel (RF-105)" VerticalAlignment="Center" Margin="0" />
           <CalendarDatePicker Grid.Column="1" SelectedDate="{Binding ExportFrom}" SelectedDateFormat="Custom"
                               CustomDateFormatString="dd/MM/yyyy" Watermark="Desde" HorizontalAlignment="Stretch" />
           <CalendarDatePicker Grid.Column="2" SelectedDate="{Binding ExportTo}" SelectedDateFormat="Custom"
                               CustomDateFormatString="dd/MM/yyyy" Watermark="Hasta" HorizontalAlignment="Stretch" />
-          <Button Grid.Column="3" Classes="primary" Content="Ventas, egresos y cierres (.xlsx)"
+          <Button Grid.Column="3" Classes="primary" Content="Exportar (.xlsx)" ToolTip.Tip="Ventas, egresos y cierres del período"
                   Command="{Binding ExportCommand}" />
         </Grid>
       </Border>
@@ -27,7 +27,7 @@
       <Border Classes="card">
         <StackPanel Spacing="10">
           <TextBlock Classes="h2" Text="Reportes operativos (RF-068 a RF-072, RF-103)" />
-          <Grid ColumnDefinitions="2*,150,150,*" ColumnSpacing="10">
+          <Grid ColumnDefinitions="2*,140,140,*" ColumnSpacing="10">
             <ComboBox ItemsSource="{Binding ReportChoices}" SelectedItem="{Binding ReportKind}" HorizontalAlignment="Stretch" />
             <CalendarDatePicker Grid.Column="1" SelectedDate="{Binding ReportFrom}" SelectedDateFormat="Custom"
                                 CustomDateFormatString="dd/MM/yyyy" Watermark="Desde" HorizontalAlignment="Stretch"
@@ -46,7 +46,7 @@
             <TextBlock FontWeight="SemiBold">
               <Run Text="{Binding Report.Title, Mode=OneWay}" /><Run Text=" · " /><Run Text="{Binding Report.Subtitle, Mode=OneWay}" />
             </TextBlock>
-            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" MaxHeight="320">
+            <ScrollViewer Classes="page" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" MaxHeight="320">
               <SelectableTextBlock FontFamily="{StaticResource Mono}" FontSize="11" Text="{Binding ReportPreview}" />
             </ScrollViewer>
           </StackPanel>
@@ -56,16 +56,16 @@
       </Border>
 
       <Grid ColumnDefinitions="*,*,*,*,*" ColumnSpacing="16" IsVisible="{Binding Summary, Converter={x:Static ObjectConverters.IsNotNull}}">
-        <Border Classes="card"><StackPanel><TextBlock Classes="muted" Text="Ventas de hoy" /><TextBlock Classes="kpi" Text="{Binding Summary.SalesToday, StringFormat='Bs {0:N2}'}" /><TextBlock Classes="muted" Text="{Binding Summary.SalesCountToday, StringFormat='{}{0} ventas'}" /></StackPanel></Border>
-        <Border Grid.Column="1" Classes="card"><StackPanel><TextBlock Classes="muted" Text="Últimos 7 días" /><TextBlock Classes="kpi" Text="{Binding Summary.SalesLast7Days, StringFormat='Bs {0:N2}'}" /></StackPanel></Border>
-        <Border Grid.Column="2" Classes="card"><StackPanel><TextBlock Classes="muted" Text="Productos en stock mínimo" /><TextBlock Classes="kpi" Foreground="{StaticResource Danger}" Text="{Binding Summary.LowStockProducts}" /></StackPanel></Border>
-        <Border Grid.Column="3" Classes="card"><StackPanel><TextBlock Classes="muted" Text="Lotes por vencer / vencidos" /><TextBlock Classes="kpi" Foreground="{StaticResource Warn}"><Run Text="{Binding Summary.ExpiringLots, Mode=OneWay}" /><Run Text=" / " /><Run Text="{Binding Summary.ExpiredLots, Mode=OneWay}" /></TextBlock></StackPanel></Border>
-        <Border Grid.Column="4" Classes="card"><StackPanel><TextBlock Classes="muted" Text="Cierres con diferencia" /><TextBlock Classes="kpi" Foreground="{StaticResource Navy}" Text="{Binding Summary.ClosuresWithDifference}" /></StackPanel></Border>
+        <Border Classes="card"><StackPanel><TextBlock Classes="muted" Text="Ventas de hoy" TextWrapping="Wrap" /><Viewbox StretchDirection="DownOnly" HorizontalAlignment="Left"><TextBlock Classes="kpi" Text="{Binding Summary.SalesToday, StringFormat='Bs {0:N2}'}" /></Viewbox><TextBlock Classes="muted" Text="{Binding Summary.SalesCountToday, StringFormat='{}{0} ventas'}" /></StackPanel></Border>
+        <Border Grid.Column="1" Classes="card"><StackPanel><TextBlock Classes="muted" Text="Últimos 7 días" TextWrapping="Wrap" /><Viewbox StretchDirection="DownOnly" HorizontalAlignment="Left"><TextBlock Classes="kpi" Text="{Binding Summary.SalesLast7Days, StringFormat='Bs {0:N2}'}" /></Viewbox></StackPanel></Border>
+        <Border Grid.Column="2" Classes="card"><StackPanel><TextBlock Classes="muted" Text="Productos en stock mínimo" TextWrapping="Wrap" /><Viewbox StretchDirection="DownOnly" HorizontalAlignment="Left"><TextBlock Classes="kpi" Foreground="{StaticResource Danger}" Text="{Binding Summary.LowStockProducts}" /></Viewbox></StackPanel></Border>
+        <Border Grid.Column="3" Classes="card"><StackPanel><TextBlock Classes="muted" Text="Lotes por vencer / vencidos" TextWrapping="Wrap" /><Viewbox StretchDirection="DownOnly" HorizontalAlignment="Left"><TextBlock Classes="kpi" Foreground="{StaticResource Warn}"><Run Text="{Binding Summary.ExpiringLots, Mode=OneWay}" /><Run Text=" / " /><Run Text="{Binding Summary.ExpiredLots, Mode=OneWay}" /></TextBlock></Viewbox></StackPanel></Border>
+        <Border Grid.Column="4" Classes="card"><StackPanel><TextBlock Classes="muted" Text="Cierres con diferencia" TextWrapping="Wrap" /><Viewbox StretchDirection="DownOnly" HorizontalAlignment="Left"><TextBlock Classes="kpi" Foreground="{StaticResource Navy}" Text="{Binding Summary.ClosuresWithDifference}" /></Viewbox></StackPanel></Border>
       </Grid>
       <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
         <Border Classes="card">
           <StackPanel>
-            <Grid ColumnDefinitions="*,200" ColumnSpacing="8" Margin="0,0,0,8">
+            <Grid ColumnDefinitions="*,180" ColumnSpacing="8" Margin="0,0,0,8">
               <TextBlock Classes="h2" Text="Ventas por cajero (RF-074)" VerticalAlignment="Center" Margin="0" />
               <!-- SCRUM-32 · HU-19: agrupación por día, semana o mes -->
               <ComboBox Grid.Column="1" ItemsSource="{Binding GroupingChoices}" SelectedItem="{Binding Grouping}"
@@ -75,7 +75,7 @@
               <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="c:SalesByCashierRow">
                   <Border Classes="row">
-                    <Grid ColumnDefinitions="100,*,70,110">
+                    <Grid ColumnDefinitions="90,*,Auto,96" ColumnSpacing="8">
                       <TextBlock Text="{Binding Day, StringFormat='{}{0:dd/MM/yyyy}'}" />
                       <TextBlock Grid.Column="1" Text="{Binding CashierName}" FontWeight="SemiBold" />
                       <TextBlock Grid.Column="2" Classes="muted" Text="{Binding Sales, StringFormat='{}{0} ventas'}" />

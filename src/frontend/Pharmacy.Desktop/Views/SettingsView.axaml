@@ -20,19 +20,19 @@
                          Text="Se guardan en el servidor. Los puestos aplican el umbral de vencimiento y el descuento máximo en la siguiente sincronización y el Notification Worker usa la nueva frecuencia en su próximo ciclo." />
               <Grid ColumnDefinitions="*,140" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="10">
                 <StackPanel VerticalAlignment="Center">
-                  <TextBlock Text="Umbral de alerta de vencimiento" FontWeight="SemiBold" />
+                  <TextBlock Text="Umbral de alerta de vencimiento" FontWeight="SemiBold" TextWrapping="Wrap" />
                   <TextBlock Classes="muted" Text="Días antes del vencimiento en que un lote pasa a «Por vencer» (1 a 365)." TextWrapping="Wrap" />
                 </StackPanel>
                 <NumericUpDown Grid.Column="1" Value="{Binding ExpiryThresholdDays}" Minimum="1" Maximum="365" Increment="5"
                                FormatString="0" VerticalAlignment="Center" />
                 <StackPanel Grid.Row="1" VerticalAlignment="Center">
-                  <TextBlock Text="Frecuencia de las alertas por correo" FontWeight="SemiBold" />
+                  <TextBlock Text="Frecuencia de las alertas por correo" FontWeight="SemiBold" TextWrapping="Wrap" />
                   <TextBlock Classes="muted" Text="Minutos entre envíos del Notification Worker (5 a 1440)." TextWrapping="Wrap" />
                 </StackPanel>
                 <NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding AlertIntervalMinutes}" Minimum="5" Maximum="1440"
                                Increment="5" FormatString="0" VerticalAlignment="Center" />
                 <StackPanel Grid.Row="2" VerticalAlignment="Center">
-                  <TextBlock Text="Descuento máximo autorizado" FontWeight="SemiBold" />
+                  <TextBlock Text="Descuento máximo autorizado" FontWeight="SemiBold" TextWrapping="Wrap" />
                   <TextBlock Classes="muted" Text="Porcentaje del subtotal que se puede descontar en una venta (0 a 100, RF-096)." TextWrapping="Wrap" />
                 </StackPanel>
                 <NumericUpDown Grid.Row="2" Grid.Column="1" Value="{Binding MaxDiscountPercent}" Minimum="0" Maximum="100"

@@ -24,7 +24,7 @@
           <Run Text="{Binding Movements.Count, Mode=OneWay}" /><Run Text=" movimientos · saldo neto " /><Run Text="{Binding TotalUnits, Mode=OneWay, StringFormat='{}{0:+0;-0;0}'}" FontWeight="SemiBold" /><Run Text=" u." />
         </TextBlock>
       </StackPanel>
-      <Grid DockPanel.Dock="Top" ColumnDefinitions="130,*,110,90,80,*,110" ColumnSpacing="8" Margin="10,0,10,6">
+      <Grid DockPanel.Dock="Top" ColumnDefinitions="118,*,92,78,64,*,96" ColumnSpacing="8" Margin="10,0,28,6">
         <TextBlock Classes="muted" Text="Fecha" />
         <TextBlock Grid.Column="1" Classes="muted" Text="Producto" />
         <TextBlock Grid.Column="2" Classes="muted" Text="Lote" />
@@ -34,11 +34,11 @@
         <TextBlock Grid.Column="6" Classes="muted" Text="Usuario" />
       </Grid>
       <ScrollViewer>
-        <ItemsControl ItemsSource="{Binding Movements}">
+        <ItemsControl Margin="0,0,18,0" ItemsSource="{Binding Movements}">
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="c:InventoryMovementDto">
               <Border Classes="row">
-                <Grid ColumnDefinitions="130,*,110,90,80,*,110" ColumnSpacing="8">
+                <Grid ColumnDefinitions="118,*,92,78,64,*,96" ColumnSpacing="8">
                   <TextBlock Text="{Binding OccurredAt, Converter={x:Static conv:LocalTime.Instance}, ConverterParameter='dd/MM/yyyy HH:mm'}" />
                   <TextBlock Grid.Column="1" Text="{Binding ProductName}" TextTrimming="CharacterEllipsis" />
                   <TextBlock Grid.Column="2" Text="{Binding LotNumber}" />
@@ -46,7 +46,7 @@
                   <TextBlock Grid.Column="4" HorizontalAlignment="Right" FontWeight="SemiBold"
                              Text="{Binding Quantity, StringFormat='{}{0:+0;-0}'}" />
                   <TextBlock Grid.Column="5" Classes="muted" Text="{Binding Reason}" TextTrimming="CharacterEllipsis" />
-                  <TextBlock Grid.Column="6" Text="{Binding UserName}" />
+                  <TextBlock Grid.Column="6" Text="{Binding UserName}" TextTrimming="CharacterEllipsis" />
                 </Grid>
               </Border>
             </DataTemplate>
