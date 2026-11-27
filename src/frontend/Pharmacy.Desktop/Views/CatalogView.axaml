@@ -54,7 +54,7 @@
     </Border>
 
     <!-- Formulario de registro y modificación (RF-009, RF-010) -->
-    <ScrollViewer Grid.Column="1">
+    <ScrollViewer Grid.Column="1" Classes="page">
       <Border Classes="card" VerticalAlignment="Top">
         <StackPanel Spacing="10">
           <TextBlock Classes="h2" Text="{Binding FormTitle}" />

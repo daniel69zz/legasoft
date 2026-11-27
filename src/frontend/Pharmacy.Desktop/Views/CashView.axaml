@@ -4,7 +4,7 @@
              xmlns:conv="using:Pharmacy.Desktop.Converters"
              x:Class="Pharmacy.Desktop.Views.CashView"
              x:DataType="vm:CashViewModel">
-  <ScrollViewer>
+  <ScrollViewer Classes="page">
     <StackPanel Spacing="16">
       <TextBlock Classes="error" Text="{Binding Error}" IsVisible="{Binding Error, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
       <TextBlock Classes="ok" Text="{Binding Info}" IsVisible="{Binding Info, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
